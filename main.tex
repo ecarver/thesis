@@ -91,17 +91,16 @@
 
 \title{
     \vspace{2in}
-    \textbf{Experiments with Hardware-based Transactional Memory in Parallel
-    Simulation \\}
+    \textbf{Cluster Headaches and Other Stories \\}
     \vspace{2in}
 }
 
-\author{Joshua Hay}
+\author{Eric Carver}
 
-\affil{hayja@mail.uc.edu}
+\affil{carverer@mail.uc.edu}
     \vspace{10pt}
-    
-\affil{(513) 607-4929}
+
+\affil{(513) 207-6501}
     \vspace{2.0in}
 
 \titleformat*{\section}{\large\normalfont}
@@ -131,29 +130,6 @@
 \newpage
 
 \section{\textbf{Introduction}}
-
-The advent of multi-core programming introduced a new avenue for increased
-performance and scalability through multi-threaded programming.  However, this
-avenue came with a toll: synchronization mechanisms for access to critical
-sections.  The critical section is segment of code accessing a shared resource
-that can only be executed by one thread at any given time \cite{os_concepts}.
-This effectively results in the serialization of thread execution on this
-segment of code. \par
-
-For example, a multi-threaded application is designed to operate on a single,
-shared memory data structure.  For the sake of simplicity, programmers typically
-use coarse-grained locking techniques to protect the critical section, e.g. a
-single atomic lock for the entire data structure.  A thread will lock all other
-threads out of the entire data structure until it has completed its task, thus
-forcing the threads to execute this segment of code serially. \par
-
-Coarse-grained locking is a pessimistic synchronization mechanism; accesses to
-shared resources are statically serialized by the programmer \cite{}.  It
-prevents multi-threaded applications from executing at their full potential as
-provided by the underlying hardware.  More importantly, it increases  
-lock contention, resulting in performance penalties rather than performance
-gains. \par
-
 
 
 \subsection{\textbf{Research Statement}}
