@@ -62,7 +62,7 @@
 \g@addto@macro\@verbatim\small
 \makeatother
 
-\setlength\parindent{0pt} % Removes all indentation from paragraphs
+%\setlength\parindent{0pt} % Removes all indentation from paragraphs
 %\setlength\parindent{24pt}
 
 \definecolor{sh_comment}{rgb}{0.12, 0.38, 0.18 } %adjusted, in Eclipse: {0.25, 0.42, 0.30 } = #3F6A4D
@@ -160,6 +160,84 @@
 %    \end{table}
 
 \newpage
+\section{\textbf{Background}}
+
+\subsection{\textbf{Infiniband and RoCE}}
+
+\href{www.infinibandta.org}{InfiniBand}\texttrademark (IB) was introduced in
+1999 to meet the new demand of data-intensive applications in high-end computing
+environments \cite{InfiniBandTABase-07}. Its characteristic high bandwidth and
+low latency make it a popular interconnect technology for computing solutions
+intended for fine-grained parallel simulation. For high-end Beowulf Clusters,
+message latency as low as one microsecond is provided through the two-pronged
+approach of using InfiniBand networking hardware and the lightweight IB
+transport layer. However, the high cost and lack of inter-fabric compatibility
+of such hardware have driven the development of solutions based on the
+ubiquitous Ethernet link layer \cite{roce-announce}.
+
+Although IB is a full first-order interconnect solution, its transport layer is
+particularly attractive to researchers who desire affordable high performance
+computing. It specifies four transport types: Reliable Connection (RC), Reliable
+Datagram (RD), Unreliable Connection (UC), and Unreliable Datagram (UD)
+\cite{InfiniBandTABase-07}. All four types support channel messaging semantics,
+wherein messages are passed using send and receive calls
+\cite{InfiniBandTABase-07}. The RC and UC types support memory semantics, also
+known as Remote Direct Memory Access (RDMA). This approach allows an initiator
+computing node to access the memory of a remote process directly, without any
+significant effort on the part of the remote node \cite{sur-11}.
+
+RDMA over Converged Ethernet (RoCE), also known as Infiniband over Ethernet
+(IBoE), is an attempt to provide the reliable, low-latency InfiniBand transport
+services over a converged Ethernet fabric already present in most data centers
+\cite{InfiniBandTARoCE-10}, \cite{roce-announce}. This enables properly
+configured networks to carry IB traffic without investing in entirely new
+physical hardware. Message latency can be under 2 microseconds when used in a
+lossless 40 Gigabit Ethernet network \cite{vienne-12}. RoCE has found a niche in
+commercial data centers, especially those that support financial operations such
+as high frequency trading. Unfortunately, specialized network adaptors are still
+required to take advantage of its features. Additionally, these solutions
+generally require switches that support Data Center Bridging (DCB)
+\cite{InfiniBandTARoCE-10}. This creates an opportunity for a solution that can
+work with existing lossy Ethernet networks.
+
+%% Could talk about iWARP here, but probably don't need to
+
+System Fabric Works, Inc., has created a pure software implementation of RoCE
+called \href{http://www.systemfabricworks.com/downloads/roce}{rxe}. rxe is a
+Linux driver that implements the full IB transport over any Ethernet adaptor
+\cite{pearson-10}. Message latency can be as low as 10
+microseconds\cite{pearson-10}. The
+\href{http://support.systemfabricworks.com/downloads/rxe/}{most recent relase of
+the driver} is in the from of patches for the mainline Linux kernel. We chose
+to port this implementation to the ODROID platform for our studies in low-cost
+Beowulf Clusters.
+
+\subsection{\textbf{Driver Model}}
+
+%% Talk about polling here
+%% TODO: Get info from Doug (EHCI, XHCI, polling implementation)
+
+\subsection{\textbf{ODROID Platform}}
+
+\subsubsection{\textbf{ODROID-U2}}
+
+\subsubsection{\textbf{ODROID-XU}}
+
+\subsection{\textbf{Related Work}}
+
+%% ERIC: do we know of any related work?  even publications talking about
+%% IBoE/RoCE performance on the x86 platform would be worth reviewing.
+
+Although performance profiling of hardware IB and RoCE is extensive
+\cite{subamaroni-09}, \cite{vienne-12}, studies on software RoCE are
+rare. Robert J. Lancaster \cite{lancaster-10} experimented with the rxe
+driver. He found that rxe message latency ranged from 14\% to 81\% lower than
+TCP/IP using a Realtek 8168B Gigabit Ethernet adaptor with the r8169 driver.
+
+%% Can't really find anything else on softroce
+
+
+
 \bibliographystyle{abbrv}
 \bibliography{refs}
 

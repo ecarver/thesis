@@ -3,7 +3,7 @@ BX=bibtex
 
 default: main.tex refs.bib
 	$(PX) main.tex
-	$(BX) main.tex
+	$(BX) main
 	$(PX) main.tex
 	$(PX) main.tex
 
