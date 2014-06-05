@@ -242,11 +242,26 @@ TCP/IP using a Realtek 8168B Gigabit Ethernet adaptor with the r8169 driver.
 
 \subsection{\textbf{Software RoCE}}
 
+Currently, there is only one open-source software RoCE project: the rxe linux
+driver. System Fabric Works created the driver with at least two goals in mind:
+to provide a low-cost gateway to Infiniband software and to function as a
+testbed for IB application development \cite{pearson-10}. In both cases, its lack
+of network hardware dependence distinguishes it from all other Infiniband
+implementations. We hoped to leverage this technology for use in our low-cost
+cluster in order to bring its performance closer to the performance of a
+traditional x86 cluster.
+
+The rxe linux driver is divided into two modules: rxe and rxe-net
+\cite{pearson-10}. rxe provides an implementation of the Infiniband transport
+compliant with the RoCE specification annex \cite{InfiniBandTARoCE-10}. rxe-net
+interfaces with the Linux networking stack to transmit and receive packets
+earmarked for rxe. The following two sections detail the design of these modules.
+
 \subsubsection{\textbf{rxe}}
 
 \subsubsection{\textbf{rxe-net}}
 
-\subsubsection{\textbf{Porting to the ODROID Platform}}
+\subsubsection{\textbf{Porting rxe to the ODROID Platform}}
 
 %% TODO: Expand on this section a bunch. Include details of porting work
 
@@ -277,8 +292,8 @@ programs, eliminating the need for high-latency context switches. rxe currently
 uses the \verb;page_address(); macro to get virtual page addresses. These calls
 should be replaced by \verb;kmap(); or \verb;kmap\_atomic(); in order to make
 them safe for use on high memory pages. However, each \verb;kmap(); call
-requires a corresponding kunmap(). Some of the rxe DMA memory mapping functions
-use the \verb;page_address(); macro to return an address for DMA
+requires a corresponding \verb;kunmap();. Some of the rxe DMA memory mapping
+functions use the \verb;page_address(); macro to return an address for DMA
 operations. This is not an intended use for \verb;kmap();, because the kernel
 has a limited number of such mappings available. We were able to run the driver
 recoded in this manner for use with micro-benchmarks, but it is unstable when
