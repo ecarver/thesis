@@ -23,6 +23,7 @@
 \usepackage{indentfirst}
 \usepackage{enumitem}
 \usepackage{pdfpages}
+\usepackage{epstopdf}
 
 \captionsetup[sub]{labelsep=newline}
 
@@ -130,8 +131,7 @@
 \newpage
 
 \section{\textbf{Introduction}}
-
-
+\label{introduction}
 
 \subsection{\textbf{Research Statement}}
 
@@ -141,27 +141,28 @@ This research will make the
 
 The remainder of this thesis is organized as follows.
 
-Chapter 2 provides background information on Parallel Discrete Event Simulation
-(PDES), Infiniband\texttrademark, and small form factor computers, including the
-ODROID platform used in this research.
+Chapter \ref{background} provides background information on Parallel Discrete
+Event Simulation (PDES), Infiniband\texttrademark, and small form factor
+computers, including the ODROID platform used in this research.
 
-Chapter 3 presents our strategy for attacking the network latency problem in our
-Beowulf cluster. It focuses on two low-cost solutions: software RDMA over
-Converged Ethernet (RoCE) and polling network drivers.
+Chapter \ref{latency_reduction} presents our strategy for attacking the network
+latency problem in our Beowulf cluster. It focuses on two low-cost solutions:
+software RDMA over Converged Ethernet (RoCE) and polling network drivers.
 
-Chapter 4 describes the hardware and software implementation of the ODROID-XU
-cluster constructed as part of these experiments and details the benchmarks and
-simulations used to test its performance.
+Chapter \ref{cluster} describes the hardware and software implementation of the
+ODROID-XU cluster constructed as part of these experiments and details the
+benchmarks and simulations used to test its performance.
 
-Chapter 5 provides the results of these tests and attempts to relate the
-cluster's performance to its cost. The results of a similar set of tests on a
-traditional cluster are provided for comparison.
+Chapter \ref{results} provides the results of these tests and attempts to relate
+the cluster's performance to its cost. The results of a similar set of tests on
+a traditional cluster are provided for comparison.
 
-Chapter 6 contextualizes the results of this research and suggests ways to
-continue this work.
+Chapter \ref{conclusions} contextualizes the results of this research and
+suggests ways to continue this work.
 
 \newpage
 \section{\textbf{Background}}
+\label{background}
 
 \subsection{\textbf{Parallel Discrete Event Simulation}}
 
@@ -237,6 +238,7 @@ TCP/IP using a Realtek 8168B Gigabit Ethernet adaptor with the r8169 driver.
 
 \newpage
 \section{\textbf{Methods for Reducing Network Latency}}
+\label{latency_reduction}
 
 \subsection{\textbf{Software RoCE}}
 
@@ -299,12 +301,89 @@ would normally be mapped into high memory.
 
 \newpage
 \section{\textbf{Cluster Implementation and Testing}}
+\label{cluster}
 
 \newpage
 \section{\textbf{Results}}
+\label{results}
+
+\subsection{\textbf{Micro-benchmark Results}}
+
+Preliminary micro-benchmark results from a cluster of two ODROID-U2 nodes are
+presented first. Next, the results of similar tests on the four-node ODROID-XU
+cluster are shown.
+
+\subsubsection{\textbf{Two ODROID-U2 Nodes}}
+
+Figures \ref{npmpi-llat} and \ref{npmpi-hlat} show MPI message latency for small
+messages and large messages, respectively. Latency over RoCE is 17\% to 31\%
+lower than latency over TCP for messages smaller than 260 B. In fact, RoCE
+latency remains flat throughout that region, while TCP performance degrades
+slowly as message size increases. This trend of identical performance for all
+messages from 0 to around 256 B continues throughout this section. We believe
+that this is a manifestation of a performance limitation introduced by the
+USB-to-Ethernet translation in the LAN9730 hardware.
+%% TODO: We will discuss this further in Section \ref{discussion}.
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{netpipe_lat_small}
+\caption{NetPIPE MPI Latency Results, Small Message Sizes}
+\label{npmpi-llat}
+\end{figure}
+
+The trend of performance improvement with RoCE continues until message size
+rises above 8 KB, after which RoCE latency is significantly higher than TCP
+latency. %% This was actually really surprising. Can't explain it...yet
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{netpipe_lat_large}
+\caption{NetPIPE MPI Latency Results, Large Message Sizes}
+\label{npmpi-hlat}
+\end{figure}
+
+The MPI bandwidth results in Figures \ref{npmpi-lbw} and \ref{npmpi-hbw} mirror
+the latency results. Interestingly, neither TCP nor RoCE traffic could saturate
+the 100 Mbps link. %% Is this because the processor can't move data around
+%% fast enough? If so, this could have implications on the discussion of GbE
+%% modules for the XU. We could also blame the NIC, Linux, or even NetPIPE. I
+%% might have to add a way to bypass the rxe flow control...
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{netpipe_bw_small}
+\caption{NetPIPE MPI Bandwidth Results, Small Message Sizes}
+\label{npmpi-lbw}
+\end{figure}
+
+
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{netpipe_bw_large}
+\caption{NetPIPE MPI Bandwidth Results, Large Message Sizes}
+\label{npmpi-hbw}
+\end{figure}
+
+In order to test transport scalability over MPI in the ODROID platform, we used
+the Intel MPI Benchmarks (IMB) suite's ``MultiPingPong'' test with four, six,
+and eight MPI processes. This benchmark creates pairs of processes that perform
+a standard ping-pong test in parallel with the other pairs. We suspected that
+the reduced CPU requirements of the IB transport would lead to slower scaling of
+latency as network and I/O bus congestion increases. Figure \ref{multipingpong}
+supports this conjecture. In fact, the rxe driver appears to thrive in a
+congested networking environment, while TCP/IP latency grows steadily. It
+appears that the increased network activity may be hiding some of the latency
+introduced by the Ethernet adaptor. %% How?
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{pingpong_multi_zoom}
+\caption{Scaling of Message Latency with Link Congestion}
+\label{multipingpong}
+\end{figure}
+
+\subsubsection{\textbf{Four ODROID-XU nodes}}
 
 \newpage
 \section{\textbf{Conclusions}}
+\label{conclusions}
 
 \bibliographystyle{abbrv}
 \bibliography{refs}
