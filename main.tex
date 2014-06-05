@@ -290,7 +290,7 @@ memory (kernel memory) at runtime. This is an important feature in modern IB
 drivers because it allows memory regions to be directly accessed by userspace
 programs, eliminating the need for high-latency context switches. rxe currently
 uses the \verb;page_address(); macro to get virtual page addresses. These calls
-should be replaced by \verb;kmap(); or \verb;kmap\_atomic(); in order to make
+should be replaced by \verb;kmap(); or \verb;kmap_atomic(); in order to make
 them safe for use on high memory pages. However, each \verb;kmap(); call
 requires a corresponding \verb;kunmap();. Some of the rxe DMA memory mapping
 functions use the \verb;page_address(); macro to return an address for DMA
