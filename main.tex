@@ -63,7 +63,7 @@
 \makeatother
 
 %\setlength\parindent{0pt} % Removes all indentation from paragraphs
-%\setlength\parindent{24pt}
+\setlength\parindent{24pt}
 
 \definecolor{sh_comment}{rgb}{0.12, 0.38, 0.18 } %adjusted, in Eclipse: {0.25, 0.42, 0.30 } = #3F6A4D
 \definecolor{sh_keyword}{rgb}{0.37, 0.08, 0.25}  % #5F1441
@@ -132,35 +132,38 @@
 \section{\textbf{Introduction}}
 
 
+
 \subsection{\textbf{Research Statement}}
+
+This research will make the 
 
 \subsection{\textbf{Thesis Overview}}
 
-%    \begin{figure}[H]
-%        \centering
-%        \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../../magic/pics/magic_layout_32_bit.png}
-%        \caption{\textbf{32 Bit Layout - Magic}}
-%        \label{fig:gg}
-%    \end{figure}
+The remainder of this thesis is organized as follows.
 
-%\section{\textbf{Work Division}}
-%    \begin{table}[H]
-%        \centering
-%        \begin{tabular}{l | p{8cm}}
-%            \hline
-%            \textbf{Student}   & \textbf{Task} \\ \hline
-%            \midrule
-%                Both        & Modified Pin-out Diagram \\
-%                Both        & Magic Layout \\
-%                Both        & IRSIM \\
-%                Both        & VHDL \\
-%                Both        & Modified Floor Plan
-%        \end{tabular}
-%        \caption{\textbf{Task Assignment}}
-%    \end{table}
+Chapter 2 provides background information on Parallel Discrete Event Simulation
+(PDES), Infiniband\texttrademark, and small form factor computers, including the
+ODROID platform used in this research.
+
+Chapter 3 presents our strategy for attacking the network latency problem in our
+Beowulf cluster. It focuses on two low-cost solutions: software RDMA over
+Converged Ethernet (RoCE) and polling network drivers.
+
+Chapter 4 describes the hardware and software implementation of the ODROID-XU
+cluster constructed as part of these experiments and details the benchmarks and
+simulations used to test its performance.
+
+Chapter 5 provides the results of these tests and attempts to relate the
+cluster's performance to its cost. The results of a similar set of tests on a
+traditional cluster are provided for comparison.
+
+Chapter 6 contextualizes the results of this research and suggests ways to
+continue this work.
 
 \newpage
 \section{\textbf{Background}}
+
+\subsection{\textbf{Parallel Discrete Event Simulation}}
 
 \subsection{\textbf{Infiniband and RoCE}}
 
@@ -200,7 +203,7 @@ generally require switches that support Data Center Bridging (DCB)
 \cite{InfiniBandTARoCE-10}. This creates an opportunity for a solution that can
 work with existing lossy Ethernet networks.
 
-%% Could talk about iWARP here, but probably don't need to
+%% TODO: Discuss iWARP
 
 System Fabric Works, Inc., has created a pure software implementation of RoCE
 called \href{http://www.systemfabricworks.com/downloads/roce}{rxe}. rxe is a
@@ -212,10 +215,6 @@ the driver} is in the from of patches for the mainline Linux kernel. We chose
 to port this implementation to the ODROID platform for our studies in low-cost
 Beowulf Clusters.
 
-\subsection{\textbf{Driver Model}}
-
-%% Talk about polling here
-%% TODO: Get info from Doug (EHCI, XHCI, polling implementation)
 
 \subsection{\textbf{ODROID Platform}}
 
@@ -236,7 +235,76 @@ TCP/IP using a Realtek 8168B Gigabit Ethernet adaptor with the r8169 driver.
 
 %% Can't really find anything else on softroce
 
+\newpage
+\section{\textbf{Methods for Reducing Network Latency}}
 
+\subsection{\textbf{Software RoCE}}
+
+\subsubsection{\textbf{rxe}}
+
+\subsubsection{\textbf{rxe-net}}
+
+\subsubsection{\textbf{Porting to the ODROID Platform}}
+
+%% TODO: Expand on this section a bunch. Include details of porting work
+
+Although rxe is designed to operate with any Ethernet adaptor, it also depends
+on the IB libraries in the Linux kernel. These libraries, in turn, depend on the
+presence of a PCI bus in the host system. Neither the ODROID-U2 nor the
+ODROID-XU has PCI support. Simply enabling PCI support in the Linux kernel
+configuration creates some incompatibilites that must be resolved before the
+kernel will work correctly. After some trial and error, I found an elegant
+solution: the addition of the line in \textbf{Figure \ref{pci_code}} near the
+beginning of \verb;drivers/pci/probe.c;.
+
+\begin{figure}[h]
+\begin{verbatim}
+#define pcibios_assign_all_busses() 1
+\end{verbatim}
+\caption{Code added to drivers/pci/probe.c}
+\label{pci_code}
+\end{figure}
+
+The most significant porting effort involved updating the rxe driver to work
+correctly with the ARM linux memory model. ARM Linux has several subtle
+differences from x86 Linux in the way the kernel maps memory. Chiefly, the rxe
+code does not support the mapping of high memory (userspace memory) into low
+memory (kernel memory) at runtime. This is an important feature in modern IB
+drivers because it allows memory regions to be directly accessed by userspace
+programs, eliminating the need for high-latency context switches. rxe currently
+uses the \verb;page_address(); macro to get virtual page addresses. These calls
+should be replaced by \verb;kmap(); or \verb;kmap\_atomic(); in order to make
+them safe for use on high memory pages. However, each \verb;kmap(); call
+requires a corresponding kunmap(). Some of the rxe DMA memory mapping functions
+use the \verb;page_address(); macro to return an address for DMA
+operations. This is not an intended use for \verb;kmap();, because the kernel
+has a limited number of such mappings available. We were able to run the driver
+recoded in this manner for use with micro-benchmarks, but it is unstable when
+used with MPI applications. We concluded that a major overhaul of the rxe DMA
+architecture would be required to support high memory on the driver side.
+
+In theory, this problem is easily resolved by configuring the kernel to map all
+memory to a single region, eliminating the distinction between user and kernel
+address space. The ODROID-U2 only has 2047 MB of main memory, so a 32-bit
+processor can map it all into a single address space. However, a peculiarity in
+the way Linux interacts with the Cortex-A9 processor's memory management unit
+permits only the mapping of 1747 MB of total memory using this paradigm. The
+remaining 300 MB are occupied by mappings for memory-mapped I/O devices that
+would normally be mapped into high memory.
+
+%% TODO: Pending testing
+%% Moving to the ODROID-XU platform obviates this problem. The Cortex-A15
+%% supports Large Physical Address Extensions (LPAE). This adds a third page table
+%% level, making its memory model more similar to the x86 memory model.
+
+\newpage
+\section{\textbf{Cluster Implementation and Testing}}
+
+\newpage
+\section{\textbf{Results}}
+
+\newpage
+\section{\textbf{Conclusions}}
 
 \bibliographystyle{abbrv}
 \bibliography{refs}
