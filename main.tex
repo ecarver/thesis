@@ -312,11 +312,68 @@ would normally be mapped into high memory.
 %% TODO: Pending testing
 %% Moving to the ODROID-XU platform obviates this problem. The Cortex-A15
 %% supports Large Physical Address Extensions (LPAE). This adds a third page table
-%% level, making its memory model more similar to the x86 memory model.
+%% level, making its memory model more similar to the x86 memory model, for
+%% which the rxe driver was originally designed.
+
+\subsection{\textbf{Polling the Network Adaptor}}
+
+Previous research with network drivers has shown that interrupt latency in a
+multi-tasking operating system can be eliminated with a polling network driver
+\cite{}. In fact, the Linux TCP/IP networking stack has moved to a hybrid of
+polling and interrupt-based event processing that is intended to reduce average
+network latency in high-traffic situations. In Parallel Discrete Event
+Simulation on multi-core processors, it is often advantageous to give up a
+processor core to a polling driver in order to significantly reduce message
+latency for all packets. The big.LITTLE processor configurations in products
+like the ODROID-XU make this prospect especially enticing when one considers
+that polling could be handled by one of the \"little\" cores, leaving all the
+\"big\" cores available for event processing.
+
+Although the ability to symetrically multi-process with both \"big\" and
+\"little\" cores is not yet present for Linux in the ODROID-XU, we pursued this
+goal in the hope that the trade of a \"big\" core for reduced latency would
+still be worthwhile. Doug Weber and Zakaria Aldeneh began this study by creating
+an EHCI polling driver for use with the standard ODROID-XU network
+adaptors. Weber and I later extended this work to an XHCI polling driver used
+with the Gigabit Ethernet adaptors for the ODROID-XU.
+
+\subsubsection{\textbf{EHCI Polling Driver}}
+
+%% TODO: Get info from Doug
+
+\subsubsection{\textbf{XHCI Polling Driver}}
+
+%% TODO: Get info from Doug
 
 \newpage
 \section{\textbf{Cluster Implementation and Testing}}
 \label{cluster}
+
+Three primary testing platforms were used for the experiments presented in this
+thesis.
+
+\subsection{\textbf{Two ODROID-U2 Nodes}}
+
+Preliminary work with RoCE was tested on two ODROID-U2 computers running
+Debian 7.0-armhf with Linux kernel 3.0.90. The ODROID-U2 nodes are connected to
+an unmanaged Gigabit switch through Category 6 Ethernet cables. Unless specified
+otherwise, the Linux network MTU is set to 1488 bytes and the RoCE MTU is set to
+1024 bytes.
+
+\subsection{\textbf{Two ODROID-XU Nodes}}
+
+Doug Weber and Zakaria Aldeneh performed their initial work with EHCI polling on
+two ODROID-XU nodes running the Linux kernel 3.4 connected to an unmanaged
+Gigabit Ethernet switch using the nodes' 100 Megabit ethernet adaptors.
+%% TODO: Get more info from Doug
+
+\subsection{\textbf{Final Cluster}}
+
+The success of RoCE and EHCI polling experiments motivated the purchase of two
+additional ODROID-XU nodes as well as Gigabit Ethernet adaptors for all four
+nodes.
+%% TODO: Get two nodes from Doug
+%% TODO: set up cluster
 
 \newpage
 \section{\textbf{Results}}
@@ -386,7 +443,7 @@ latency as network and I/O bus congestion increases. Figure \ref{multipingpong}
 supports this conjecture. In fact, the rxe driver appears to thrive in a
 congested networking environment, while TCP/IP latency grows steadily. It
 appears that the increased network activity may be hiding some of the latency
-introduced by the Ethernet adaptor. %% How?
+introduced by the Ethernet adaptor. %% TODO: How?
 
 \begin{figure}[H]
 \includegraphics[width=\textwidth]{pingpong_multi_zoom}
@@ -394,7 +451,13 @@ introduced by the Ethernet adaptor. %% How?
 \label{multipingpong}
 \end{figure}
 
-\subsubsection{\textbf{Four ODROID-XU nodes}}
+\subsubsection{\textbf{Final Cluster}}
+
+\subsection{\textbf{Parallel Discrete Event Simulation Results}}
+
+\href{https://github.com/carothersc/ROSS}{Rensselaer's Optimistic Simulation
+  System (ROSS)} is used for all PDES experiments. It uses MPI for all
+inter-process communication, including local communication \cite{carothers-02}.
 
 \newpage
 \section{\textbf{Conclusions}}
