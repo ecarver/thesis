@@ -1,144 +1,95 @@
-\documentclass[a4paper]{article}
-\usepackage{fancyhdr}
-\usepackage[includeheadfoot,left=1in, right=0.5in, top=0.5in, bottom=0.5in]{geometry}
-\usepackage{lastpage}
-\usepackage{extramarks}
-\usepackage[usenames,dvipsnames]{color}
+\documentclass[11pt]{book}
+
+\usepackage{fullpage}
 \usepackage{graphicx}
-\usepackage{listings}
-\usepackage{courier}
-\usepackage{tikz}
-\usepackage{color}
-\usepackage{float}
+\usepackage{cite}
+\usepackage{times}
 \usepackage{url}
-\usepackage{subfigure}
-\usepackage{varwidth}
-\usepackage{caption}
-\usepackage{multirow}
-\usepackage[pdfborder={0 0 0}]{hyperref}
-\usepackage[compact,small]{titlesec}
-\usepackage{microtype}
-\usepackage{verbatim}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{ifthen}
+\usepackage{listings}
+\usepackage[section]{placeins}
+\usepackage{xtab}
 \usepackage{booktabs}
-\usepackage{indentfirst}
-\usepackage{enumitem}
-\usepackage{pdfpages}
-\usepackage{epstopdf}
-\usepackage{bmpsize}
+\usepackage{float}
 
-\captionsetup[sub]{labelsep=newline}
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{4}
+\renewcommand{\topfraction}{0.5}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.7}
 
-% line spacing
-\linespread{2.0}
-
-% bold item
-\let\origitem\item
-\renewcommand{\item}{\normalfont\origitem}
-\newcommand{\bolditem}{\small\bfseries\origitem}
-
-% tilde
-%\newcommand{\small_tilde}{\raise.17ex\hbox{$\scriptstyle\sim$}}
-
-% indent item
-\newcommand{\indentitem}{\setlength\itemindent{24pt}}
-
-% perfect tilde
-\newcommand{\tildep}{\raise.17ex\hbox{$\scriptstyle\sim$}}
-
-\parskip = 0.5\baselineskip
-\setlength{\belowcaptionskip}{-\baselineskip}
-
-\captionsetup{font=scriptsize}
-\captionsetup{labelfont=bf}
+\setlength{\abovecaptionskip}{3pt}
+\setlength{\belowcaptionskip}{3pt}
 
 \pagestyle{fancy}
-\rhead{\fancyplain{}{\rightmark }}
-\lhead{\fancyplain{}{\leftmark }}
-\rfoot{Page\ \thepage\ of \protect\pageref{LastPage}}
-\cfoot{}
-\renewcommand\headrulewidth{0.4pt}
-\renewcommand\footrulewidth{0.4pt}
-
-% make verbatim text small
-\makeatletter
-\g@addto@macro\@verbatim\small
-\makeatother
-
-%\setlength\parindent{0pt} % Removes all indentation from paragraphs
-\setlength\parindent{24pt}
-
-\definecolor{sh_comment}{rgb}{0.12, 0.38, 0.18 } %adjusted, in Eclipse: {0.25, 0.42, 0.30 } = #3F6A4D
-\definecolor{sh_keyword}{rgb}{0.37, 0.08, 0.25}  % #5F1441
-\definecolor{sh_string}{rgb}{0.06, 0.10, 0.98} % #101AF9
-
-%\sectionfont{\centering}
-\lstset{
-  language=vhdl,
-  xleftmargin=.25in,
-  xrightmargin=.25in,
-  numbers=left,
-  numberstyle=\tiny,
-  frame=tb,
-  showstringspaces=false,
-  captionpos=b,
-  stringstyle=\color{sh_string},
-  keywordstyle = \color{sh_keyword}\bfseries,
-  commentstyle=\color{sh_comment}\itshape,
-  basicstyle=\small\sffamily,
-  %numbersep=-5pt,
-  belowskip=\baselineskip,
-  aboveskip=\baselineskip
-}
-\usepackage{authblk}
-
-\title{
-  \vspace{2in}
-  \textbf{Cluster Headaches and Other Stories \\}
-  \vspace{2in}
-}
-
-\author{Eric Carver}
-
-\affil{carverer@mail.uc.edu}
-\vspace{10pt}
-
-\affil{(513) 207-6501}
-\vspace{2.0in}
-
-\titleformat*{\section}{\large\normalfont}
+\setboolean{@twoside}{false}
+\setlength{\headsep}{25pt}
+\setlength{\headheight}{14pt}
 
 \begin{document}
 
-%\includepdf{}
-\maketitle
 \thispagestyle{empty}
-\newpage
-\thispagestyle{empty}
-\parskip = 0.2\baselineskip
-\newpage
-\thispagestyle{empty}
-\section*{\textbf{Abstract}}
-\newpage
-\thispagestyle{empty}
-\section*{\textbf{Acknowledgements}}
-\newpage
-\thispagestyle{empty}
-\tableofcontents
-\newpage
-\thispagestyle{empty}
-\listoffigures
-\listoftables
-\parskip = 0.5\baselineskip
-\newpage
-        
-\section{\textbf{Introduction}}
+
+\doublespacing
+
+\vspace*{0.5in}
+
+\begin{center}
+  \LARGE{\textbf{Droids and Shit}}
+
+  \vspace*{0.4in}
+
+  {\large A thesis submitted to the\\[0.20in]
+    Division of Research and Advanced Studies\\
+    of the University of Cincinnati\\[0.20in]
+    in partial fulfillment of the\\
+    requirements for the degree of\\[0.20in]
+    {\bf MASTER OF SCIENCE}\\[0.20in]
+    in the School of Electric and Computing Systems\\
+    of the College of Engineering and Applied
+    Sciences\\[0.20in]
+    August xx, 2010\\[0.20in]
+    by\\[0.20in]
+    {\bf Eric Carver}\\
+    BSEE, University of
+    Cincinnati, 2014\\}
+  \vspace{0.5in}
+  {\large Thesis Advisor and Committee Chair:  Dr. Philip A. Wilsey}
+\end{center}
+
+\clearpage
+
+\setcounter{page}{1}
+\pagenumbering{roman}
+\clearpage
+
+\chapter*{Abstract}
+
+%% TODO: Write abstract
+
+\chapter*{Acknowledgements}
+
+\tableofcontents \markright{ }
+\listoffigures \markright{ }
+\listoftables \markright{ }
+
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\chapter{Introduction}
 \label{introduction}
 
-\subsection{\textbf{Research Statement}}
+\section{\textbf{Research Statement}}
 
 This research will make the
 
-\subsection{\textbf{Thesis Overview}}
+\section{\textbf{Thesis Overview}}
 
 The remainder of this thesis is organized as follows.
 
@@ -162,12 +113,12 @@ Chapter \ref{conclusions} contextualizes the results of this research and
 suggests ways to continue this work.
 
 \newpage
-\section{\textbf{Background}}
+\chapter{Background}
 \label{background}
 
-\subsection{\textbf{Parallel Discrete Event Simulation}}
+\section{\textbf{Parallel Discrete Event Simulation}}
 
-\subsection{\textbf{Infiniband and RoCE}}
+\section{\textbf{Infiniband and RoCE}}
 
 \href{www.infinibandta.org}{InfiniBand}\texttrademark (IB) was introduced in
 1999 to meet the new demand of data-intensive applications in high-end computing
@@ -211,20 +162,44 @@ System Fabric Works, Inc., has created a pure software implementation of RoCE
 called \href{http://www.systemfabricworks.com/downloads/roce}{rxe}. \verb;rxe;
 is a Linux driver that implements the full IB transport over any Ethernet
 adaptor \cite{pearson-10}. Message latency can be as low as 10
-microseconds\cite{pearson-10}. The
+microseconds on a 10 Gigabit Ethernet controller \cite{pearson-10}. The
 \href{http://support.systemfabricworks.com/downloads/rxe/}{most recent relase of
   the driver} is in the from of patches for the mainline Linux kernel. We chose
 to port this implementation to the ODROID platform for our studies in low-cost
 Beowulf Clusters.
 
 
-\subsection{\textbf{ODROID Platform}}
+\section{\textbf{ODROID Platform}}
 
-\subsubsection{\textbf{ODROID-U2}}
+The ODROID series of development boards from Hardkernel Co., Ltd. has made
+low-cost mobile hardware available in more traditional computing platforms. In
+these studies, we focus on the ODROID-U2 and ODROID-XU boards. The
+characteristics of these two platforms are given in the next two sections.
 
-\subsubsection{\textbf{ODROID-XU}}
+\subsection{\textbf{ODROID-U2}}
 
-\subsection{\textbf{Related Work}}
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{odroid_u2_top}
+\caption{ODROID-U2 circuit board top view\cite{odroid-u2-board-detail}}
+\label{odroid-u2-board}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{odroid_u2}
+\caption{ODROID-U2 with heatsink \cite{odroid-u2-board-detail}}
+\label{odroid-u2}
+\end{figure}
+
+The ODROID-U2 board hosts a Samsung Exynos 4412 Prime System on a Chip
+(SoC). \textbf{Figure \ref{odroid-u2-board}} shows the board on its own, and
+\textbf{Figure \ref{odroid-u2}} shows the board installed in its heatsink. The
+board features the following hardware components:
+
+
+\subsection{\textbf{ODROID-XU}}
+
+\section{\textbf{Related Work}}
 
 %% ERIC: do we know of any related work?  even publications talking about
 %% IBoE/RoCE performance on the x86 platform would be worth reviewing.
@@ -239,10 +214,10 @@ driver.
 %% Can't really find anything else on softroce
 
 \newpage
-\section{\textbf{Methods for Reducing Network Latency}}
+\chapter{Methods for Reducing Network Latency}
 \label{latency_reduction}
 
-\subsection{\textbf{Software RoCE}}
+\section{\textbf{Software RoCE}}
 
 Currently, there is only one open-source software RoCE project: the \verb;rxe;
 linux driver. System Fabric Works created the driver with at least two goals in
@@ -253,7 +228,7 @@ implementations. We hoped to leverage this technology for use in our low-cost
 cluster in order to bring its performance closer to the performance of a
 traditional x86 cluster.
 
-\begin{figure}[h]
+\begin{figure}[H]
 \includegraphics[width=\textwidth]{rxe_linux}
 \caption{rxe driver role in a Linux networking environment \cite{pearson-10}}
 \label{rxe-linux}
@@ -276,7 +251,7 @@ interface so that any compliant IB application can use the \verb;rxe; device
 without any modification. This library is essentially a user-mode wrapper for
 the functions found in the rxe driver, so its design will not be detailed here.
 
-\subsubsection{\textbf{rxe}}
+\subsection{\textbf{rxe}}
 \label{rxe}
 
 The \verb;rxe; kernel module contains the portion of the \verb;rxe; driver that
@@ -374,12 +349,12 @@ altogether. In our research with the ODROID-U2, lowering or removing these
 timing thresholds had no effect on end-to-end latency on a 100 Mbps Ethernet
 link.
 
-\subsubsection{\textbf{rxe-net}}
+\subsection{\textbf{rxe-net}}
 
 In many ways, the \verb;rxe-net; module functions as a wrapper for the
 \verb;rxe; transport module described in \textbf{Section \ref{rxe}}.
 
-\subsubsection{\textbf{Porting rxe to the ODROID Platform}}
+\subsection{\textbf{Porting rxe to the ODROID Platform}}
 
 %% TODO: Expand on this section a bunch. Include details of porting work
 
@@ -393,62 +368,83 @@ solution: the addition of the line in \textbf{Figure \ref{pci_code}} near the
 beginning of \verb;drivers/pci/probe.c;.
 
 \begin{figure}[h]
-\begin{center}
+\centering
 \begin{verbatim}
 #define pcibios_assign_all_busses() 1
 \end{verbatim}
-\end{center}
 \caption{Code added to drivers/pci/probe.c}
 \label{pci_code}
 \end{figure}
 
 The most significant porting effort involved updating the \verb;rxe; driver to
 work correctly with the ARM linux memory model. ARM Linux has several subtle
-differences from x86 Linux in the way the kernel maps memory. Chiefly, the rxe
-code does not support the mapping of high memory (userspace memory) into low
-memory (kernel memory) at runtime. This is an important feature in modern IB
-drivers because it allows memory regions to be directly accessed by userspace
-programs, eliminating the need for high-latency context switches. \verb;rxe;
-currently uses the \verb;page_address(); macro to get virtual page
-addresses. These calls should be replaced by \verb;kmap(); or
-\verb;kmap_atomic(); in order to make them safe for use on high memory
-pages. However, each \verb;kmap(); call requires a corresponding
-\verb;kunmap();. Some of the \verb;rxe; DMA memory mapping functions use the
-\verb;page_address(); macro to return an address for DMA operations. This is not
-an intended use for \verb;kmap();, because the kernel has a limited number of
-such mappings available. We were able to run the driver recoded in this manner
-for use with micro-benchmarks, but it is unstable when used with MPI
-applications. We concluded that a major overhaul of the \verb;rxe; DMA
-architecture would be required to support high memory on the driver side.
+differences from x86 Linux in the way the kernel maps memory. This resulted in
+some incompatibilities with the rxe code. Chiefly, the rxe code does not support
+the mapping of high memory (userspace memory) into low memory (kernel memory) at
+runtime. This is an important feature in modern IB drivers because it allows
+memory regions to be directly accessed by userspace programs, eliminating some
+need for high-latency context switches. \verb;rxe; currently uses the
+\verb;page_address(); macro to get virtual page addresses. These calls should be
+replaced by \verb;kmap(); or \verb;kmap_atomic(); in order to make them safe for
+use on high memory pages. However, each \verb;kmap(); call requires a
+corresponding \verb;kunmap();. Some of the \verb;rxe; DMA memory mapping
+functions use the \verb;page_address(); macro to return an address for DMA
+operations. This is not an intended use for \verb;kmap();, because the kernel
+has a limited number of such mappings available. We were able to run the driver
+recoded in this manner for use with micro-benchmarks, but it is unstable when
+used with MPI applications. We concluded that a major overhaul of the \verb;rxe;
+DMA architecture would be required to support high memory on the driver side.
 
-In theory, this problem is easily resolved by configuring the kernel to map all
+Luckily, this problem is easily resolved by configuring the kernel to map all
 memory to a single region, eliminating the distinction between user and kernel
-address space. The ODROID-U2 only has 2047 MB of main memory, so a 32-bit
-processor can map it all into a single address space. However, a peculiarity in
-the way Linux interacts with the Cortex-A9 processor's memory management unit
-permits only the mapping of 1747 MB of total memory using this paradigm. The
-remaining 300 MB are occupied by mappings for memory-mapped I/O devices that
-would normally be mapped into high memory.
+address space. The ODROID-U2 and ODROID-XU only have 2046 MB of main memory, so
+a 32-bit processor can map it all into a single address space. However, the
+\verb;vmalloc; virtual memory region can overlap with some of this space,
+causing the Linux kernel to ignore or truncate regions of address space that
+should be mapped to physical memory. This limitation can be partially bypassed
+by reconfiguring the size of the \verb;vmalloc; region using Linux kernel
+parameters \cite{vmalloc-overlap}. Additionally, it is possible to move the
+region by altering the values of the \verb;VMALLOC_START; and \verb;VMALLOC_END;
+macros, then shifting the \verb;IO_ADDRESS; macro accordingly so memory-mapped
+I/O devices still have their own address space. For the ODROID-XU, this process
+enabled the use of 1884 MB of memory, while the remaining 163 MB were dedicated
+to I/O devices. The final address space mapping is shown in \textbf{Figure
+  \ref{addrmap}}.
 
-%% TODO: Pending testing
-%% Moving to the ODROID-XU platform obviates this problem. The Cortex-A15
-%% supports Large Physical Address Extensions (LPAE). This adds a third page table
-%% level, making its memory model more similar to the x86 memory model, for
-%% which the \verb;rxe; driver was originally designed.
+\begin{figure}[h]
+\begin{center}
+\begin{verbatim}
+Memory: 2046MB = 2046MB total
+Memory: 1927936k/1927936k available, 167168k reserved, 0K highmem
+Virtual kernel memory layout:
+    vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+    fixmap  : 0xfff00000 - 0xfffe0000   ( 896 kB)
+    vmalloc : 0xc0000000 - 0xff000000   (1008 MB)
+    lowmem  : 0x40000000 - 0xbfe00000   (2046 MB)
+    modules : 0x3f000000 - 0x40000000   (  16 MB)
+      .text : 0x40008000 - 0x409ce000   (10008 kB)
+      .init : 0x409ce000 - 0x40a0dfc0   ( 256 kB)
+      .data : 0x40a0e000 - 0x40ab8a98   ( 683 kB)
+       .bss : 0x40ab8abc - 0x40c7d758   (1812 kB)
+\end{verbatim}
+\end{center}
+\caption{Address space mapped by Linux kernel}
+\label{addrmap}
+\end{figure}
 
-\subsection{\textbf{Polling the Network Adaptor}}
+\section{\textbf{Polling the Network Adaptor}}
 
 Previous research with network drivers has shown that interrupt latency in a
 multi-tasking operating system can be eliminated with a polling network driver
-\cite{}. In fact, the Linux TCP/IP networking stack has moved to a hybrid of
-polling and interrupt-based event processing that is intended to reduce average
-network latency in high-traffic situations. In Parallel Discrete Event
-Simulation on multi-core processors, it is often advantageous to give up a
-processor core to a polling driver in order to significantly reduce message
-latency for all packets. The big.LITTLE processor configurations in products
-like the ODROID-XU make this prospect especially enticing when one considers
-that polling could be handled by one of the ``little'' cores, leaving all the
-``big'' cores available for event processing.
+\cite{dovrolis-01}\cite{liu-09}. In fact, the Linux TCP/IP networking stack has
+moved to a hybrid of polling and interrupt-based event processing that is
+intended to reduce average network latency in high-traffic situations. In
+Parallel Discrete Event Simulation on multi-core processors, it is often
+advantageous to give up a processor core to a polling driver in order to
+significantly reduce message latency for all packets. The big.LITTLE processor
+configurations in products like the ODROID-XU make this prospect especially
+enticing when one considers that polling could be handled by one of the
+``little'' cores, leaving all the ``big'' cores available for event processing.
 
 Although the ability to symetrically multi-process with both ``big'' and
 ``little'' cores is not yet present for Linux in the ODROID-XU, we pursued this
@@ -458,22 +454,22 @@ an EHCI polling driver for use with the standard ODROID-XU network
 adaptors. Weber and I later extended this work to an XHCI polling driver used
 with the Gigabit Ethernet adaptors for the ODROID-XU.
 
-\subsubsection{\textbf{EHCI Polling Driver}}
+\subsection{\textbf{EHCI Polling Driver}}
 
 %% TODO: Get info from Doug
 
-\subsubsection{\textbf{XHCI Polling Driver}}
+\subsection{\textbf{XHCI Polling Driver}}
 
 %% TODO: Get info from Doug
 
 \newpage
-\section{\textbf{Cluster Implementation and Testing}}
+\chapter{Cluster Implementation and Testing}
 \label{cluster}
 
 Three primary testing platforms were used for the experiments presented in this
 thesis.
 
-\subsection{\textbf{Two ODROID-U2 Nodes}}
+\section{\textbf{Two ODROID-U2 Nodes}}
 
 Preliminary work with RoCE was tested on two ODROID-U2 computers running Debian
 7.0-armhf with Linux kernel 3.0.90. The ODROID-U2 nodes are connected to an
@@ -481,14 +477,14 @@ unmanaged Gigabit switch through Category 6 Ethernet cables. Unless specified
 otherwise, the Linux network MTU is set to 1488 bytes and the RoCE MTU is set to
 1024 bytes.
 
-\subsection{\textbf{Two ODROID-XU Nodes}}
+\section{\textbf{Two ODROID-XU Nodes}}
 
 Doug Weber and Zakaria Aldeneh performed their initial work with EHCI polling on
 two ODROID-XU nodes running the Linux kernel 3.4 connected to an unmanaged
 Gigabit Ethernet switch using the nodes' 100 Megabit ethernet adaptors.
 %% TODO: Get more info from Doug
 
-\subsection{\textbf{Final Cluster}}
+\section{\textbf{Final Cluster}}
 
 The success of RoCE and EHCI polling experiments motivated the purchase of two
 additional ODROID-XU nodes as well as Gigabit Ethernet adaptors for all four
@@ -497,16 +493,16 @@ nodes.
 %% TODO: set up cluster
 
 \newpage
-\section{\textbf{Results}}
+\chapter{Results}
 \label{results}
 
-\subsection{\textbf{Micro-benchmark Results}}
+\section{\textbf{Micro-benchmark Results}}
 
 Preliminary micro-benchmark results from a cluster of two ODROID-U2 nodes are
 presented first. Next, the results of similar tests on the four-node ODROID-XU
 cluster are shown.
 
-\subsubsection{\textbf{Two ODROID-U2 Nodes}}
+\subsection{\textbf{Two ODROID-U2 Nodes}}
 
 Figures \ref{npmpi-llat} and \ref{npmpi-hlat} show MPI message latency for small
 messages and large messages, respectively. Latency over RoCE is 17\% to 31\%
@@ -572,16 +568,16 @@ introduced by the Ethernet adaptor. %% TODO: How?
 \label{multipingpong}
 \end{figure}
 
-\subsubsection{\textbf{Final Cluster}}
+\subsection{\textbf{Final Cluster}}
 
-\subsection{\textbf{Parallel Discrete Event Simulation Results}}
+\section{\textbf{Parallel Discrete Event Simulation Results}}
 
 \href{https://github.com/carothersc/ROSS}{Rensselaer's Optimistic Simulation
   System (ROSS)} is used for all PDES experiments. It uses MPI for all
 inter-process communication, including local communication \cite{carothers-02}.
 
 \newpage
-\section{\textbf{Conclusions}}
+\chapter{Conclusions}
 \label{conclusions}
 
 \newpage
