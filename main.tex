@@ -188,6 +188,20 @@ small form factor platform.
 
 %%TODO
 
+The Transmission Control Protocol/Internet Protocol describes a packet-switched
+network designed to communicate over a wide area with reliable, ordered
+transmission of these packets, each of which contains one or more messages.
+
+TCP/IP also does not support active messaging. Active messages are messages that
+can perform operations on their own. For example, a message in a Remote Direct
+Memory Access (RDMA) system may be a write message; that message can write to
+the receiving node's memory. TCP, on the other hand, would probably accomplish
+this by sending a message containing a write command and another message
+containing the data to be written. Many low-latency protocols that are discussed
+later in this section achieve a significant portion of their efficiency by
+supporting active messages in some way. In particular, RDMA semantics have
+become popular in the last decade.
+
 \subsection{\textbf{Extensions to TCP}}
 
 %%TODO
@@ -198,12 +212,13 @@ pursued extensively for data centers.
 \subsection{\textbf{GAMMA}}
 
 The Genoa Active Message Machine (GAMMA) is a Linux driver that implements a
-low-latency active messaging protocol over Gigabit Ethernet \cite{gamma}. It is
-designed as a no-cost solution that reduces network latency on existing network
-hardware. Schneidenbach et al. observed a 50\% or greater reduction in small
-message transmission times compared to TCP/IP when using GAMMA on the same
-hardware \cite{schneidenbach-03}. GAMMA Message throughput was also consistently
-higher than TCP/IP for all message sizes.
+low-latency active messaging protocol over Megabit and Gigabit Ethernet
+\cite{gamma}. It is designed as a no-cost solution that reduces network latency
+on existing network hardware. Schneidenbach et al. observed a 50\% or greater
+reduction in small message transmission times compared to TCP/IP when using
+GAMMA on the same Gigabit Ethernet hardware \cite{schneidenbach-03}. GAMMA Message throughput was
+also consistently higher than TCP/IP for all message sizes. Ciaccio also found
+that GAMMA message latency 
 
 However, GAMMA has significant limitations. It is incompatible with existing
 Internet Protocol (IP) implementations; therefore, it requires a second network
