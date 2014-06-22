@@ -40,7 +40,7 @@
 \vspace*{0.5in}
 
 \begin{center}
-  \LARGE{\textbf{Droids and Shit}}
+  \LARGE{\textbf{Reducing Network Latency for Low-cost Beowulf Clusters}}
 
   \vspace*{0.4in}
 
@@ -53,7 +53,7 @@
     in the School of Electric and Computing Systems\\
     of the College of Engineering and Applied
     Sciences\\[0.20in]
-    August xx, 2010\\[0.20in]
+    July TODO, 2014\\[0.20in]
     by\\[0.20in]
     {\bf Eric Carver}\\
     BSEE, University of
@@ -85,9 +85,65 @@
 \chapter{Introduction}
 \label{introduction}
 
+The applications of Beowulf clusters have expanded since Becker et al. created
+the first one in 1995 \cite{becker-95}. Although originally intended for
+scientific computing, this ``network-of-worstations'' technology has also been
+adopted for use in data centers \cite{liu-13}, cloud computing
+\cite{trivedi-11}, and research in fine-grained parallel computing
+\cite{aad-03}. Because these workstations are self contained and connected
+through a network, the bandwidth and latency of their interconnect are
+determining factors of a Beowulf cluster's performance \cite{lancaster-10}
+\cite{becker-95}. This is particularly true for fine-grained parallelism, where
+messages must be passed frequently in order to utilize the processing power of
+the cluster.
+
+Even small Beowulf clusters typically cost many thousands of dollars. This
+limits their availability to researchers in two ways. First, many academic
+institutions cannot afford any type of traditional Beowulf cluster. Second,
+those who can afford one must restrict access to the cluster because many
+researchers need to use it. This need to administer the cluster as a shared
+environment eliminates the possibility of exploring custom hardware and
+operating system services targeted to increase cluster performance for
+fine-grained parallel applications.
+
+Additionally, once an institution sinks the high cost of a traditional Beowulf
+cluster, the institution is naturally reluctant to upgrade the cluster for many
+years. This can prevent researchers from accessing new innovations in hardware
+and their associated features for many years.
+
+However, the emergence of small form factor symmetric multiprocessing (SMP)
+computing platforms has created an opportunity to create a new class of Beowulf
+cluster. Driven by the quickly increasing computing demands of small form factor
+computers such as cellular telephones, tablet computers, and netbooks, mobile
+computing platforms have increased dramatically in computing power in the last
+few years. However, there has been little interest in applying these low-cost
+processors to solve availability issues in high-performance computing (HPC)
+research.
+
+The Samsung Exynos 5410 system-on-a-chip (SoC) is an example of a powerful, yet
+low cost SMP platform. Its eight processor cores promise excellent raw computing
+performance for those who are able to utilize it.
+
+Currently, the design of these mobile SMP platforms presents some challenges to
+those who wish to use them as nodes in a high-performance cluster. In
+particular, end-to-end network latency can be orders of magnitude greater than
+one would expect to find in a traditional Beowulf cluster. In order to minimize
+the impact of this limitation on computing performance, we have embarked on
+research into software-based methods of reducing network latency.
+
 \section{\textbf{Research Statement}}
 
-This research will make the
+We believe that it is possible to create a Beowulf cluster using small form
+factor computers that delivers a performance-for-price ratio comparable to the
+ratio of some traditional Beowulf clusters, especially those that are at least a few
+years old. In particular, we want to achieve such a ratio for performance in
+parallel discrete event simulation (PDES).
+
+The primary obstacle to this objective is the high network latency associated
+with many small form factor computers. Therefore, this research will focus on
+two methods of reducing that latency at no additional cost: software Remote
+Direct Memory Access (RDMA) over Converged Ethernet (RoCE) and polling network
+drivers.
 
 \section{\textbf{Thesis Overview}}
 
@@ -196,6 +252,20 @@ The ODROID-U2 board hosts a Samsung Exynos 4412 Prime System on a Chip
 \textbf{Figure \ref{odroid-u2}} shows the board installed in its heatsink. The
 board features the following hardware components:
 
+\begin{itemize}
+\item Samsung Exynos 4412 Prime
+  \begin{itemize}
+  \item 4 ARM Cortex-A9 cores clocked at 1.7 GHz
+  \item 2 GB LPDDR2 capable of 880 MT/s
+  \end{itemize}
+\item SMSC USB3503A USB 2.0 hub
+\item SMSC LAN9730 USB 2.0 to 100 Mpbs Ethernet controller
+\item MAXIM MAX98098 Audio CODEC
+\end{itemize}
+
+While the ODROID-U2 features impressive raw processing power for its size and
+price, its small of main memory can adversely impact performance for even
+moderately sized parallel simulation models. The Exynos SoC 
 
 \subsection{\textbf{ODROID-XU}}
 
@@ -210,6 +280,11 @@ rare. Robert J. Lancaster \cite{lancaster-10} experimented with the rxe
 driver. He found that \verb;rxe; message latency ranged from 14\% to 81\% lower
 than TCP/IP using a Realtek 8168B Gigabit Ethernet adaptor with the r8169
 driver.
+
+Trivedi et al. \cite{trivedi-11} experimented with a software implementation of
+iWARP for use in cloud computing. They found that end-to-end latencies were
+reduced for messages larger than 64 kB thanks the protocol's lightweight RDMA
+implementation.
 
 %% Can't really find anything else on softroce
 
@@ -237,9 +312,9 @@ traditional x86 cluster.
 \textbf{Figure \ref{rxe-linux}} illustrates how the \verb;rxe; driver functions
 as a bridge between RDMA software and the Linux networking core.
 
-The \verb;rxe; linux driver is divided into two modules: \verb;rxe; and rxe-net
-\cite{pearson-10}. \verb;rxe; provides an implementation of the Infiniband
-transport compliant with the RoCE specification annex
+The \verb;rxe; linux driver is divided into two modules: \verb;rxe; and
+\verb;rxe-net; \cite{pearson-10}. \verb;rxe; provides an implementation of the
+Infiniband transport compliant with the RoCE specification annex
 \cite{InfiniBandTARoCE-10}. \verb;rxe-net; interfaces with the Linux networking
 stack to transmit and receive packets earmarked for \verb;rxe;
 \cite{pearson-10}. The following two sections detail the design of these
@@ -352,7 +427,27 @@ link.
 \subsection{\textbf{rxe-net}}
 
 In many ways, the \verb;rxe-net; module functions as a wrapper for the
-\verb;rxe; transport module described in \textbf{Section \ref{rxe}}.
+\verb;rxe; transport module described in \textbf{Section \ref{rxe}}. It
+implements most of layer 3 of RoCE, allowing the layer 4 and higher functions of
+\verb;rxe; to integrate with the existing layer 2 networking implementation in
+Linux by forming a bridge that communicates with Linux on both the RDMA and
+Ethernet sides. It can be envisioned as the horizontal portion of the \verb;rxe;
+driver in \textbf{Figure \ref{rxe-linux}}. In addition to facilitating this
+communication and marshalling of data, \verb;rxe-net; writes the appropriate
+combination of Infiniband and MAC headers to each packet in order to fulfill the
+requirements of the RoCE specification \cite{pearson-10}
+\cite{InfiniBandTARoCE-10}. In accordance with the specification, the Ethernet
+MAC (layer 2) header is identical to a normal ethernet packet except for the
+ethertype value, which is set to \verb;0x8915; for all RoCE packets
+\cite{InfiniBandTARoCE-10}. \textbf{Figure \ref{roce-packet}} compares normal
+Infiniband packets to RoCE packets \cite{ayoub-11} \cite{InfiniBandTABase-07}
+\cite{InfiniBandTARoCE-10}.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{roce_packet}
+\caption{RoCE packet composition \cite{ayoub-11}}
+\label{roce-packet}
+\end{figure}
 
 \subsection{\textbf{Porting rxe to the ODROID Platform}}
 
@@ -410,6 +505,11 @@ I/O devices still have their own address space. For the ODROID-XU, this process
 enabled the use of 1884 MB of memory, while the remaining 163 MB were dedicated
 to I/O devices. The final address space mapping is shown in \textbf{Figure
   \ref{addrmap}}.
+
+The migration from the ODROID-U2 to the ODROID-XU presented some additional
+challenges in the porting effort for the rxe driver. I encountered a bug that
+disrupted the marshalling of Work Requests from userspace to kernel space. This
+bug was a symptom of TODO. This problem can be solved by TODO.
 
 \begin{figure}[h]
 \begin{center}
