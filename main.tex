@@ -150,7 +150,7 @@ drivers.
 The remainder of this thesis is organized as follows.
 
 Chapter \ref{background} provides background information on Parallel Discrete
-Event Simulation (PDES), Infiniband\texttrademark, and small form factor
+Event Simulation (PDES), low-latency networking, and small form factor
 computers, including the ODROID platform used in this research.
 
 Chapter \ref{latency_reduction} presents our strategy for attacking the network
@@ -174,9 +174,54 @@ suggests ways to continue this work.
 
 \section{\textbf{Parallel Discrete Event Simulation}}
 
-\section{\textbf{Infiniband and RoCE}}
+\section{\textbf{MPI}}
 
-\href{www.infinibandta.org}{InfiniBand}\texttrademark (IB) was introduced in
+\section{\textbf{Low-latency Networking}}
+
+This section will discuss the limitations of most TCP/IP implementations as well
+as alternatives that have been used to reduce network latency in high
+performance platforms. Proprietary interconnect solutions such as Myrinet and
+RapidIO are excluded from this discussion because we cannot port them to a
+small form factor platform.
+
+\subsection{\textbf{Limitations of TCP/IP}}
+
+%%TODO
+
+\subsection{\textbf{Extensions to TCP}}
+
+%%TODO
+One way to attack the latency limitations of TCP/IP is to implement flow control
+algorithms targeted specifically at a cluster's uses. This approach has been
+pursued extensively for data centers.
+
+\subsection{\textbf{GAMMA}}
+
+The Genoa Active Message Machine (GAMMA) is a Linux driver that implements a
+low-latency active messaging protocol over Gigabit Ethernet \cite{gamma}. It is
+designed as a no-cost solution that reduces network latency on existing network
+hardware. Schneidenbach et al. observed a 50\% or greater reduction in small
+message transmission times compared to TCP/IP when using GAMMA on the same
+hardware \cite{schneidenbach-03}. GAMMA Message throughput was also consistently
+higher than TCP/IP for all message sizes.
+
+However, GAMMA has significant limitations. It is incompatible with existing
+Internet Protocol (IP) implementations; therefore, it requires a second network
+controller for each node in order to construct a cluster that receives user
+input over a network. In its existing implementation, it is also both x86 and
+network controller-specific. Although it may be possible to port such a system
+to the ARM architecture, other solutions are more attractive.
+
+\subsection{\textbf{OpenFabrics Solutions}}
+
+\href{www.openfabrics.org}{The OpenFabrics Alliance} provides software to
+support the most successful set of high-performance computing (HPC) low-latency
+interconnects. This subsection will provide background on its three associated
+technologies: Infiniband, RoCE, and iWARP.
+
+\subsubsection{\textbf{Infiniband}}
+
+\href {www.infinibandta.org}{InfiniBand}\texttrademark (IB) was introduced in
 1999 to meet the new demand of data-intensive applications in high-end computing
 environments \cite{InfiniBandTABase-07}. Its characteristic high bandwidth and
 low latency make it a popular interconnect technology for computing solutions
@@ -198,6 +243,8 @@ known as Remote Direct Memory Access (RDMA). This approach allows an initiator
 computing node to access the memory of a remote process directly, without any
 significant effort on the part of the remote node \cite{sur-11}.
 
+\subsubsection{\textbf{RoCE}}
+
 RDMA over Converged Ethernet (RoCE), also known as Infiniband over Ethernet
 (IBoE), is an attempt to provide the reliable, low-latency InfiniBand transport
 services over a converged Ethernet fabric already present in most data centers
@@ -212,8 +259,6 @@ generally require switches that support Data Center Bridging (DCB)
 \cite{InfiniBandTARoCE-10}. This creates an opportunity for a solution that can
 work with existing lossy Ethernet networks.
 
-%% TODO: Discuss iWARP
-
 System Fabric Works, Inc., has created a pure software implementation of RoCE
 called \href{http://www.systemfabricworks.com/downloads/roce}{rxe}. \verb;rxe;
 is a Linux driver that implements the full IB transport over any Ethernet
@@ -224,6 +269,9 @@ microseconds on a 10 Gigabit Ethernet controller \cite{pearson-10}. The
 to port this implementation to the ODROID platform for our studies in low-cost
 Beowulf Clusters.
 
+\subsubsection{\textbf{iWARP}}
+
+%% TODO: Discuss iWARP
 
 \section{\textbf{ODROID Platform}}
 
@@ -279,6 +327,7 @@ message latency over 500 microseconds.
 \end{figure}
 
 \begin{figure}[H]
+\centering
 \includegraphics[width=0.5\textwidth]{odroid_xu}
 \caption{ODROID-XU board as shipped \cite{odroid-xu-board-detail}}
 \label{odroid-xu}
@@ -330,8 +379,8 @@ eight cores to run simultaneously is ongoing at Hardkernel.
 %% IBoE/RoCE performance on the x86 platform would be worth reviewing.
 
 Although performance profiling of hardware IB and RoCE is extensive
-\cite{subamaroni-09}, \cite{vienne-12}, studies on software RoCE are
-rare. Robert J. Lancaster \cite{lancaster-10} experimented with the rxe
+\cite{subamaroni-09} \cite{vienne-12}, studies on software RoCE are
+rare. Robert J. Lancaster \cite{lancaster-10} experimented with the \verb;rxe;
 driver. He found that \verb;rxe; message latency ranged from 14\% to 81\% lower
 than TCP/IP using a Realtek 8168B Gigabit Ethernet adaptor with the r8169
 driver.
@@ -350,7 +399,11 @@ implementation.
 \section{\textbf{Software RoCE}}
 
 Currently, there is only one open-source software RoCE project: the \verb;rxe;
-linux driver. System Fabric Works created the driver with at least two goals in
+linux driver. Previous work in our laboratory has proven that it is capable of
+providing significant reduction in network latency when used in an x86 machine
+\cite{lancaster-10}.
+
+System Fabric Works created the driver with at least two goals in
 mind: to provide a low-cost gateway to Infiniband software and to function as a
 testbed for IB application development \cite{pearson-10}. In both cases, its
 lack of network hardware dependence distinguishes it from all other Infiniband
