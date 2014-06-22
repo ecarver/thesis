@@ -236,7 +236,7 @@ characteristics of these two platforms are given in the next two sections.
 
 \begin{figure}[H]
 \includegraphics[width=\textwidth]{odroid_u2_top}
-\caption{ODROID-U2 circuit board top view\cite{odroid-u2-board-detail}}
+\caption{ODROID-U2 circuit board top view \cite{odroid-u2-board-detail}}
 \label{odroid-u2-board}
 \end{figure}
 
@@ -249,14 +249,15 @@ characteristics of these two platforms are given in the next two sections.
 
 The ODROID-U2 board hosts a Samsung Exynos 4412 Prime System on a Chip
 (SoC). \textbf{Figure \ref{odroid-u2-board}} shows the board on its own, and
-\textbf{Figure \ref{odroid-u2}} shows the board installed in its heatsink. The
-board features the following hardware components:
+\textbf{Figure \ref{odroid-u2}} shows the board installed in its heatsink. We
+purchased two ODROID-U2 nodes for \$89 each. The board features the following
+hardware components \cite{odroid-u2-board-detail}:
 
 \begin{itemize}
 \item Samsung Exynos 4412 Prime
   \begin{itemize}
   \item 4 ARM Cortex-A9 cores clocked at 1.7 GHz
-  \item 2 GB LPDDR2 capable of 880 MT/s
+  \item 2 GB LPDDR2 RAM
   \end{itemize}
 \item SMSC USB3503A USB 2.0 hub
 \item SMSC LAN9730 USB 2.0 to 100 Mpbs Ethernet controller
@@ -265,9 +266,63 @@ board features the following hardware components:
 
 While the ODROID-U2 features impressive raw processing power for its size and
 price, its small of main memory can adversely impact performance for even
-moderately sized parallel simulation models. The Exynos SoC 
+moderately sized parallel simulation models. Additionally, the LAN9730 network
+controller is even slower than we feared, resulting in end-to-end TCP small
+message latency over 500 microseconds.
 
 \subsection{\textbf{ODROID-XU}}
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{odroid_xu_top}
+\caption{ODROID-XU circuit board top view \cite{odroid-xu-board-detail}}
+\label{odroid-xu-board}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=0.5\textwidth]{odroid_xu}
+\caption{ODROID-XU board as shipped \cite{odroid-xu-board-detail}}
+\label{odroid-xu}
+\end{figure}
+
+The ODROID-XU features the Samsung Exynos 5410 SoC. We purchased four of these
+for \$169 each to form our final four-node cluster. \textbf{Figure
+  \ref{odroid-xu-board}} shows the top of the ODROID-XU circuit board without
+the processor heatsink and fan installed. \textbf{Figure \ref{odroid-xu}} shows
+the ODROID-XU in its plastic case. Clearly, the ODROID-XU has a lower physical
+profile than the ODROID-U2 because its heatsink is smaller. However, in terms of
+the circuit boards alone, the ODROID-XU is larger than the ODROID-U2. Because
+the ODROID-XU has the same network controller as the ODROID-U2, we also
+purchased four USB 3.0 to Gigabit Ethernet modules that reduce end-to-end TCP
+small message latency to under 300 microseconds. Further details on the
+ODROID-XU follow \cite{odroid-xu-board-detail}. Note that the USB 3.0 controller
+is not specified on the Hardkernel website.
+
+\begin{itemize}
+\item Samsung Exynos 5410 Octa
+  \begin{itemize}
+  \item 4 ARM Cortex-A15 cores with DVFS support
+  \item 4 ARM Cortex-A7 cores
+  \item 2 GB LPDDR3 RAM
+  \end{itemize}
+\item SMSC USB3503A USB 2.0 hub
+\item SMSC LAN9730 USB 2.0 to 100 Mpbs Ethernet controller
+\item MAXIM MAX98098 Audio CODEC
+\item ASIX AX88179 USB3.0 to Gigabit Ethernet Controller
+\end{itemize}
+
+The eight processor cores on the ODROID-XU's SoC are arranged in a big.LITTLE
+configuration. This heterogeneous computing platform presents some interesting
+opportunities specific to this hardware. For example, it would be advantageous
+to bind a polling network driver to one of the ``little'' Cortex-A7 cores, leaving all four
+of the ``big'' Cortex-A15 cores available for computing work. It might also be possible
+to dedicate one or more of the Cortex-A7 cores to overhead tasks in parallel
+simulation, again allowing for more of the Cortex-A15 group's raw processing
+power to be used for parallel simulation.
+
+Unfortunately, the only supported operating mode for the ODROID-XU is currently
+``cluster migration.'' That is, either all four ``little'' cores are active, or
+all four ``big'' cores are active. Development of a solution that will allow all
+eight cores to run simultaneously is ongoing at Hardkernel.
 
 \section{\textbf{Related Work}}
 
