@@ -327,11 +327,18 @@ correct. Therefore, an LP needs only save state to just before the current GVT
 
 In a similar fashion, a simulation cannot be terminated using LVT
 information. GVT information can be used to guarantee that a simulation meets a
-termiantion condition \cite{jefferson-85}.
+termination condition \cite{jefferson-85}.
 
 \section{\textbf{MPI}}
 
-%%TODO
+The Message Passing Interface (MPI) provides a standard interface for message
+passing programs that includes point-to-point and collective communication
+functions \cite{mpi-12}. It is widely used in High Performance Computing (HPC), with several
+implementations available depending on the needs of the user. For example, MPICH
+\cite{mpich} is an MPI implementation used in many supercomputers with a
+TCP-based networking infrastructure. MVAPICH \cite{mvapich} is a similar
+implementation that runs over InfiniBand networks. OpenMPI \cite{openmpi} is a
+third implementation that supports both TCP and InfiniBand.
 
 \section{\textbf{Low-latency Networking}}
 
@@ -389,9 +396,9 @@ to the ARM architecture, other solutions are more attractive.
 \href{www.openfabrics.org}{The OpenFabrics Alliance} provides software to
 support the most successful set of high-performance computing (HPC) low-latency
 interconnects. This subsection will provide background on its three associated
-technologies: Infiniband, RoCE, and iWARP.
+technologies: InfiniBand, RoCE, and iWARP.
 
-\subsubsection{\textbf{Infiniband}}
+\subsubsection{\textbf{InfiniBand}}
 
 \href {www.infinibandta.org}{InfiniBand}\texttrademark (IB) was introduced in
 1999 to meet the new demand of data-intensive applications in high-end computing
@@ -417,7 +424,7 @@ significant effort on the part of the remote node \cite{sur-11}.
 
 \subsubsection{\textbf{RoCE}}
 
-RDMA over Converged Ethernet (RoCE), also known as Infiniband over Ethernet
+RDMA over Converged Ethernet (RoCE), also known as InfiniBand over Ethernet
 (IBoE), is an attempt to provide the reliable, low-latency InfiniBand transport
 services over a converged Ethernet fabric already present in most data centers
 \cite{InfiniBandTARoCE-10}, \cite{roce-announce}. This enables properly
@@ -576,9 +583,9 @@ providing significant reduction in network latency when used in an x86 machine
 \cite{lancaster-10}.
 
 System Fabric Works created the driver with at least two goals in
-mind: to provide a low-cost gateway to Infiniband software and to function as a
+mind: to provide a low-cost gateway to InfiniBand software and to function as a
 testbed for IB application development \cite{pearson-10}. In both cases, its
-lack of network hardware dependence distinguishes it from all other Infiniband
+lack of network hardware dependence distinguishes it from all other InfiniBand
 implementations. We hoped to leverage this technology for use in our low-cost
 cluster in order to bring its performance closer to the performance of a
 traditional x86 cluster.
@@ -594,14 +601,14 @@ as a bridge between RDMA software and the Linux networking core.
 
 The \verb;rxe; linux driver is divided into two modules: \verb;rxe; and
 \verb;rxe-net; \cite{pearson-10}. \verb;rxe; provides an implementation of the
-Infiniband transport compliant with the RoCE specification annex
+InfiniBand transport compliant with the RoCE specification annex
 \cite{InfiniBandTARoCE-10}. \verb;rxe-net; interfaces with the Linux networking
 stack to transmit and receive packets earmarked for \verb;rxe;
 \cite{pearson-10}. The following two sections detail the design of these
 modules.
 
 The \verb;rxe; driver also interfaces with a user-mode library called
-librxe. This library provides the common Infiniband\texttrademark verbs
+librxe. This library provides the common InfiniBand\texttrademark verbs
 interface so that any compliant IB application can use the \verb;rxe; device
 without any modification. This library is essentially a user-mode wrapper for
 the functions found in the rxe driver, so its design will not be detailed here.
@@ -611,7 +618,7 @@ the functions found in the rxe driver, so its design will not be detailed here.
 
 The \verb;rxe; kernel module contains the portion of the \verb;rxe; driver that
 implements layers 4 through 7 of the OSI model. It provides a software
-implementation of the Infiniband\texttrademark RoCE transport. As with all IB
+implementation of the InfiniBand\texttrademark RoCE transport. As with all IB
 verbs applications, memory is preallocated in Memory Regions (MR), and coupled
 pairs of send and receive queues called ``queue pairs'' (QPs) are allocated by
 the application based on its needs. That is, QPs are configurable at allocation
@@ -714,13 +721,13 @@ Linux by forming a bridge that communicates with Linux on both the RDMA and
 Ethernet sides. It can be envisioned as the horizontal portion of the \verb;rxe;
 driver in \textbf{Figure \ref{rxe-linux}}. In addition to facilitating this
 communication and marshalling of data, \verb;rxe-net; writes the appropriate
-combination of Infiniband and MAC headers to each packet in order to fulfill the
+combination of InfiniBand and MAC headers to each packet in order to fulfill the
 requirements of the RoCE specification \cite{pearson-10}
 \cite{InfiniBandTARoCE-10}. In accordance with the specification, the Ethernet
 MAC (layer 2) header is identical to a normal ethernet packet except for the
 ethertype value, which is set to \verb;0x8915; for all RoCE packets
 \cite{InfiniBandTARoCE-10}. \textbf{Figure \ref{roce-packet}} compares normal
-Infiniband packets to RoCE packets \cite{ayoub-11} \cite{InfiniBandTABase-07}
+InfiniBand packets to RoCE packets \cite{ayoub-11} \cite{InfiniBandTABase-07}
 \cite{InfiniBandTARoCE-10}.
 
 \begin{figure}[h]
