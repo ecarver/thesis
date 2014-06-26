@@ -210,7 +210,7 @@ changes to a system \cite{fujimoto-pdes}:
 \end{enumerate}
 
 A discrete event simulation can be executed sequentially using the method shown
-in \ref{sequential-des}.
+in \textbf{Figure \ref{sequential-des}}.
 
 \begin{figure}[h]
 \centering
@@ -278,7 +278,56 @@ performance costs associated with rollbacks.
 
 \subsubsection{\textbf{Time Warp}}
 
+Jefferson \cite{jefferson-85} proposed an optimistic PDES mechanism known as
+\textit{Time Warp}. He described a system in which a set of \textit{simulation
+  objects} also known as \textit{logical processes} (LPs) process events in
+parallel. Each LP has its own simulation clock. The local simulation time is
+often called Local Virtual Time (LVT). When simulating forward in LVT, an LP
+behaves similarly to \textbf{Figure \ref{sequential-des}}, with the addition of
+remote nodes that complicate event scheduling. When an LP (the sender) must schedule an event
+to be simulated by another LP (the receiver), a message is sent by the sender to
+the receiver. The contents of the message are model-dependent, but every Time
+Warp message must be tagged with the following five values \cite{jefferson-85}.
 
+\begin{enumerate}
+  \item Identity of the sender
+  \item Identity of the receiver
+  \item Virtual send time
+  \item Virtual receive time
+  \item Sign (positive or negative)
+\end{enumerate}
+
+In order to satisfy strict causality, the receive time of a message must be
+greater than its send time \cite{lamport-78}. When added to the strictures
+already imposed on virtual time in a discrete event simulation, this implies
+that each LP's message output is ordered by send time as long as it is
+simulating forward in time \cite{jefferson-85}.
+
+When an LP receives an event with a receive time less than its current LVT, it
+must invalidate all the processing it has done at virtual times after that
+receive time. This process is complicated by the fact that it may also have sent
+messages to other LPs. This situation is resolved by sending
+``antimessages''. An \textit{antimessage} cancels the processing of the message
+that has the same sender, receiver, and timestamp values as the antimessage, but
+opposite sign. For clarity, messages are often called \textit{positive
+  messages}, and antimessages are called \textit{negative messages}. When an LP
+encounters the presence of corresponding positive and negative messages, those
+two messages ``annihilate'' \cite{jefferson-85}. That is, both are invalidated.
+
+When examined in terms of only group of LPs, it is clear that this system would
+require each LP to save information on every state it has been in and every
+message it has sent or received. In order to keep memory costs at a reasonable
+level, the notion of Global Virtual Time (GVT) is introduced. Jefferson defines
+GVT as ``the minimum of (1) all virtual times in all virtual clocks at time r,
+and (2) of the virtual send times of all messages that have been sent but have
+not yet been processed'' \cite{jefferson-85}. GVT defines the virtual time
+before which all event processing is guaranteed to be causally
+correct. Therefore, an LP needs only save state to just before the current GVT
+\cite{fujimoto-89b}.
+
+In a similar fashion, a simulation cannot be terminated using LVT
+information. GVT information can be used to guarantee that a simulation meets a
+termiantion condition \cite{jefferson-85}.
 
 \section{\textbf{MPI}}
 
@@ -820,8 +869,6 @@ Gigabit Ethernet switch using the nodes' 100 Megabit ethernet adaptors.
 The success of RoCE and EHCI polling experiments motivated the purchase of two
 additional ODROID-XU nodes as well as Gigabit Ethernet adaptors for all four
 nodes.
-%% TODO: Get two nodes from Doug
-%% TODO: set up cluster
 
 \newpage
 \chapter{Results}
