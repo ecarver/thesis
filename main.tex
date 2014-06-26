@@ -172,9 +172,117 @@ suggests ways to continue this work.
 \chapter{Background}
 \label{background}
 
+This chapter briefly introduces Parallel Discrete Event Simulation (PDES) and
+discusses its dependence on network communication in distributed computing
+platforms. It then discusses the Message Passing Interface (MPI), the
+communication library used in most PDES platforms. Finally, it presents
+limitations of existing Local Area Network (LAN) communication solutions and
+introduces alternative solutions.
+
 \section{\textbf{Parallel Discrete Event Simulation}}
 
+\subsection{\textbf{Discrete Event Simulation}}
+
+Discrete Event Simulation (DES) is a powerful tool for researchers who wish to
+model the operation of a physical system in such a way that its behavior can be
+abstracted into a series of changes that take place instantaneously
+\cite{jacob-13}. These changes are known as \textit{events}. At any moment
+during execution, a discrete event simulation can be described in terms of the
+following three properties \cite{fujimoto-pdes} \cite{jacob-13} \cite{page-94}.
+
+\begin{enumerate}
+  \item Information on the current state of the simulation (the \textit{state variables})
+  \item A list of events that are scheduled for execution (the \textit{pending
+    event list})
+  \item A method for determining the ordering of events (the \textit{simulation
+    clock})
+\end{enumerate}
+
+Events are processed one at a time by the simulator, in order. This order can be
+described by relating it to the simulation clock, providing each event with a
+virtual timestamp. The simulation clock time is always equal to the timestamp of
+the event currently being simulated. Simulating an event can effect two kinds of
+changes to a system \cite{fujimoto-pdes}:
+
+\begin{enumerate}
+  \item A new event is scheduled.
+  \item The state variables are altered.
+\end{enumerate}
+
+A discrete event simulation can be executed sequentially using the method shown
+in \ref{sequential-des}.
+
+\begin{figure}[h]
+\centering
+\begin{verbatim}
+sequential_des(state_variables, pending_event_list, simulation_clock)
+
+  while (pending_event_list is not empty)
+    current_event = pending_event_list.remove_next_event();
+    simulation_clock.time = current_event.time;
+    // The event simulation may change state variables or schedule new events
+    current_event.simulate(state_variables, pending_event_list);
+  loop;
+
+end sequential_des;
+\end{verbatim}
+\caption{Sequential DES loop \cite{jacob-13}}
+\label{sequential-des}
+\end{figure}
+
+An important property of DES is its adherence to strict causality
+\cite{fujimoto-pdes}. That is, an event can never schedule a new event that has
+a timestamp less than that of the scheduling event. This also means that in a
+sequential DES, the simulation time can never decrease. Causality is a property
+of all virtual time systems, including parallel simulation schemes
+\cite{lamport-78}.
+
+\subsection{\textbf{Parallel Discrete Event Simulation}}
+
+Unfortunately, sequential execution of discrete event simulations can require
+immense amounts of execution time for large simulation models
+\cite{fujimoto-pdes}. This motivates the study of methods for reducing that
+execution time. Chief among such methods is the attempt to parallelize discrete
+event simulations. The goal of a parallel discrete event simulation (PDES) is to
+exploit as much concurrency in the simulation as possible while still satisfying
+the DES causality property \cite{fujimoto-89b}. Parallel discrete event
+simulators can be broadly classified by their approach to this event scheduling
+problem.
+
+\textit{Conservative} scheduling simulates an event only when the simulator can
+guarantee that all past events have already been simulated. In this way,
+causality is never violated, but only events that are guaranteed to be causally
+independent can be executed in parallel. Because the output of an event cannot
+generally be predicted before it is simulated, independent events are limited to
+those with identical timestamps. While conservatively scheduled parallel
+simulation is useful for some types of problems \cite{nicol-93b}, more
+aggressive event scheduling may be necessary to exploit concurrency in a larger
+set of DES problems.
+
+\textit{Optimistic} scheduling simulates events speculatively and invalidates
+computation when a causality violation is detected. Each simulation process is
+permitted to simulate as far forward in time as it is able until it is notified
+that something in its past has changed. This triggers a \textit{rollback}, in
+which the process must revert to an earlier state and cancel any actions it has
+taken after that state \cite{nicol-93b}. The necessity of this functionality
+implies that state-saving mechanisms must be employed by the simulator, which
+will consume more memory than than a conservatively scheduled simulator would
+while solving the same problem. However, it eliminates at least some of the
+overhead associated with conservative scheduling by avoiding processor idle time
+\cite{nicol-93b}. However, the possibility of rollbacks also introduces an
+additional source of overhead computation, the severity of which varies based on
+the specifics of both the simulation and the simulator
+\cite{fujimoto-pdes}. Therefore, much research in optimistic parallel simulation
+has been targeted at the reduction of rollbacks and the reduction of the
+performance costs associated with rollbacks.
+
+\subsubsection{\textbf{Time Warp}}
+
+
+
 \section{\textbf{MPI}}
+
+%%TODO
 
 \section{\textbf{Low-latency Networking}}
 
@@ -182,7 +290,7 @@ This section will discuss the limitations of most TCP/IP implementations as well
 as alternatives that have been used to reduce network latency in high
 performance platforms. Proprietary interconnect solutions such as Myrinet and
 RapidIO are excluded from this discussion because we cannot port them to a
-small form factor platform.
+small form factor platform at a low cost.
 
 \subsection{\textbf{Limitations of TCP/IP}}
 
