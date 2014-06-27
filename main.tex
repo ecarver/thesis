@@ -941,11 +941,22 @@ nodes.
 \chapter{Experimental Results}
 \label{results}
 
+We first used micro-benchmarks to demonstrate the performance of the RoCE
+transport and polling drivers. We focus on MPI-based benchmarks because these
+directly measure the performance available for PDES simulators that use MPI. The
+Network Protocol Independent Performance Evaluator (NetPIPE) \cite{NetPIPE}
+version 3.7.1 provides an MPI ping-pong benchmark that suits our needs. For more
+targeted benchmarking, we turn to the Intel MPI Benchmark (IMB) suite version
+3.2.4.
+
+Finally, we used Rensselaer's Optimisitic Simulation System (ROSS) to benchmark
+the final cluster's PDES performance.
+
 \section{\textbf{Micro-benchmark Results}}
 
 Preliminary micro-benchmark results from a cluster of two ODROID-U2 nodes are
-presented first. Next, the results of similar tests on the four-node ODROID-XU
-cluster are shown.
+presented first. Next, the results of similar tests on two of the nodes
+comprising the four-node ODROID-XU cluster are shown.
 
 \subsection{\textbf{Two ODROID-U2 Nodes}}
 
@@ -957,34 +968,30 @@ slowly as message size increases. This trend of identical performance for all
 messages from 0 to around 256 B continues throughout this section. We believe
 that this is a manifestation of a performance limitation introduced by the
 USB-to-Ethernet translation in the LAN9730 hardware.
-%% TODO: We will discuss this further in Section \ref{discussion}.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{netpipe_lat_small}
-\caption{NetPIPE MPI Latency Results, Small Message Sizes}
+\caption{U2 NetPIPE MPI Latency Results, Small Message Sizes}
 \label{npmpi-llat}
 \end{figure}
 
 The trend of performance improvement with RoCE continues until message size
 rises above 8 KB, after which RoCE latency is significantly higher than TCP
-latency. %% This was actually really surprising. Can't explain it...yet
+latency.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{netpipe_lat_large}
-\caption{NetPIPE MPI Latency Results, Large Message Sizes}
+\caption{U2 NetPIPE MPI Latency Results, Large Message Sizes}
 \label{npmpi-hlat}
 \end{figure}
 
-The MPI bandwidth results in Figures \ref{npmpi-lbw} and \ref{npmpi-hbw} mirror
-the latency results. Interestingly, neither TCP nor RoCE traffic could saturate
-the 100 Mbps link. %% Is this because the processor can't move data around
-%% fast enough? If so, this could have implications on the discussion of GbE
-%% modules for the XU. We could also blame the NIC, Linux, or even NetPIPE. I
-%% might have to add a way to bypass the \verb;rxe; flow control...
+The MPI bandwidth results in \textbf{Figures \ref{npmpi-lbw}} and
+\textbf{\ref{npmpi-hbw}} mirror the latency results. Interestingly, neither TCP
+nor RoCE could saturate the 100 Mbps link.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{netpipe_bw_small}
-\caption{NetPIPE MPI Bandwidth Results, Small Message Sizes}
+\caption{U2 NetPIPE MPI Bandwidth Results, Small Message Sizes}
 \label{npmpi-lbw}
 \end{figure}
 
@@ -992,28 +999,118 @@ the 100 Mbps link. %% Is this because the processor can't move data around
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{netpipe_bw_large}
-\caption{NetPIPE MPI Bandwidth Results, Large Message Sizes}
+\caption{U2 NetPIPE MPI Bandwidth Results, Large Message Sizes}
 \label{npmpi-hbw}
 \end{figure}
 
 In order to test transport scalability over MPI in the ODROID platform, we used
 the Intel MPI Benchmarks (IMB) suite's ``MultiPingPong'' test with four, six,
 and eight MPI processes. This benchmark creates pairs of processes that perform
-a standard ping-pong test in parallel with the other pairs. We suspected that
-the reduced CPU requirements of the IB transport would lead to slower scaling of
-latency as network and I/O bus congestion increases. Figure \ref{multipingpong}
-supports this conjecture. In fact, the \verb;rxe; driver appears to thrive in a
-congested networking environment, while TCP/IP latency grows steadily. It
-appears that the increased network activity may be hiding some of the latency
-introduced by the Ethernet adaptor. %% TODO: How?
+a standard ping-pong test in parallel with the other pairs. With this tool, we
+can test the effects of network communication on inter-process communication by
+making some of the process pairs communicate locally on a node and others
+communicate over the network. We suspected that the reduced CPU requirements of
+the IB transport would lead to slower scaling of latency as network and I/O bus
+congestion increases. \textbf{Figure \ref{multipingpong-u2}} supports this
+conjecture. In fact, the \verb;rxe; driver appears to thrive in a congested
+networking environment, while TCP/IP latency grows steadily. This is surprising
+because we expected the average latency of both transports to decrease as low
+inter-process communication latencies were averaged with longer network
+latencies. Regardless, the context switching associated with TCP appears to have
+drastic performance impact on the operation of the Exynos 4412. RoCE appears to
+eliminate this problem, with a maximum speedup of over two times TCP.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{pingpong_multi_zoom}
-\caption{Scaling of Message Latency with Link Congestion}
-\label{multipingpong}
+\caption{Scaling of U2 Message Latency with Communication Congestion}
+\label{multipingpong-u2}
 \end{figure}
 
 \subsection{\textbf{Final Cluster}}
+
+I tested two ODROID-XU nodes equipped with AX88179 Gigabit Ethernet adaptors
+using the same NetPIPE and IMB benchmarks that are shown above for the
+ODROID-U2. We can see immediately that the purchase of the Gigabit Ethernet
+controllers has improved performance drastically, nearly halving our base TCP
+small message latency.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{xu_lat_small}
+\caption{XU NetPIPE MPI Latency Results, Small Message Sizes}
+\label{xu-lat-small}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{xu_lat_large}
+\caption{XU NetPIPE MPI Latency Results, Large Message Sizes}
+\label{xu-lat-large}
+\end{figure}
+
+\textbf{Figures \ref{xu-lat-small}} and \textbf{\ref{xu-lat-large}} show the
+NetPIPE MPI latency results for two nodes on the ODROID-XU cluster using Gigabit
+Ethernet controllers. A minimum message latency of 200 microseconds is an
+excellent improvement from the performance observed on the ODROID-U2.
+
+This time, we observe approximately a 25\% decrease in small message latency for
+the RoCE transport as compared to TCP. However, the two transports become very
+close in performance around message sizes of 384 bytes. This continues until
+1024 bytes, where TCP actually overtakes RoCE briefly. Strangely, this entire
+trend repeats for the range from 1024 to 4096 bytes and again from 4096 bytes to
+8192 bytes. After 8 KB, RoCE latency is significantly higher than TCP latency
+until 64 KB, where RoCE again takes the lead.
+
+I speculated that these results could be caused by the calculation of the Cyclic
+Redundance Check (CRC) for each RoCE packet. This would explain the performance
+sensitifity to certain message sizes. In order to test this hypothesis, I ran
+the same tests again with the RoCE CRC disabled. Sure enough, performance
+improved compared to RoCE with CRC enabled, returning to data trends similar to
+what we observed from the ODROID-U2. Note that disabling the CRC does not reduce
+packet size; it merely bypasses the actual computation of the CRC. Although CRC
+computation is considered inexpensive, it clearly has a measurable effect on
+both latency and bandwidth performance here.
+
+Returning to the ODROID-U2 and disabling the RoCE CRC yielded no significant
+performance changes. This implies that the reduction in latency from the Gigabit
+Ethernet controller exposed some of the performance costs of the \verb;rxe; CRC
+algorithm that were previously hidden by the high latency of the LAN9730
+ethernet controller. In accordance with this finding, our PDES tests will be run
+with RoCE CRC disabled.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{xu_bw_small}
+\caption{XU NetPIPE MPI Bandwidth Results, Small Message Sizes}
+\label{xu-bw-small}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{xu_bw_large}
+\caption{XU NetPIPE MPI Bandwidth Results, Large Mesage Sizes}
+\label{xu-bw-large}
+\end{figure}
+
+Again, the bandwidth results shown in \textbf{Figures \ref{xu-bw-small}} and
+\textbf{\ref{xu-bw-large}} mirror the latency results from the same benchmarking
+tool. This time, however, the maximum bandwidth is dramatically increased thanks
+to the Gigabit Ethernet adaptors. However, it still does not approach the
+Gigabit level. Now that we have observed this behavior from two different
+USB-to-ethernet controllers, we must conclude that this is a limitation inherent
+to such an architecture.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{xu_imb}
+\caption{Scaling of XU Message Latency with Communication Congestion}
+\label{xu-imb-low}
+\end{figure}
+
+\textbf{Figure \ref{xu-imb-low}} shows the scaling of inter-process
+communication latency with increased network communication. This time, we use
+all four nodes in the cluster for this benchmark in order to better simulate the
+communication conditions of large PDES simulations. We observe that the Exynos
+5410 has drastically lower inter-process communication latency compared to the
+Exynos 4412. However, this serves to highlight the lightweight characteristics
+of the RoCE transport even more; up to a 3.34 times speedup is possible for very
+small messages when all cores are utilized. Even when only two of four cores are
+in use, 2.5 times speedup is possible.
 
 \section{\textbf{Parallel Discrete Event Simulation Results}}
 
