@@ -344,7 +344,7 @@ third implementation that supports both TCP and InfiniBand.
 
 This section will discuss the limitations of most TCP/IP implementations as well
 as alternatives that have been used to reduce network latency in high
-performance platforms. Proprietary interconnect solutions such as Myrinet and
+performance platforms. Proprietary interconnect solutions such as
 RapidIO are excluded from this discussion because we cannot port them to a
 small form factor platform at a low cost.
 
@@ -368,10 +368,47 @@ become popular in the last decade.
 
 \subsection{\textbf{Extensions to TCP}}
 
-%%TODO
 One way to attack the latency limitations of TCP/IP is to implement flow control
 algorithms targeted specifically at a cluster's uses. This approach has been
 pursued extensively for data centers.
+
+One large source of latency in data centers is switch buffer overruns
+\cite{liu-13}. Data Center TCP (DCTCP) is an approach that limits this
+congestion in networks by detecting the beginnings of buffer overruns before they impact
+network performance. This eliminates many latency spikes that can plague
+high-traffic TCP networks. High-bandwidth Ultra-Low Latency (HULL) extends DCTCP
+by using simple simulation software to predict these buffer overruns and adjust
+traffic to compensate \cite{liu-13}. HULL is even more effective than DCTCP at
+eliminating sudden spikes in TCP latency.
+
+Deadline Driven Delivery (D\textsuperscript{3}) is another attempt to minimize latency spikes
+and, further, to enforce real time requirements on the delivery of TCP messages
+in a local network \cite{liu-13}. It is a form of active flow control that allocates
+networking resources based on time requirements associated with certain
+traffic. However, it has a tendency to starve out some requests when traffic
+becomes heavy. Preemptive Distributed Quick flow scheduling (PDQ) solves this
+problem by applying an improved scheduling algorithm \cite{liu-13}.
+
+A problem with flow control in HPC is the computing power and specialized
+hardware required for its implementation. While the benefits of the preceding
+approaches are demonstrable for large clusters, it is unlikely that a small,
+low-cost cluster would see much benefit from their implementation.
+
+\subsection{\textbf{Open-MX}}
+
+Open-MX is an implementation of the Myrinet Express messaging stack that runs
+over any ethernet hardware through a Linux driver
+\cite{goglin-08}. Micro-benchmark tests show that Open-MX can reduce message
+latency by 24.3\% to 32.2\% for ethernet controllers that support jumbo frames
+\cite{goglin-11}. However, the performance improvement is only 0.7\% to 10.4\%
+for ethernet controllers that do not support jumbo frames. Most embedded
+ethernet controllers fall into the latter category.
+
+Unfortunately, open source MPI implementation OpenMPI is phasing out support for
+Myrinet transports \cite{openmpi-myrinet}, leaving proprietary MPI implementations
+the only option for those who wish to pursue the use of this transport. The cost
+of a license for one of these implementations is prohibitive for use in research
+on low-cost clusters.
 
 \subsection{\textbf{GAMMA}}
 
@@ -380,9 +417,9 @@ low-latency active messaging protocol over Megabit and Gigabit Ethernet
 \cite{gamma}. It is designed as a no-cost solution that reduces network latency
 on existing network hardware. Schneidenbach et al. observed a 50\% or greater
 reduction in small message transmission times compared to TCP/IP when using
-GAMMA on the same Gigabit Ethernet hardware \cite{schneidenbach-03}. GAMMA Message throughput was
-also consistently higher than TCP/IP for all message sizes. Ciaccio also found
-that GAMMA message latency 
+GAMMA on the same Gigabit Ethernet hardware \cite{schneidenbach-03}. GAMMA
+Message throughput was also consistently higher than TCP/IP for all message
+sizes.
 
 However, GAMMA has significant limitations. It is incompatible with existing
 Internet Protocol (IP) implementations; therefore, it requires a second network
@@ -450,7 +487,15 @@ Beowulf Clusters.
 
 \subsubsection{\textbf{iWARP}}
 
-%% TODO: Discuss iWARP
+The Internet Wide Area RDMA Protocol (iWARP) brings the benefits of active
+messaging to TCP/IP by encapsulating an RDMA protocol within a TCP transport
+layer. In the same fashion as IB, iWARP adaptors are generally believed to
+provide the best performance when using this protocol. However, there are pure
+software implementations of iWARP \cite{neeser-10}. Because iWARP still uses TCP
+sockets, message latency of such a software implementation may not be
+significantly different from standard TCP. Nonetheless, application performance
+can still be improved because of the reduced processing and I/O bus requirements
+associated with RDMA protocols \cite{narravula-07}.
 
 \section{\textbf{ODROID Platform}}
 
@@ -469,7 +514,7 @@ characteristics of these two platforms are given in the next two sections.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.5\textwidth]{odroid_u2}
+\includegraphics[width=0.25\textwidth]{odroid_u2}
 \caption{ODROID-U2 with heatsink \cite{odroid-u2-board-detail}}
 \label{odroid-u2}
 \end{figure}
@@ -491,11 +536,19 @@ hardware components \cite{odroid-u2-board-detail}:
 \item MAXIM MAX98098 Audio CODEC
 \end{itemize}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{odroid_u2_block_diagram}
+\caption{ODROID-U2 block diagram \cite{odroid-u2-board-detail}}
+\label{odroid-u2-block-diagram}
+\end{figure}
+
 While the ODROID-U2 features impressive raw processing power for its size and
 price, its small of main memory can adversely impact performance for even
 moderately sized parallel simulation models. Additionally, the LAN9730 network
-controller is even slower than we feared, resulting in end-to-end TCP small
-message latency over 500 microseconds.
+controller is even slower than we feared, routinely reaching end-to-end TCP
+small message latency over 500 microseconds.
+
 
 \subsection{\textbf{ODROID-XU}}
 
@@ -538,6 +591,14 @@ is not specified on the Hardkernel website.
 \item ASIX AX88179 USB3.0 to Gigabit Ethernet Controller
 \end{itemize}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{odroid_xu_block_diagram}
+\caption{ODROID-XU block diagram \cite{odroid-xu-board-detail}}
+\label{odroid-xu-block-diagram}
+\end{figure}
+
+
 The eight processor cores on the ODROID-XU's SoC are arranged in a big.LITTLE
 configuration. This heterogeneous computing platform presents some interesting
 opportunities specific to this hardware. For example, it would be advantageous
@@ -554,8 +615,7 @@ eight cores to run simultaneously is ongoing at Hardkernel.
 
 \section{\textbf{Related Work}}
 
-%% ERIC: do we know of any related work?  even publications talking about
-%% IBoE/RoCE performance on the x86 platform would be worth reviewing.
+
 
 Although performance profiling of hardware IB and RoCE is extensive
 \cite{subamaroni-09} \cite{vienne-12}, studies on software RoCE are
@@ -878,7 +938,7 @@ additional ODROID-XU nodes as well as Gigabit Ethernet adaptors for all four
 nodes.
 
 \newpage
-\chapter{Results}
+\chapter{Experimental Results}
 \label{results}
 
 \section{\textbf{Micro-benchmark Results}}
