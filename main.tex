@@ -506,13 +506,13 @@ characteristics of these two platforms are given in the next two sections.
 
 \subsection{\textbf{ODROID-U2}}
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{odroid_u2_top}
 \caption{ODROID-U2 circuit board top view \cite{odroid-u2-board-detail}}
 \label{odroid-u2-board}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
 \includegraphics[width=0.25\textwidth]{odroid_u2}
 \caption{ODROID-U2 with heatsink \cite{odroid-u2-board-detail}}
@@ -536,7 +536,7 @@ hardware components \cite{odroid-u2-board-detail}:
 \item MAXIM MAX98098 Audio CODEC
 \end{itemize}
 
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{odroid_u2_block_diagram}
 \caption{ODROID-U2 block diagram \cite{odroid-u2-board-detail}}
@@ -552,13 +552,13 @@ small message latency over 500 microseconds.
 
 \subsection{\textbf{ODROID-XU}}
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{odroid_xu_top}
 \caption{ODROID-XU circuit board top view \cite{odroid-xu-board-detail}}
 \label{odroid-xu-board}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
 \includegraphics[width=0.5\textwidth]{odroid_xu}
 \caption{ODROID-XU board as shipped \cite{odroid-xu-board-detail}}
@@ -591,7 +591,7 @@ is not specified on the Hardkernel website.
 \item ASIX AX88179 USB3.0 to Gigabit Ethernet Controller
 \end{itemize}
 
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{odroid_xu_block_diagram}
 \caption{ODROID-XU block diagram \cite{odroid-xu-board-detail}}
@@ -650,7 +650,7 @@ implementations. We hoped to leverage this technology for use in our low-cost
 cluster in order to bring its performance closer to the performance of a
 traditional x86 cluster.
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_linux}
 \caption{rxe driver role in a Linux networking environment \cite{pearson-10}}
 \label{rxe-linux}
@@ -687,7 +687,7 @@ time in terms of both queue depth and entry length
 they are created, but such an operation may adversely impact performance
 \cite{InfiniBandTARoCE-10}.
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_overview}
 \caption{rxe driver overview \protect\cite{pearson-10}}
 \label{rxe-overview}
@@ -706,7 +706,7 @@ Completion Queue (CQ) that can be accessed by the verbs application. This
 Completion Queue Entry (CQE) contains information that the application needs in
 order to consider the WR completed.
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_recv}
 \caption{rxe Receive task \protect\cite{pearson-10}}
 \label{rxe-recv}
@@ -718,7 +718,7 @@ from \verb;rxe-net; as an input. It inspects the SKB header in order to
 determine whether the message is a response packet or a request packet and
 places the SKB into a corresponding packet list in the receive queue.
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_resp}
 \caption{rxe QP Responder architecture \protect\cite{pearson-10}}
 \label{rxe-resp}
@@ -737,7 +737,7 @@ order to support retries for all message semantics and unordered read/write
 operations for RDMA semantics. In \textbf{Figure \ref{rxe-resp}}, this is
 represented by the ``Responder Resources'' data structure.
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_req}
 \caption{rxe QP Requester architecure \protect\cite{pearson-10}}
 \label{rxe-req}
@@ -754,7 +754,7 @@ retried, the Initiator can be reset to the point where the Completer is
 waiting. For all other channel sematics, the WQE is retired and released
 immediately by the Initiator without invoking the Completer.
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_arbiter}
 \caption{rxe Arbiter architecture \protect\cite{pearson-10}}
 \label{rxe-arbiter}
@@ -853,10 +853,10 @@ enabled the use of 1884 MB of memory, while the remaining 163 MB were dedicated
 to I/O devices. The final address space mapping is shown in \textbf{Figure
   \ref{addrmap}}.
 
-The migration from the ODROID-U2 to the ODROID-XU presented some additional
-challenges in the porting effort for the rxe driver. I encountered a bug that
-disrupted the marshalling of Work Requests from userspace to kernel space. This
-bug was a symptom of TODO. This problem can be solved by TODO.
+%% The migration from the ODROID-U2 to the ODROID-XU presented some additional
+%% challenges in the porting effort for the rxe driver. I encountered a bug that
+%% disrupted the marshalling of Work Requests from userspace to kernel space. This
+%% bug was a symptom of TODO. This problem can be solved by TODO.
 
 \begin{figure}[h]
 \begin{center}
@@ -959,7 +959,7 @@ that this is a manifestation of a performance limitation introduced by the
 USB-to-Ethernet translation in the LAN9730 hardware.
 %% TODO: We will discuss this further in Section \ref{discussion}.
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{netpipe_lat_small}
 \caption{NetPIPE MPI Latency Results, Small Message Sizes}
 \label{npmpi-llat}
@@ -969,7 +969,7 @@ The trend of performance improvement with RoCE continues until message size
 rises above 8 KB, after which RoCE latency is significantly higher than TCP
 latency. %% This was actually really surprising. Can't explain it...yet
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{netpipe_lat_large}
 \caption{NetPIPE MPI Latency Results, Large Message Sizes}
 \label{npmpi-hlat}
@@ -982,7 +982,7 @@ the 100 Mbps link. %% Is this because the processor can't move data around
 %% modules for the XU. We could also blame the NIC, Linux, or even NetPIPE. I
 %% might have to add a way to bypass the \verb;rxe; flow control...
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{netpipe_bw_small}
 \caption{NetPIPE MPI Bandwidth Results, Small Message Sizes}
 \label{npmpi-lbw}
@@ -990,7 +990,7 @@ the 100 Mbps link. %% Is this because the processor can't move data around
 
 
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{netpipe_bw_large}
 \caption{NetPIPE MPI Bandwidth Results, Large Message Sizes}
 \label{npmpi-hbw}
@@ -1007,7 +1007,7 @@ congested networking environment, while TCP/IP latency grows steadily. It
 appears that the increased network activity may be hiding some of the latency
 introduced by the Ethernet adaptor. %% TODO: How?
 
-\begin{figure}[H]
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{pingpong_multi_zoom}
 \caption{Scaling of Message Latency with Link Congestion}
 \label{multipingpong}
