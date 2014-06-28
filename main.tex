@@ -277,6 +277,7 @@ has been targeted at the reduction of rollbacks and the reduction of the
 performance costs associated with rollbacks.
 
 \subsubsection{\textbf{Time Warp}}
+\label{time-warp}
 
 Jefferson \cite{jefferson-85} proposed an optimistic PDES mechanism known as
 \textit{Time Warp}. He described a system in which a set of \textit{simulation
@@ -350,16 +351,18 @@ small form factor platform at a low cost.
 
 \subsection{\textbf{Limitations of TCP/IP}}
 
-%%TODO
-
-The Transmission Control Protocol/Internet Protocol describes a packet-switched
+The Transmission Control Protocol/Internet Protocol (TCP/IP) describes a packet-switched
 network designed to communicate over a wide area with reliable, ordered
-transmission of these packets, each of which contains one or more messages.
+transmission of these packets, each of which contains one or more
+messages. TCP/IP provides a global interconnect that is robust over long
+distances and a variety of network conditions. However, it also requires
+computational resources to support these features that can reduce performance
+compared to protocols focues on Local Area Networks (LANs).
 
 TCP/IP also does not support active messaging. Active messages are messages that
 can perform operations on their own. For example, a message in a Remote Direct
 Memory Access (RDMA) system may be a write message; that message can write to
-the receiving node's memory. TCP, on the other hand, would probably accomplish
+the receiving node's memory. TCP/IP, on the other hand, would probably accomplish
 this by sending a message containing a write command and another message
 containing the data to be written. Many low-latency protocols that are discussed
 later in this section achieve a significant portion of their efficiency by
@@ -629,7 +632,13 @@ iWARP for use in cloud computing. They found that end-to-end latencies were
 reduced for messages larger than 64 kB thanks the protocol's lightweight RDMA
 implementation.
 
-%% Can't really find anything else on softroce
+Rajovic et al. \cite{rajovic-13} examined some mobile SoC platforms in order to
+evaluate their usefulness for HPC applications. They used the Open-MX
+interconnect to reduce network latency in these tests, and elected to use the
+NVIDIA Tegra 2 platform to build and deploy a large-scale cluster
+\cite{rajovic-14}. They focused on scientific computing and other coarse-grained
+parallel applications in performance testing, but found that the cluster scales
+well for such purposes using a Gigabit Ethernet interconnect.
 
 \newpage
 \chapter{Methods for Reducing Network Latency}
@@ -797,8 +806,6 @@ InfiniBand packets to RoCE packets \cite{ayoub-11} \cite{InfiniBandTABase-07}
 \end{figure}
 
 \subsection{\textbf{Porting rxe to the ODROID Platform}}
-
-%% TODO: Expand on this section a bunch. Include details of porting work
 
 Although \verb;rxe; is designed to operate with any Ethernet adaptor, it also
 depends on the IB libraries in the Linux kernel. These libraries, in turn,
@@ -1112,15 +1119,119 @@ of the RoCE transport even more; up to a 3.34 times speedup is possible for very
 small messages when all cores are utilized. Even when only two of four cores are
 in use, 2.5 times speedup is possible.
 
-\section{\textbf{Parallel Discrete Event Simulation Results}}
+\section{\textbf{PDES Results}}
 
 \href{https://github.com/carothersc/ROSS}{Rensselaer's Optimistic Simulation
   System (ROSS)} is used for all PDES experiments. It uses MPI for all
-inter-process communication, including local communication \cite{carothers-02}.
+inter-process communication, including local communication
+\cite{carothers-02}. Its optimistic synchronization protocol uses the Time Warp
+paradigm with some modifications. Notably, ROSS features the addition of Kernel
+Processes (KPs) that aggregate processed event lists and perform all the
+rollback computations, while the traditional LPs perform forward computation
+\cite{carothers-02}. There must be at least one LP assigned to each KP, but
+assigning several LPs to each KP can reduce memory footprint for many
+simulations \cite{carothers-02}.
+
+For the results shown in this section, we use four of the simulation models
+included with ROSS: \verb;airport;, \verb;wifi;, \verb;disksim;, and
+\verb;raid;. The number of LPs used for each model is tuned so that startup
+overhead is not a significant portion of simulation runtime but memory is not
+exhausted. As the number of processes used in the simulation is varied, the
+number of LPs remains the same, although the number of KPs changes as it remains
+at the default allocation per process. %% TODO: actual number of KPs
+
+\begin{tabular}[c]{| l | r | r |}
+  \hline
+  Model Name & LPs & Temination Time (GVT) \\ \hline
+  \textsc{airport} & 48 & 10000 \\
+  \textsc{disksim} & 384 & 1000000 \\
+  \textsc{raid} & 384 & 10000 \\
+  \textsc{wifi} & 96 & 10000 \\
+  \hline
+\end{tabular}
 
 \newpage
 \chapter{Conclusions}
 \label{conclusions}
+
+\section{\textbf{Cost and Performance Comparisons}}
+
+\section{\textbf{Challenges in SoC-based HPC}}
+
+In this section, a few architectural challenges are presented that,
+collectively, represent a barrier to adoption of clusters built from mobile
+SoCs. Possible solutions
+
+\subsection{\textbf{PoP Memory}}
+
+In our search for inexpensive cluster nodes, we found that a drawback to mobile
+SoCs is their limited main memory that is typically included in a Package on
+Package (PoP) assembly, making it impossible for the end user to
+upgrade. Although current mobile operating systems are parsimonious with memory,
+the opposite is true for HPC and, in particular, optimistically synchronized
+PDES. In our studies, we were limited to relatively small simulation model sizes
+for our PDES tests because of memory constraints rather than execution time
+constraints.
+
+Although the amount of memory that vendors package on mobile SoCs is steadily
+increasing, memory limitations prevent them from being a contender for
+replacement of large cluster nodes. Regardless, the attractiveness of mobile SoC
+nodes for a small-scale cluster is undeniable.
+
+Including memory expansion slots on a mobile SoC is not currently feasible
+because of package size constraints. However, vendors could offer multiple
+versions of their chips with identical processors but different amounts of main
+memory.
+
+\subsection{\textbf{I/O Limitations}}
+
+The lack of Peripheral Component Interconnect (PCI) support in the Exynos line
+of SoCs means that all ethernet communications must be routed through a USB
+interface. Although we saw that USB 3 reduces latency dramatically when compared
+to USB 2, both incur significant latency penalties when compared to a PCI or PCI
+Express (PCIe) network interface.
+
+NVIDIA's Tegra 2 and Tegra 3 SoCs support PCIe, which provides access to a
+relatively low-latency networking interface in a mobile platform
+\cite{rajovic-13}. The Tegra 4 does not support PCIe \cite{arstch-tegra},
+illustrating the lack of demand for high speed I/O in mobile devices.
+
+The Linux system images for the ODROID boards are hosted on small flash memory
+devices: microSD cards for the ODROID-XU and eMMC cards for the ODROID-U2. This
+fact alone eliminates the possibility of any ``disk-intensive'' programs from
+running well on our cluster.
+
+Again, the Tegra 2 and 3 include support for SATA disks, but the Tegra 4 does
+not \cite{arstch-tegra}.
+
+\subsection{\textbf{Memory Errors}}
+
+High Performance Compution platforms typically use Error Correcting Code (ECC)
+main memory in order to avoid data corruption that could taint scientific
+results. Commodity processors rarely include support for ECC memory because such
+errors can be tolerated in a desktop or mobile computing environment. Because
+Low Power Double Data Rate (LPDDR) memory does not support ECC, there is no way
+to measure the incidence of memory errors in our own cluster; further, there is
+no way
+
+Although conventional wisdom suggests that memory errors are rare in practice, a
+recent study by Schroeder et al. \cite{schroeder-09} on ECC memory found that
+8.2\% of all tested memory modules were affected by at least one error per
+year. Additionally, the incidence of memory errors increased with memory module
+density. This makes sense when one considers the possibility of charge sharing
+in the memory modules. This implies that memory errors are even more likely in
+an SoC environment where memory density is very high.
+
+A significant step toward enabling mobile SoCs for deployment in HPC
+applications would be to include ECC memory. Most current ECC implementations
+can correct single-bit-per-word errors, which account for almost all memory
+errors observed in Schroeder's study \cite{schroeder-09} and detect more severe
+errors, ensuring that bit flips cannot affect computation results without the
+user's knowledge.
+
+\section{\textbf{Benefits of SoC-based HPC}}
+
+\subsection{\textbf{Commodity Pricing}}
 
 \newpage
 \bibliographystyle{abbrv} \bibliography{refs}
