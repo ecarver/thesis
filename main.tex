@@ -942,7 +942,47 @@ Gigabit Ethernet switch using the nodes' 100 Megabit ethernet adaptors.
 
 The success of RoCE and EHCI polling experiments motivated the purchase of two
 additional ODROID-XU nodes as well as Gigabit Ethernet adaptors for all four
-nodes.
+nodes. The total cost of the computing hardware for this cluster is calculated
+in \textbf{Table \ref{xu-cost-table}}.
+
+\begin{table}
+  \label{xu-cost-table}
+  \caption{Hardware cost of ODROID-XU cluster}
+  \centering
+  \begin{tabular}{| l | r |}
+    \hline
+    \textbf{Component} & \textbf{Cost} \\ \hline
+    ODROID-XU board $\times$ 4 & \$169.00 $\times$ 4 \\
+    ASIX GbE Adaptor $\times$ 4 & \$25.00 $\times$ 4 \\
+    16 GB Class 10 MicroSD card, various vendors $\times$ 4 & \$10.99 $\times$ 4 \\
+    Netgear GS108 GbE switch & \$45.99 \\
+    \hline
+    \textbf{Total} & \textbf{\$865.95} \\ \hline
+  \end{tabular}
+\end{table}
+
+\section{\textbf{Comparison Cluster}}
+
+We will compare the performance of the ODROID-XU cluster with a small
+traditional Beowulf cluster consisting of two x86 PCs running Intel Haswell CPUs
+and 32 GB of main memory. Although not all of the hardware components were
+purchased new for this cluster, the hardware costs of these PCs are estimated in
+\textbf{Table \ref{x86-cost-table}}.
+
+\begin{table}
+  \label{x86-cost-table}
+  \caption{Hardware cost of x86 cluster}
+  \centering
+  \begin{tabular}{| l | r |}
+    \hline
+    \textbf{Component} & \textbf{Cost} \\
+    \hline
+    Intel Core i7-4770 CPU $\times$ 2 & \$309.00 $\times$ 2 \\
+    \hline
+    \textbf{Total} & \textbf{TODO} \\ \hline
+  \end{tabular}
+\end{table}
+
 
 \newpage
 \chapter{Experimental Results}
@@ -1034,6 +1074,7 @@ eliminate this problem, with a maximum speedup of over two times TCP.
 \end{figure}
 
 \subsection{\textbf{Final Cluster}}
+\label{final-cluster-benchmarks}
 
 I tested two ODROID-XU nodes equipped with AX88179 Gigabit Ethernet adaptors
 using the same NetPIPE and IMB benchmarks that are shown above for the
@@ -1138,17 +1179,116 @@ included with ROSS: \verb;airport;, \verb;wifi;, \verb;disksim;, and
 overhead is not a significant portion of simulation runtime but memory is not
 exhausted. As the number of processes used in the simulation is varied, the
 number of LPs remains the same, although the number of KPs changes as it remains
-at the default allocation per process. %% TODO: actual number of KPs
+at the default allocation per process. \textbf{Table \ref{lp}} lists the total
+number of LPs across all processes as well as the termination time set for each
+model.
 
-\begin{tabular}[c]{| l | r | r |}
-  \hline
-  Model Name & LPs & Temination Time (GVT) \\ \hline
-  \textsc{airport} & 48 & 10000 \\
-  \textsc{disksim} & 384 & 1000000 \\
-  \textsc{raid} & 384 & 10000 \\
-  \textsc{wifi} & 96 & 10000 \\
-  \hline
-\end{tabular}
+\begin{table}
+  \label{lp}
+  \caption{ROSS Simulation Model Parameters}
+  \centering
+  \begin{tabular}[c]{| l | r | r |}
+    \hline
+    Model Name & LPs & Temination Time (GVT) \\ \hline
+    \textsc{airport} & 48 & 10000 \\
+    \textsc{disksim} & 384 & 1000000 \\
+    \textsc{raid} & 384 & 10000 \\
+    \textsc{wifi} & 96 & 10000 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+Simulation runtime results as reported by ROSS are shown throughout the rest of
+this section. The error bars in \textbf{Figures \ref{airport}, \ref{disksim},
+  \ref{raid},} and \textbf{\ref{wifi}}. show a 99\% confidence interval for the
+mean simulation time.
+
+\begin{figure}
+\centering
+%\includegraphics[width=0.75\textwidth]{airport}
+\caption{Mean Simulation Runtimes for ROSS \textsc{airport} Model}
+\label{airport}
+\end{figure}
+
+\begin{figure}
+\centering
+%\includegraphics[width=0.75\textwidth]{airport_median}
+\caption{Median Simulation Runtimes for ROSS \textsc{airport} Model}
+\label{airport-median}
+\end{figure}
+
+%%TODO
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{disksim}
+\caption{Mean Simulation Runtimes for ROSS \textsc{disksim} Model}
+\label{disksim}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{disksim_median}
+\caption{Median Simulation Runtimes for ROSS \textsc{disksim} Model}
+\label{disksim-median}
+\end{figure}
+
+The \verb;disksim; model is an example of a small model that we can run with a
+high number of LPs. We can see from \textbf{Figure \ref{disksim}} that RoCE
+slightly improves runtime over TCP when no more than one MPI process is
+allocated to the node. When two or more MPI processes are allocated per compute
+node, the runtimes become unstable, occasionally stalling for many times the
+average runtime. For comparison, \textbf{Figure \ref{disksim-median}} shows the
+median simulation runtimes for the same set of tests. Aside from the stalls, it
+is clear that the performance of RoCE is a constant factor better than TCP for 8
+and 16 total MPI processes as well as 2 and 4.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{raid}
+\caption{Mean Simulation Runtimes for ROSS \textsc{raid} Model}
+\label{raid}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{raid_median}
+\caption{Median Simulation Runtimes for ROSS \textsc{raid} Model}
+\label{raid-median}
+\end{figure}
+
+We can observe nearly the same phenomenon from tests using the \verb;raid;
+model, the results of which are shown in \textbf{Figures \ref{raid}} and
+\textbf{\ref{raid-median}}. This time, our confidence interval is sufficiently
+small to conclude that RoCE performs worse than TCP when more than one MPI
+process is allocated per node. This is in stark contrast to the predictions of
+the micro-benchmark results from \textbf{Section
+  \ref{final-cluster-benchmarks}}, especially those that measure the scaling of
+inter-process communication latency. A possible explanation for these PDES
+results in light of the micro-benchmark results is that the factor difference
+between the latency of shared memory communication compared to remote node
+communication is greater for RoCE than TCP. In fact, the factor difference is
+more than double according to \textbf{Figure \ref{xu-imb-low}}.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{wifi}
+\caption{Mean Simulation Runtimes for ROSS \textsc{wifi} Model}
+\label{wifi}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{wifi_median}
+\caption{Median Simulation Runtimes for ROSS \textsc{wifi} Model}
+\label{wifi-median}
+\end{figure}
+
+Finally, the \verb;wifi; model results in \textbf{Figures \ref{wifi}} and
+\textbf{\ref{wifi-median}} show the same problem without the large variance seen
+in the \verb;disksim; and \verb;raid; models. Clearly, network message latency
+alone is not a good predictor for PDES performance when more than one
+communication layer is in use.
 
 \newpage
 \chapter{Conclusions}
@@ -1160,7 +1300,9 @@ at the default allocation per process. %% TODO: actual number of KPs
 
 In this section, a few architectural challenges are presented that,
 collectively, represent a barrier to adoption of clusters built from mobile
-SoCs. Possible solutions
+SoCs. Most of these issues are caused by valid design decisions on the part of
+SoC vendors, considering their primary market. Possible solutions are also
+discussed.
 
 \subsection{\textbf{PoP Memory}}
 
@@ -1206,7 +1348,7 @@ not \cite{arstch-tegra}.
 
 \subsection{\textbf{Memory Errors}}
 
-High Performance Compution platforms typically use Error Correcting Code (ECC)
+High Performance Computing platforms typically use Error Correcting Code (ECC)
 main memory in order to avoid data corruption that could taint scientific
 results. Commodity processors rarely include support for ECC memory because such
 errors can be tolerated in a desktop or mobile computing environment. Because
