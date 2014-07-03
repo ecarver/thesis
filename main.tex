@@ -14,6 +14,7 @@
 \usepackage{xtab}
 \usepackage{booktabs}
 \usepackage{float}
+\usepackage{caption}
 
 \setcounter{topnumber}{2}
 \setcounter{bottomnumber}{3}
@@ -905,16 +906,19 @@ Although the ability to symetrically multi-process with both ``big'' and
 goal in the hope that the trade of a ``big'' core for reduced latency would
 still be worthwhile. Doug Weber and Zakaria Aldeneh began this study by creating
 an EHCI polling driver for use with the standard ODROID-XU network
-adaptors. Weber and I later extended this work to an XHCI polling driver used
+adaptors. Weber and I later extended this work to an xHCI polling driver used
 with the Gigabit Ethernet adaptors for the ODROID-XU.
 
 \subsection{\textbf{EHCI Polling Driver}}
 
-%% TODO: Get info from Doug
+Initial work with the EHCI Polling Driver by Doug Weber and Zakaria Aldeneh
+revealed that it could reduce network message latency over TCP by as much as
+35\%. This motivated the creation of a similarly architected polling driver
+for use with the USB 3 to Gigabit Ethernet adaptors.
 
-\subsection{\textbf{XHCI Polling Driver}}
+\subsection{\textbf{xHCI Polling Driver}}
 
-%% TODO: Get info from Doug
+
 
 \newpage
 \chapter{Cluster Implementation and Testing}
@@ -923,7 +927,7 @@ with the Gigabit Ethernet adaptors for the ODROID-XU.
 Three primary testing platforms were used for the experiments presented in this
 thesis.
 
-\section{\textbf{Two ODROID-U2 Nodes}}
+\section{\textbf{ODROID-U2}}
 
 Preliminary work with RoCE was tested on two ODROID-U2 computers running Debian
 7.0-armhf with Linux kernel 3.0.90. The ODROID-U2 nodes are connected to an
@@ -931,23 +935,20 @@ unmanaged Gigabit switch through Category 6 Ethernet cables. Unless specified
 otherwise, the Linux network MTU is set to 1488 bytes and the RoCE MTU is set to
 1024 bytes.
 
-\section{\textbf{Two ODROID-XU Nodes}}
+\section{\textbf{ODROID-XU}}
 
-Doug Weber and Zakaria Aldeneh performed their initial work with EHCI polling on
-two ODROID-XU nodes running the Linux kernel 3.4 connected to an unmanaged
-Gigabit Ethernet switch using the nodes' 100 Megabit ethernet adaptors.
-%% TODO: Get more info from Doug
+The success of RoCE and EHCI polling experiments motivated the purchase of four
+ODROID-XU nodes as well as Gigabit Ethernet adaptors for all four nodes. All
+tests in theis section are run on four ODROID-XU computers running Debian
+8.0-armhf with Linux kernel 3.4.76. The Linux network MTU is set to 1500 bytes,
+and the RoCE MTU is set to 1024 bytes.
 
-\section{\textbf{Final Cluster}}
-
-The success of RoCE and EHCI polling experiments motivated the purchase of two
-additional ODROID-XU nodes as well as Gigabit Ethernet adaptors for all four
-nodes. The total cost of the computing hardware for this cluster is calculated
-in \textbf{Table \ref{xu-cost-table}}.
+The total cost of the computing hardware for this cluster is calculated in
+\textbf{Table \ref{xu-cost-table}}.
 
 \begin{table}
-  \label{xu-cost-table}
   \caption{Hardware cost of ODROID-XU cluster}
+  \label{xu-cost-table}
   \centering
   \begin{tabular}{| l | r |}
     \hline
@@ -966,23 +967,107 @@ in \textbf{Table \ref{xu-cost-table}}.
 We will compare the performance of the ODROID-XU cluster with a small
 traditional Beowulf cluster consisting of two x86 PCs running Intel Haswell CPUs
 and 32 GB of main memory. Although not all of the hardware components were
-purchased new for this cluster, the hardware costs of these PCs are estimated in
-\textbf{Table \ref{x86-cost-table}}.
+purchased specifically for this cluster, the hardware costs of these PCs are
+estimated in \textbf{Table \ref{x86-cost-table}}.
 
 \begin{table}
-  \label{x86-cost-table}
   \caption{Hardware cost of x86 cluster}
+  \label{x86-cost-table}
   \centering
   \begin{tabular}{| l | r |}
     \hline
     \textbf{Component} & \textbf{Cost} \\
     \hline
     Intel Core i7-4770 CPU $\times$ 2 & \$309.00 $\times$ 2 \\
+    32 GB RAM (2 DIMMs) $\times$ 2 & \$318.09 $\times$ 2 \\
+    Lynx Point based motherboard $\times$ 2 & \$105.00 $\times$ 2 \\
+    Hard Drives & \$150 \\
+    Enclosure $\times$ 2 & \$100 $\times$ 2 \\
+    Netgear GS108 GbE switch & \$45.99 \\
     \hline
-    \textbf{Total} & \textbf{TODO} \\ \hline
+    \textbf{Total} & \textbf{\$1860.17} \\ \hline
   \end{tabular}
 \end{table}
 
+Although each Intel processor has only four processor cores, it supports
+Simultaneous Multithreading (SMT), presenting eight logical cores to the
+operating system. Therefore, two of these x86 nodes will provide the same number
+of independent hardware threads as the four ARM nodes.
+
+\section{\textbf{Initial Cost Comparisons}}
+
+The Linux \verb;sysbench; benchmark is used to compare CPU mathematics and
+memory performance in order to compare the raw processing power available to
+applications running on each cluster.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{sysbench_all}
+\caption{Sysbench results}
+\label{sysbench-all}
+\end{figure}
+
+First, the \verb;sysbench; CPU test was
+run on in several threading configurations for 60 seconds per
+configuration. This test calculates prime numbers using 64-bit
+integers. \textbf{Figure \ref{sysbench-all}} organizes the results of these
+tests by the number of threads on which the test was run. Although both
+platforms scale well with threads, it is clear that the x86 machine is superior
+in 64-bit integer computations. 
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{sysbench_cost}
+\caption{Sysbench 64-bit Integer Calculations per Second per Dollar}
+\label{sysbench-cost}
+\end{figure}
+
+\textbf{Figure \ref{sysbench-cost}} compares the performance per dollar of the
+two clusters based on the sysbench results. It is clear that the x86 cluster is
+the clear winner in pure compute power for 64-bit integer operations. This is
+expected, because the word size of the x86 processor is 64 bits, while the word
+size of the ARM processor is 32 bits.
+
+Next, the \verb;nbench; benchmark \cite{nbench} is used to compare performance
+in three key areas (integer performance, floating point performance, and memory
+performance) in comparison with a baseline machine: an AMD
+K6/233. \textbf{Figure \ref{nbench-all}} shows the performance comparison for
+both platforms with and without compiler optimizations. The benchmark was
+compiled with the GNU C Compiler (\verb;gcc;) on both platforms, with the
+\verb;-03; and the \verb;-O0; flags for optimization and no optimization,
+respectively.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{nbench_all}
+\caption{nbench Results}
+\label{nbench-all}
+\end{figure}
+
+\textbf{Figure \ref{nbench-performance}} sets a new baseline for performance:
+our Cortex-A15 machines. The performance results with optimizations are used to
+set the performance of the ARM processor at one in each category. \textbf{Figure
+  \ref{nbench-cost}} does the same for \verb;nbench; performance per dollar in
+each category.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{nbench_performance}
+\caption{Normalized nbench Results}
+\label{nbench-performance}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{nbench_cost}
+\captionof{figure}{Normalized nbench Performance per Dollar}
+\label{nbench-cost}
+\end{figure}
+
+In all three performance areas, the x86 CPU more than triples the computation
+power per dollar of the ARM CPU as measured by this benchmark. However, one can
+expect factors other than raw computing power to determine PDES performance.
 
 \newpage
 \chapter{Experimental Results}
@@ -1179,13 +1264,14 @@ included with ROSS: \verb;airport;, \verb;wifi;, \verb;disksim;, and
 overhead is not a significant portion of simulation runtime but memory is not
 exhausted. As the number of processes used in the simulation is varied, the
 number of LPs remains the same, although the number of KPs changes as it remains
-at the default allocation per process. \textbf{Table \ref{lp}} lists the total
+at the default allocation per process. \textbf{Table \ref{lptable}} lists the total
 number of LPs across all processes as well as the termination time set for each
-model.
+model. This configuration is used for both the ARM and x86 clusters in order to
+allow a direct performance comparison.
 
 \begin{table}
-  \label{lp}
   \caption{ROSS Simulation Model Parameters}
+  \label{lptable}
   \centering
   \begin{tabular}[c]{| l | r | r |}
     \hline
@@ -1199,9 +1285,11 @@ model.
 \end{table}
 
 Simulation runtime results as reported by ROSS are shown throughout the rest of
-this section. The error bars in \textbf{Figures \ref{airport}, \ref{disksim},
-  \ref{raid},} and \textbf{\ref{wifi}}. show a 99\% confidence interval for the
-mean simulation time.
+this section. For each model, results from the x86 cluster and results from the
+ARM cluster over TCP and over RoCE are presented. The error bars in
+\textbf{Figures \ref{airport}, \ref{disksim}, \ref{raid},} and
+\textbf{\ref{wifi}}. show a 99\% confidence interval for the mean simulation
+time.
 
 \begin{figure}
 \centering
@@ -1373,7 +1461,29 @@ user's knowledge.
 
 \section{\textbf{Benefits of SoC-based HPC}}
 
+This section discusses some of our discoveries about the benefits of SoC-based
+clusters.
+
 \subsection{\textbf{Commodity Pricing}}
+
+Although the ARM cluster from this project falls short of a traditional x86
+Beowulf cluster in terms of performance for price, the possibility of
+constructing an inexpensive multi-node cluster may be attractive to some
+researchers.
+
+\section{\textbf{Suggestions for Future Work}}
+
+I have touted the ability to deploy custom operating systems in a cluster
+environment as a benefit of SoC-based HPC. Creating a custom operating
+system is a significant commitment toward a platform that is not yet proven to
+scale well for PDES. However, new hardware features such as hardware
+virtualization support and Large Physical Address Extension support reduce the
+risk associated with such a project.
+
+Similar work on a platform with support for lower latency networking through PCI
+is likely to scale better with increases in number of MPI processes because the
+disparity between local and remote latency will be less pronounced for each
+node.
 
 \newpage
 \bibliographystyle{abbrv} \bibliography{refs}
