@@ -1280,16 +1280,16 @@ rollback computations, while the traditional LPs perform forward computation
 assigning several LPs to each KP can reduce memory footprint for many
 simulations \cite{carothers-02}.
 
-For the results shown in this section, we use four of the simulation models
-included with ROSS: \verb;airport;, \verb;wifi;, \verb;disksim;, and
-\verb;raid;. The number of LPs used for each model is tuned so that startup
-overhead is not a significant portion of simulation runtime but memory is not
-exhausted. As the number of processes used in the simulation is varied, the
-number of LPs remains the same, although the number of KPs changes as it remains
-at the default allocation per process. \textbf{Table \ref{lptable}} lists the total
-number of LPs across all processes as well as the termination time set for each
-model. This configuration is used for both the ARM and x86 clusters in order to
-allow a direct performance comparison.
+For the results shown in this section, we use three of the simulation models
+included with ROSS: \verb;wifi;, \verb;disksim;, and \verb;raid;. The number of
+LPs used for each model is tuned so that startup overhead is not a significant
+portion of simulation runtime but memory is not exhausted. As the number of
+processes used in the simulation is varied, the number of LPs remains the same,
+although the number of KPs changes as it remains at the default allocation per
+process. \textbf{Table \ref{lptable}} lists the total number of LPs across all
+processes as well as the termination time set for each model. This configuration
+is used for both the ARM and x86 clusters in order to allow a direct performance
+comparison.
 
 \begin{table}
   \caption{ROSS Simulation Model Parameters}
@@ -1298,7 +1298,6 @@ allow a direct performance comparison.
   \begin{tabular}[c]{| l | r | r |}
     \hline
     Model Name & LPs & Temination Time (GVT) \\ \hline
-    \textsc{airport} & 48 & 10000 \\
     \textsc{disksim} & 384 & 1000000 \\
     \textsc{raid} & 384 & 10000 \\
     \textsc{wifi} & 96 & 10000 \\
@@ -1309,25 +1308,9 @@ allow a direct performance comparison.
 Simulation runtime results as reported by ROSS are shown throughout the rest of
 this section. For each model, results from the x86 cluster and results from the
 ARM cluster over TCP and over RoCE are presented. The error bars in
-\textbf{Figures \ref{airport}, \ref{disksim}, \ref{raid},} and
+\textbf{Figures \ref{disksim}, \ref{raid},} and
 \textbf{\ref{wifi}}. show a 99\% confidence interval for the mean simulation
 time.
-
-\begin{figure}
-\centering
-%\includegraphics[width=0.75\textwidth]{airport}
-\caption{Mean Simulation Runtimes for ROSS \textsc{airport} Model}
-\label{airport}
-\end{figure}
-
-\begin{figure}
-\centering
-%\includegraphics[width=0.75\textwidth]{airport_median}
-\caption{Median Simulation Runtimes for ROSS \textsc{airport} Model}
-\label{airport-median}
-\end{figure}
-
-%%TODO
 
 \begin{figure}
 \centering
