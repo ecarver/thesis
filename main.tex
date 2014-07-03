@@ -918,7 +918,29 @@ for use with the USB 3 to Gigabit Ethernet adaptors.
 
 \subsection{\textbf{xHCI Polling Driver}}
 
+The eXtensible Host Controller Interface (xHCI) specification \cite{xhci}
+describes a structure called a Transfer Request Block (TRB) that represents a
+single transaction between a driver and a USB controller. TRBs are placed on a
+data structure called a ``ring,'' which is similar to a circular linked list. We
+are particularly interested in the Event Ring, which is used by the host
+controller to notify a driver of hardware events, including received data.
 
+The architecture of the xHCI polling driver used in this study is contained
+within the \verb;xhci_hcd; Linux kernel module. When loaded, the module performs
+its normal function in interrupt mode. In interrupt mode, the controller raises
+an interrupt when it places a TRB onto the Event Ring. In response, the
+operating system executes the Interrupt Service Routine (ISR) associated with the
+interrupt. In turn, the ISR schedules a Deferred Procedure Call (DPC) that
+performs the necessary processing to handle all unprocessed TRBs on the Event
+Ring. Although this process is very fast, some overhead is incurred by the ISR.
+
+When the \verb;poll_option; module parameter is set to 1, it spawns a kernel
+thread that loops forever, checking the Event Ring for new TRBs. In this way,
+the driver is able to process incoming events immediately, without waiting for
+the context switches associated with an ISR. Naturally, this thread completely
+utilizes one CPU core. In this case, we hope that the mitigation of interrupt
+latency can improve PDES performance enough to offset the removal of one event
+processing core.
 
 \newpage
 \chapter{Cluster Implementation and Testing}
