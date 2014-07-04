@@ -1383,13 +1383,19 @@ in the \verb;disksim; and \verb;raid; models. Clearly, network message latency
 alone is not a good predictor for PDES performance when more than one
 communication layer is in use.
 
+
 \subsection{\textbf{RoCE Speedup}}
 
 \textbf{Figures \ref{disksim-speedup}, \ref{raid-speedup},} and
 \textbf{\ref{wifi-speedup}} show the mean speedup obtained by using the RoCE
 transport compared to TCP on the ARM cluster. Speedup is defined as
-$\frac{runtime_TCP}{runtime_RoCE}$, so values greater than one indicate speedup,
+$\frac{runtime_{TCP}}{runtime_{RoCE}}$, so values greater than one indicate speedup,
 while values less than one indicate slowdown.
+
+For all three models, we observe a consistent speedup between 5\% and 15\% when
+there is a maximum of one MPI process per node and a drastic slowdown when
+at least two MPI processes are allocated per node. Again, this may indicate that
+the transport is sensitive to large differences in message latency between LPs.
 
 \begin{figure}
 \centering
