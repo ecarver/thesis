@@ -1383,11 +1383,43 @@ in the \verb;disksim; and \verb;raid; models. Clearly, network message latency
 alone is not a good predictor for PDES performance when more than one
 communication layer is in use.
 
+\subsection{\textbf{RoCE Speedup}}
+
+\textbf{Figures \ref{disksim-speedup}, \ref{raid-speedup},} and
+\textbf{\ref{wifi-speedup}} show the mean speedup obtained by using the RoCE
+transport compared to TCP on the ARM cluster. Speedup is defined as
+$\frac{runtime_TCP}{runtime_RoCE}$, so values greater than one indicate speedup,
+while values less than one indicate slowdown.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{disksim_speedup}
+\caption{RoCE Speedup for \textsc{disksim} Model}
+\label{disksim-speedup}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{raid_speedup}
+\caption{RoCE Speedup for \textsc{raid} Model}
+\label{raid-speedup}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{wifi_speedup}
+\caption{RoCE Speedup for \textsc{wifi} Model}
+\label{wifi-speedup}
+\end{figure}
+
+
 \newpage
 \chapter{Conclusions}
 \label{conclusions}
 
 \section{\textbf{Cost and Performance Comparisons}}
+
+
 
 \section{\textbf{Challenges in SoC-based HPC}}
 
