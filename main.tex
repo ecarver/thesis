@@ -361,15 +361,14 @@ OpenMPI is ideal for comparison of TCP/IP and IB communication stacks because it
 supports the ability to choose which transports an MPI job will use. For
 example, \textbf{Figure \ref{ompi-btl}} shows \verb;mpirun; commands that can
 isolate first the TCP transport layer, then an IB transport layer for any
-job. Note that the \verb;self; layer (for loopback communication) and the
-\verb;sm; layer (shared memory, for local communication) must always be
-specified.
+job. Note that the \verb;self; layer (for loopback communication) should always
+be specified.
 
 \begin{figure}
 \centering
 \begin{verbatim}
-mpirun -n 16 -host xu0,xu1,xu2,xu3 --mca btl tcp,self,sm <MPI job>
-mpirun -n 16 -host xu0,xu1,xu2,xu3 --mca btl openib,self,sm <MPI job>
+mpirun -n 16 -host <host list> --mca btl tcp,self <MPI job>
+mpirun -n 16 -host <host list> --mca btl openib,self <MPI job>
 \end{verbatim}
 \caption{Commands to Isolate Transport Layers using OpenMPI}
 \label{ompi-btl}
@@ -1334,12 +1333,12 @@ comparison.
   \caption{ROSS Simulation Model Parameters}
   \label{lptable}
   \centering
-  \begin{tabular}[c]{| l | r | r |}
+  \begin{tabular}[c]{| l | r | r | r |}
     \hline
-    Model Name & LPs & Temination Time (GVT) \\ \hline
-    \textsc{disksim} & 384 & 1000000 \\
-    \textsc{raid} & 384 & 10000 \\
-    \textsc{wifi} & 96 & 10000 \\
+    Model Name & LPs & Memory per Process (MB) & Temination Time (GVT) \\ \hline
+    \textsc{disksim} & 768 & 384 & 10000000 \\
+    \textsc{raid} & 384 & 384 & 10000 \\
+    \textsc{wifi} & 96 & 384 & 10000 \\
     \hline
   \end{tabular}
 \end{table}
@@ -1501,7 +1500,22 @@ visible for both clusters.
 \end{figure}
 
 In all cases, the x86 cluster exhibits superior performance-for-cost compared to
-our ARM cluster. \textbf{Figure \ref{costperf}} shows the performance-for-cost comparison
+our ARM cluster. \textbf{Figure \ref{costperf-summary}} shows the
+performance-for-cost comparison to baseline for each model. This compares how
+performance scales for each model and each cluster as more MPI processes are
+added. We observe that the \verb;raid; model scales more efficiently than the
+other models we tested. From this, we learn that PDES performance depends
+significantly on simulation modeling techniques as well as network
+performance, and the cost of adding nodes to a cluster is more likely to be
+justified if one uses models similar to the ROSS \verb;raid; model than if one
+uses models similar to either \verb;disksim; or \verb;wifi;.
+
+\begin{figure}
+\centering
+%\includegraphics[width=\textwidth]{costperf_summary}
+\caption{Scaling of Model Performance for Cost on Each Platform}
+\label{costperf-summary}
+\end{figure}
 
 \section{\textbf{Challenges in SoC-based HPC}}
 
