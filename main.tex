@@ -71,9 +71,24 @@
 
 \chapter*{Abstract}
 
-%% TODO: Write abstract
+Beowulf clusters are networks of workstation personal computers that are
+designed to perform tasks in parallel. Although these clusters are built from
+commodity components, they may still cost thousands of dollars per node.
+
+In this thesis, the construction of Beowulf clusters using inexpensive
+processors intended for use in mobile devices is explored. We construct a
+four-node Beowulf cluster from ARM system on a chip (SoC) processors for a
+fraction of the cost of a traditional four-node Beowulf cluster. In order to
+mitigate the effects of high-latency network communication, we explore the
+replacement of the TCP/IP transport with a software implementation of the RDMA
+over Converged Ethernet (RoCE) transport. We then evaluate the cluster's
+performance, both in terms of operations per second and Parallel Discrete Event
+Simulation.  We find that its performance does not justify its price for either
+application.
 
 \chapter*{Acknowledgements}
+
+%% TODO
 
 \tableofcontents \markright{ }
 \listoffigures \markright{ }
@@ -341,6 +356,24 @@ implementations available depending on the needs of the user. For example, MPICH
 TCP-based networking infrastructure. MVAPICH \cite{mvapich} is a similar
 implementation that runs over InfiniBand networks. OpenMPI \cite{openmpi} is a
 third implementation that supports both TCP and InfiniBand.
+
+OpenMPI is ideal for comparison of TCP/IP and IB communication stacks because it
+supports the ability to choose which transports an MPI job will use. For
+example, \textbf{Figure \ref{ompi-btl}} shows \verb;mpirun; commands that can
+isolate first the TCP transport layer, then an IB transport layer for any
+job. Note that the \verb;self; layer (for loopback communication) and the
+\verb;sm; layer (shared memory, for local communication) must always be
+specified.
+
+\begin{figure}
+\centering
+\begin{verbatim}
+mpirun -n 16 -host xu0,xu1,xu2,xu3 --mca btl tcp,self,sm <MPI job>
+mpirun -n 16 -host xu0,xu1,xu2,xu3 --mca btl openib,self,sm <MPI job>
+\end{verbatim}
+\caption{Commands to Isolate Transport Layers using OpenMPI}
+\label{ompi-btl}
+\end{figure}
 
 \section{\textbf{Low-latency Networking}}
 
@@ -938,16 +971,21 @@ When the \verb;poll_option; module parameter is set to 1, it spawns a kernel
 thread that loops forever, checking the Event Ring for new TRBs. In this way,
 the driver is able to process incoming events immediately, without waiting for
 the context switches associated with an ISR. Naturally, this thread completely
-utilizes one CPU core. In this case, we hope that the mitigation of interrupt
+utilizes one CPU core. In this case, we hoped that the mitigation of interrupt
 latency can improve PDES performance enough to offset the removal of one event
 processing core.
+
+Unfortunately, stability issues with this implementation made it impossible to
+sufficiently test its performance with MPI network communication.
 
 \newpage
 \chapter{Cluster Implementation and Testing}
 \label{cluster}
 
 Three primary testing platforms were used for the experiments presented in this
-thesis.
+thesis. OpenMPI is used for all MPI communication. Its transport layer selection
+feature is used to isolate either the TCP/IP or RoCE transport for individual
+tests.
 
 \section{\textbf{ODROID-U2}}
 
@@ -1268,6 +1306,7 @@ small messages when all cores are utilized. Even when only two of four cores are
 in use, 2.5 times speedup is possible.
 
 \section{\textbf{PDES Results}}
+\label{pdes-results}
 
 \href{https://github.com/carothersc/ROSS}{Rensselaer's Optimistic Simulation
   System (ROSS)} is used for all PDES experiments. It uses MPI for all
@@ -1420,12 +1459,49 @@ the transport is sensitive to large differences in message latency between LPs.
 
 
 \newpage
-\chapter{Conclusions}
+\chapter{Discussion}
 \label{conclusions}
 
 \section{\textbf{Cost and Performance Comparisons}}
 
+In this section, I present performance-for-cost data calculated using the
+results from \textbf{Chapter \ref{pdes-results}}. First, performance for cost is
+defined as $\frac{1}{runtime \times price}$ which yields a result with
+dimensions of $\frac{1}{seconds \times Dollars}$. This result is several orders
+of magnitude less than one, so all performance-for-cost numbers for a simulation
+model are scaled by a constant factor so that the lowest performance for cost is
+equal to one.
 
+Therefore, the results in \textbf{Figures \ref{disksim-costperf},
+  \ref{raid-costperf},} and \textbf{\ref{wifi-costperf}} can be interpreted as
+the ``times better performance for cost relative to the worst case seen in
+either cluster.'' Note that the results in \textbf{Figure \ref{raid-costperf}}
+are shown in with a logarithmic scale so that the performance-for-cost values are
+visible for both clusters.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{disksim_costperf}
+\caption{Normalized Performance for Cost for \textsc{disksim} Model}
+\label{disksim-costperf}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{raid_costperf}
+\caption{Normalized Performance for Cost for \textsc{raid} Model}
+\label{raid-costperf}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{wifi_costperf}
+\caption{Normalized Performance for Cost for \textsc{wifi} Model}
+\label{wifi-costperf}
+\end{figure}
+
+In all cases, the x86 cluster exhibits superior performance-for-cost compared to
+our ARM cluster. \textbf{Figure \ref{costperf}} shows the performance-for-cost comparison
 
 \section{\textbf{Challenges in SoC-based HPC}}
 
@@ -1512,7 +1588,10 @@ clusters.
 Although the ARM cluster from this project falls short of a traditional x86
 Beowulf cluster in terms of performance for price, the possibility of
 constructing an inexpensive multi-node cluster may be attractive to some
-researchers.
+researchers. This is the same economic force that drove the adoption of Beowulf
+clusters in the first place: inexpensive commodity microprocessors intended for
+workstations gradually became more attractive than expensive custom solutions
+for small-scale High Performance Computing.
 
 \section{\textbf{Suggestions for Future Work}}
 
