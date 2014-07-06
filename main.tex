@@ -1335,10 +1335,10 @@ comparison.
   \centering
   \begin{tabular}[c]{| l | r | r | r |}
     \hline
-    Model Name & LPs & Memory per Process (MB) & Temination Time (GVT) \\ \hline
-    \textsc{disksim} & 768 & 384 & 10000000 \\
-    \textsc{raid} & 384 & 384 & 10000 \\
-    \textsc{wifi} & 96 & 384 & 10000 \\
+    Model Name & LPs & Memory per Node (MB) & Temination Time (GVT) \\ \hline
+    \textsc{disksim} & 768 & 1536 & 10000000 \\
+    \textsc{raid} & 384 & 1536 & 10000 \\
+    \textsc{wifi} & 96 & 1536 & 10000 \\
     \hline
   \end{tabular}
 \end{table}
@@ -1346,9 +1346,8 @@ comparison.
 Simulation runtime results as reported by ROSS are shown throughout the rest of
 this section. For each model, results from the x86 cluster and results from the
 ARM cluster over TCP and over RoCE are presented. The error bars in
-\textbf{Figures \ref{disksim}, \ref{raid},} and
-\textbf{\ref{wifi}}. show a 99\% confidence interval for the mean simulation
-time.
+\textbf{Figures \ref{disksim}, \ref{raid},} and \textbf{\ref{wifi}} show a 99\%
+confidence interval for the mean simulation time.
 
 \begin{figure}
 \centering
@@ -1500,22 +1499,51 @@ visible for both clusters.
 \end{figure}
 
 In all cases, the x86 cluster exhibits superior performance-for-cost compared to
-our ARM cluster. \textbf{Figure \ref{costperf-summary}} shows the
-performance-for-cost comparison to baseline for each model. This compares how
-performance scales for each model and each cluster as more MPI processes are
-added. We observe that the \verb;raid; model scales more efficiently than the
-other models we tested. From this, we learn that PDES performance depends
-significantly on simulation modeling techniques as well as network
-performance, and the cost of adding nodes to a cluster is more likely to be
-justified if one uses models similar to the ROSS \verb;raid; model than if one
-uses models similar to either \verb;disksim; or \verb;wifi;.
+our ARM cluster. \textbf{Figure \ref{costperf}} shows the worst-case
+performance-for-cost comparison for the x86 cluster in comparison to the ARM
+cluster. The x86 cluster is at least 3 times more cost-efficient than the ARM
+cluster for PDES.
 
 \begin{figure}
 \centering
-%\includegraphics[width=\textwidth]{costperf_summary}
-\caption{Scaling of Model Performance for Cost on Each Platform}
+\includegraphics[width=\textwidth]{costperf}
+\caption{Performance for Cost of x86 Cluster Compared to ARM Cluster}
+\label{costperf}
+\end{figure}
+
+\textbf{Figure \ref{costperf-summary}} shows the performance-for-cost comparison
+to baseline for each model. This compares how performance scales for each model
+and each cluster as more MPI processes are added. We observe that the
+\verb;raid; model scales more efficiently than the other models we tested. From
+this, we learn that PDES performance depends significantly on simulation
+modeling techniques as well as network performance, and the cost of adding nodes
+to a cluster is more likely to be justified if one uses models similar to the
+ROSS \verb;raid; model than if one uses models similar to either \verb;disksim;
+or \verb;wifi;. Additionally, the x86 cluster takes advantage of parallelism
+more efficiently than the ARM cluster for all three models.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{costperf_summary}
+\caption{Scaling of Model Performance for Cost with Parallelism on Each Platform}
 \label{costperf-summary}
 \end{figure}
+
+\section{\textbf{Conclusions}}
+
+The software RoCE transport increases ROSS performance by a consistent 5\% to
+11\% over the TCP/IP transport when no more than one MPI process is allocated
+per compute node for our cluster. With more than one MPI process per node, RoCE
+performance is less consistent. Execution stalls occasionally as rollbacks
+cascade, doubling or tripling execution time, perhaps once per ten runs. A
+configuration of three processes per node is particularly susceptible to this
+effect, leading us to conclude that disparity betweeen remote and local
+communication latency may be the cause of this problem.
+
+In terms of both raw computing power for price and PDES performance for price,
+our x86 cluster is far more efficient than our ARM cluster. However, the The x86 cluster also
+exhibits tendencies that appear to lead to better scaling with increased
+parallelism than the ARM cluster.
 
 \section{\textbf{Challenges in SoC-based HPC}}
 
@@ -1607,6 +1635,18 @@ clusters in the first place: inexpensive commodity microprocessors intended for
 workstations gradually became more attractive than expensive custom solutions
 for small-scale High Performance Computing.
 
+\subsection{\textbf{Small Form Factor}}
+
+Traditional Beowulf clusters require physical space and infrastructure for power
+and cooling that is not necessary for SoC-based clusters. In fact, a very large
+cluster of ARM-based PCs can fit in the same physical space as a single
+x86-based PC. Their power supplies are also much smaller than corresponding x86
+power supplies. In fact, an advantage of the mobile SoC design is that the
+entire board runs from a single external power rail. This is in contrast to most
+x86 PCs, which require several different voltage supply rails from a power
+supply. This fact opens possibilities for innovative packaging solutions for
+SoC-based clusters, from large lattices to small fanless configurations.
+
 \section{\textbf{Suggestions for Future Work}}
 
 I have touted the ability to deploy custom operating systems in a cluster
@@ -1620,6 +1660,12 @@ Similar work on a platform with support for lower latency networking through PCI
 is likely to scale better with increases in number of MPI processes because the
 disparity between local and remote latency will be less pronounced for each
 node.
+
+Comparison of the power dissipated by our ARM cluster and the power dissipated
+by our x86 cluster would be interesting, especially as it pertains to discussion
+about scaling costs. Because an ARM-based cluster would probably require more
+nodes than an x86 cluster to achieve similar computing performance, it is not
+clear which architecture would actually be more efficient at a large scale.
 
 \newpage
 \bibliographystyle{abbrv} \bibliography{refs}
