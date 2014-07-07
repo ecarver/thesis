@@ -486,7 +486,7 @@ InfiniBand, RoCE, and iWARP.
 
 \subsubsection{\textbf{InfiniBand}}
 
-\href {www.infinibandta.org}{InfiniBand}\texttrademark (IB) was introduced in
+\href {www.infinibandta.org}{InfiniBand} (IB) was introduced in
 1999 to meet the new demand of data-intensive applications in high-end computing
 environments \cite{InfiniBandTABase-07}. Its characteristic high bandwidth and
 low latency make it a popular interconnect technology for computing solutions
@@ -724,7 +724,7 @@ stack to transmit and receive packets earmarked for \verb;rxe;
 modules.
 
 The \verb;rxe; driver also interfaces with a user-mode library called
-\verb;librxe;. This library provides the common InfiniBand\texttrademark verbs
+\verb;librxe;. This library provides the common InfiniBand verbs
 interface so that any compliant IB application can use the \verb;rxe; device
 without any modification. This library is essentially a user-mode wrapper for
  the functions found in the rxe driver, so its design will not be detailed here.
@@ -734,7 +734,7 @@ without any modification. This library is essentially a user-mode wrapper for
 
 The \verb;rxe; kernel module contains the portion of the \verb;rxe; driver that
 implements layers 4 through 7 of the OSI model. It provides a software
-implementation of the InfiniBand\texttrademark RoCE transport. As with all IB
+implementation of the InfiniBand RoCE transport. As with all IB
 verbs applications, memory is preallocated in Memory Regions (MR), and coupled
 pairs of send and receive queues called ``queue pairs'' (QPs) are allocated by
 the application based on its needs. That is, QPs are configurable at allocation
