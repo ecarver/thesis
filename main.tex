@@ -75,16 +75,25 @@ Beowulf clusters are networks of workstation personal computers that are
 designed to perform tasks in parallel. Although these clusters are built from
 commodity components, they may still cost thousands of dollars per node.
 
+Parallel Discrete Event Simulation (PDES) performance can benefit from custom
+hardware and operating systems that may not be available in traditional cluster
+environments. However, it is also very sensitive to network message latency.
+
 In this thesis, the construction of Beowulf clusters using inexpensive
 processors intended for use in mobile devices is explored. We construct a
 four-node Beowulf cluster from ARM system on a chip (SoC) processors for a
 fraction of the cost of a traditional four-node Beowulf cluster. In order to
 mitigate the effects of high-latency network communication, we explore the
 replacement of the TCP/IP transport with a software implementation of the RDMA
-over Converged Ethernet (RoCE) transport. We then evaluate the cluster's
-performance, both in terms of operations per second and Parallel Discrete Event
-Simulation.  We find that its performance does not justify its price for either
-application.
+over Converged Ethernet (RoCE) transport. We find that software RoCE is capable
+of reducing end-to-end small message latency by more than 30\% in two embedded
+platforms. This translates to a performance improvement of greater than 10\% for
+some configurations using Rensselaer's Optimistic Simulation System (ROSS).
+
+We then evaluate the cluster's performance for cost, both in terms of operations
+per second and Parallel Discrete Event Simulation. By comparing it to a small
+x86-based Beowulf cluster, we find that its performance does not justify its
+price for either application.
 
 \chapter*{Acknowledgements}
 
