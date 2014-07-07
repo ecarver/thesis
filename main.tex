@@ -145,9 +145,9 @@ few years. However, there has been little interest in applying these low-cost
 processors to solve availability issues in high-performance computing (HPC)
 research.
 
-The Samsung Exynos 5410 system-on-a-chip (SoC) is an example of a powerful, yet
+The Samsung Exynos 5410 System on a Chip (SoC) is an example of a powerful yet
 low cost SMP platform. Its eight processor cores promise excellent raw computing
-performance for those who are able to utilize it.
+performance for those who are able to utilize them fully.
 
 Currently, the design of these mobile SMP platforms presents some challenges to
 those who wish to use them as nodes in a high-performance cluster. In
@@ -164,11 +164,11 @@ ratio of some traditional Beowulf clusters, especially those that are at least a
 years old. In particular, we want to achieve such a ratio for performance in
 parallel discrete event simulation (PDES).
 
-The primary obstacle to this objective is the high network latency associated
-with many small form factor computers. Therefore, this research will focus on
-two methods of reducing that latency at no additional cost: software Remote
-Direct Memory Access (RDMA) over Converged Ethernet (RoCE) and polling network
-drivers.
+The primary obstacle preventing us from achieving this objective is the high
+network latency associated with many small form factor computers. Therefore,
+this research will focus on two methods of reducing that latency at no
+additional cost: software Remote Direct Memory Access (RDMA) over Converged
+Ethernet (RoCE) and polling network drivers.
 
 \section{\textbf{Thesis Overview}}
 
@@ -183,15 +183,16 @@ latency problem in our Beowulf cluster. It focuses on two low-cost solutions:
 software RDMA over Converged Ethernet (RoCE) and polling network drivers.
 
 Chapter \ref{cluster} describes the hardware and software implementation of the
-ODROID-XU cluster constructed as part of these experiments and details the
-benchmarks and simulations used to test its performance.
+clusters constructed for these experiments and benchmarks them in terms of raw
+computing performance.
 
 Chapter \ref{results} provides the results of these tests and attempts to relate
 the cluster's performance to its cost. The results of a similar set of tests on
-a traditional cluster are provided for comparison.
+a traditional Beowulf cluster are provided for comparison.
 
 Chapter \ref{conclusions} contextualizes the results of this research and
-suggests ways to continue this work.
+suggests ways to continue this work. It discusses the current benefits and
+limitations of SoC-based cluster computing.
 
 \newpage
 \chapter{Background}
@@ -251,7 +252,7 @@ sequential_des(state_variables, pending_event_list, simulation_clock)
 
 end sequential_des;
 \end{verbatim}
-\caption{Sequential DES loop \cite{jacob-13}}
+\caption{Sequential DES Loop \cite{jacob-13}}
 \label{sequential-des}
 \end{figure}
 
@@ -274,7 +275,7 @@ the DES causality property \cite{fujimoto-89b}. Parallel discrete event
 simulators can be broadly classified by their approach to this event scheduling
 problem.
 
-\textit{Conservative} scheduling simulates an event only when the simulator can
+\textit{Conservative} synchronization simulates an event only when the simulator can
 guarantee that all past events have already been simulated. In this way,
 causality is never violated, but only events that are guaranteed to be causally
 independent can be executed in parallel. Because the output of an event cannot
@@ -284,18 +285,18 @@ simulation is useful for some types of problems \cite{nicol-93b}, more
 aggressive event scheduling may be necessary to exploit concurrency in a larger
 set of DES problems.
 
-\textit{Optimistic} scheduling simulates events speculatively and invalidates
+\textit{Optimistic} synchronization simulates events speculatively and invalidates
 computation when a causality violation is detected. Each simulation process is
 permitted to simulate as far forward in time as it is able until it is notified
 that something in its past has changed. This triggers a \textit{rollback}, in
 which the process must revert to an earlier state and cancel any actions it has
-taken after that state \cite{nicol-93b}. The necessity of this functionality
+taken since that state \cite{nicol-93b}. The necessity of this functionality
 implies that state-saving mechanisms must be employed by the simulator, which
-will consume more memory than than a conservatively scheduled simulator would
-while solving the same problem. However, it eliminates at least some of the
+will consume more memory than than a conservatively synchronized simulator would
+while solving the same problem. However, optimistic synchronization eliminates at least some of the
 overhead associated with conservative scheduling by avoiding processor idle time
-\cite{nicol-93b}. However, the possibility of rollbacks also introduces an
-additional source of overhead computation, the severity of which varies based on
+\cite{nicol-93b}. Still, the possibility of rollbacks also introduces an
+additional source of overhead computation, the impact of which varies based on
 the specifics of both the simulation and the simulator
 \cite{fujimoto-pdes}. Therefore, much research in optimistic parallel simulation
 has been targeted at the reduction of rollbacks and the reduction of the
@@ -308,12 +309,13 @@ Jefferson \cite{jefferson-85} proposed an optimistic PDES mechanism known as
 \textit{Time Warp}. He described a system in which a set of \textit{simulation
   objects} also known as \textit{logical processes} (LPs) process events in
 parallel. Each LP has its own simulation clock. The local simulation time is
-often called Local Virtual Time (LVT). When simulating forward in LVT, an LP
+called \textit{Local Virtual Time} (LVT). When simulating forward in LVT, an LP
 behaves similarly to \textbf{Figure \ref{sequential-des}}, with the addition of
-remote nodes that complicate event scheduling. When an LP (the sender) must schedule an event
-to be simulated by another LP (the receiver), a message is sent by the sender to
-the receiver. The contents of the message are model-dependent, but every Time
-Warp message must be tagged with the following five values \cite{jefferson-85}.
+remote nodes that complicate event scheduling. When an LP (the sender) must
+schedule an event to be simulated by another LP (the receiver), a
+\textit{message} is sent from the sender to the receiver. The contents of the
+message are model-dependent, but every Time Warp message must be tagged with the
+following five values \cite{jefferson-85}.
 
 \begin{enumerate}
   \item Identity of the sender
@@ -332,18 +334,19 @@ simulating forward in time \cite{jefferson-85}.
 When an LP receives an event with a receive time less than its current LVT, it
 must invalidate all the processing it has done at virtual times after that
 receive time. This process is complicated by the fact that it may also have sent
-messages to other LPs. This situation is resolved by sending
-``antimessages''. An \textit{antimessage} cancels the processing of the message
-that has the same sender, receiver, and timestamp values as the antimessage, but
-opposite sign. For clarity, messages are often called \textit{positive
-  messages}, and antimessages are called \textit{negative messages}. When an LP
-encounters the presence of corresponding positive and negative messages, those
-two messages ``annihilate'' \cite{jefferson-85}. That is, both are invalidated.
+messages to other LPs; these messages also must be invalidated. This situation
+is resolved by sending ``antimessages''. An \textit{antimessage} cancels the
+processing of the message that has the same sender, receiver, and timestamp
+values as the antimessage, but opposite sign. For clarity, messages are often
+called \textit{positive messages}, and antimessages are called \textit{negative
+  messages}. When an LP encounters the presence of corresponding positive and
+negative messages, those two messages ``annihilate'' \cite{jefferson-85}. That
+is, both are invalidated.
 
-When examined in terms of only group of LPs, it is clear that this system would
+When examined in terms of only a group of LPs, it is clear that this system would
 require each LP to save information on every state it has been in and every
 message it has sent or received. In order to keep memory costs at a reasonable
-level, the notion of Global Virtual Time (GVT) is introduced. Jefferson defines
+level, the notion of \textit{Global Virtual Time} (GVT) is introduced. Jefferson defines
 GVT as ``the minimum of (1) all virtual times in all virtual clocks at time r,
 and (2) of the virtual send times of all messages that have been sent but have
 not yet been processed'' \cite{jefferson-85}. GVT defines the virtual time
@@ -359,12 +362,13 @@ termination condition \cite{jefferson-85}.
 
 The Message Passing Interface (MPI) provides a standard interface for message
 passing programs that includes point-to-point and collective communication
-functions \cite{mpi-12}. It is widely used in High Performance Computing (HPC), with several
-implementations available depending on the needs of the user. For example, MPICH
-\cite{mpich} is an MPI implementation used in many supercomputers with a
-TCP-based networking infrastructure. MVAPICH \cite{mvapich} is a similar
-implementation that runs over InfiniBand networks. OpenMPI \cite{openmpi} is a
-third implementation that supports both TCP and InfiniBand.
+functions \cite{mpi-12}. It is widely used in High Performance Computing (HPC),
+with several implementations available depending on the needs of the user. For
+example, MPICH \cite{mpich} is an MPI implementation used in many supercomputers
+with a Transmission Control Protocol/Internet Protocol (TCP/IP)-based networking
+infrastructure. MVAPICH \cite{mvapich} is a similar implementation that runs
+over InfiniBand networks. OpenMPI \cite{openmpi} is a third implementation that
+supports both TCP and InfiniBand.
 
 OpenMPI is ideal for comparison of TCP/IP and IB communication stacks because it
 supports the ability to choose which transports an MPI job will use. For
@@ -376,10 +380,10 @@ be specified.
 \begin{figure}
 \centering
 \begin{verbatim}
-mpirun -n 16 -host <host list> --mca btl tcp,self <MPI job>
-mpirun -n 16 -host <host list> --mca btl openib,self <MPI job>
+mpirun -n <number of processes> -host <host list> --mca btl tcp,self <MPI job>
+mpirun -n <number of processes> -host <host list> --mca btl openib,self <MPI job>
 \end{verbatim}
-\caption{Commands to Isolate Transport Layers using OpenMPI}
+\caption{Commands to Isolate Transport Layers Using OpenMPI}
 \label{ompi-btl}
 \end{figure}
 
@@ -393,23 +397,23 @@ small form factor platform at a low cost.
 
 \subsection{\textbf{Limitations of TCP/IP}}
 
-The Transmission Control Protocol/Internet Protocol (TCP/IP) describes a packet-switched
-network designed to communicate over a wide area with reliable, ordered
-transmission of these packets, each of which contains one or more
+The Transmission Control Protocol/Internet Protocol (TCP/IP) describes a
+packet-switched network designed to communicate over a wide area with reliable,
+ordered transmission of these packets, each of which contains one or more
 messages. TCP/IP provides a global interconnect that is robust over long
 distances and a variety of network conditions. However, it also requires
 computational resources to support these features that can reduce performance
-compared to protocols focues on Local Area Networks (LANs).
+compared to protocols that focus on Local Area Networks (LANs).
 
-TCP/IP also does not support active messaging. Active messages are messages that
-can perform operations on their own. For example, a message in a Remote Direct
-Memory Access (RDMA) system may be a write message; that message can write to
-the receiving node's memory. TCP/IP, on the other hand, would probably accomplish
-this by sending a message containing a write command and another message
-containing the data to be written. Many low-latency protocols that are discussed
-later in this section achieve a significant portion of their efficiency by
-supporting active messages in some way. In particular, RDMA semantics have
-become popular in the last decade.
+TCP/IP also does not support \textit{active messaging}. Active messages are
+messages that can perform operations on their own. For example, a message in a
+Remote Direct Memory Access (RDMA) system may be a write message; that message
+can write to the receiving node's memory. TCP/IP, on the other hand, would
+probably accomplish this by sending a message containing a write command and
+another message containing the data to be written. Many low-latency protocols
+that are discussed later in this section achieve a significant portion of their
+efficiency by supporting active messages in some way. In particular, RDMA
+semantics have become popular in the last decade.
 
 \subsection{\textbf{Extensions to TCP}}
 
@@ -435,8 +439,8 @@ becomes heavy. Preemptive Distributed Quick flow scheduling (PDQ) solves this
 problem by applying an improved scheduling algorithm \cite{liu-13}.
 
 A problem with flow control in HPC is the computing power and specialized
-hardware required for its implementation. While the benefits of the preceding
-approaches are demonstrable for large clusters, it is unlikely that a small,
+hardware required for its implementation. While the benefits of these extensions
+to TCP/IP are demonstrable for large clusters, it is unlikely that a small,
 low-cost cluster would see much benefit from their implementation.
 
 \subsection{\textbf{Open-MX}}
@@ -462,7 +466,7 @@ low-latency active messaging protocol over Megabit and Gigabit Ethernet
 \cite{gamma}. It is designed as a no-cost solution that reduces network latency
 on existing network hardware. Schneidenbach et al. observed a 50\% or greater
 reduction in small message transmission times compared to TCP/IP when using
-GAMMA on the same Gigabit Ethernet hardware \cite{schneidenbach-03}. GAMMA
+GAMMA over Gigabit Ethernet hardware \cite{schneidenbach-03}. GAMMA
 Message throughput was also consistently higher than TCP/IP for all message
 sizes.
 
@@ -471,14 +475,14 @@ Internet Protocol (IP) implementations; therefore, it requires a second network
 controller for each node in order to construct a cluster that receives user
 input over a network. In its existing implementation, it is also both x86 and
 network controller-specific. Although it may be possible to port such a system
-to the ARM architecture, other solutions are more attractive.
+to an embedded architecture, other solutions are more attractive.
 
 \subsection{\textbf{OpenFabrics Solutions}}
 
 \href{www.openfabrics.org}{The OpenFabrics Alliance} provides software to
-support the most successful set of high-performance computing (HPC) low-latency
-interconnects. This subsection will provide background on its three associated
-technologies: InfiniBand, RoCE, and iWARP.
+support the most successful set of HPC low-latency interconnects. This
+subsection will provide background on its three associated technologies:
+InfiniBand, RoCE, and iWARP.
 
 \subsubsection{\textbf{InfiniBand}}
 
@@ -517,7 +521,7 @@ commercial data centers, especially those that support financial operations such
 as high frequency trading. Unfortunately, specialized network adaptors are still
 required to take advantage of its features. Additionally, these solutions
 generally require switches that support Data Center Bridging (DCB)
-\cite{InfiniBandTARoCE-10}. This creates an opportunity for a solution that can
+\cite{InfiniBandTARoCE-10}. This leaves an opportunity for a solution that can
 work with existing lossy Ethernet networks.
 
 System Fabric Works, Inc., has created a pure software implementation of RoCE
@@ -553,14 +557,14 @@ characteristics of these two platforms are given in the next two sections.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{odroid_u2_top}
-\caption{ODROID-U2 circuit board top view \cite{odroid-u2-board-detail}}
+\caption{ODROID-U2 Circuit Board Top View \cite{odroid-u2-board-detail}}
 \label{odroid-u2-board}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.25\textwidth]{odroid_u2}
-\caption{ODROID-U2 with heatsink \cite{odroid-u2-board-detail}}
+\caption{ODROID-U2 with Heatsink \cite{odroid-u2-board-detail}}
 \label{odroid-u2}
 \end{figure}
 
@@ -577,19 +581,19 @@ hardware components \cite{odroid-u2-board-detail}:
   \item 2 GB LPDDR2 RAM
   \end{itemize}
 \item SMSC USB3503A USB 2.0 hub
-\item SMSC LAN9730 USB 2.0 to 100 Mpbs Ethernet controller
+\item SMSC LAN9730 USB 2.0 to 100 Mbps Ethernet controller
 \item MAXIM MAX98098 Audio CODEC
 \end{itemize}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{odroid_u2_block_diagram}
-\caption{ODROID-U2 block diagram \cite{odroid-u2-board-detail}}
+\caption{ODROID-U2 Block Diagram \cite{odroid-u2-board-detail}}
 \label{odroid-u2-block-diagram}
 \end{figure}
 
 While the ODROID-U2 features impressive raw processing power for its size and
-price, its small of main memory can adversely impact performance for even
+price, its small amount of main memory can adversely impact performance for even
 moderately sized parallel simulation models. Additionally, the LAN9730 network
 controller is even slower than we feared, routinely reaching end-to-end TCP
 small message latency over 500 microseconds.
@@ -599,14 +603,14 @@ small message latency over 500 microseconds.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{odroid_xu_top}
-\caption{ODROID-XU circuit board top view \cite{odroid-xu-board-detail}}
+\caption{ODROID-XU Circuit Board Top View \cite{odroid-xu-board-detail}}
 \label{odroid-xu-board}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.5\textwidth]{odroid_xu}
-\caption{ODROID-XU board as shipped \cite{odroid-xu-board-detail}}
+\caption{ODROID-XU Board as Shipped \cite{odroid-xu-board-detail}}
 \label{odroid-xu}
 \end{figure}
 
@@ -631,7 +635,7 @@ is not specified on the Hardkernel website.
   \item 2 GB LPDDR3 RAM
   \end{itemize}
 \item SMSC USB3503A USB 2.0 hub
-\item SMSC LAN9730 USB 2.0 to 100 Mpbs Ethernet controller
+\item SMSC LAN9730 USB 2.0 to 100 Mbps Ethernet controller
 \item MAXIM MAX98098 Audio CODEC
 \item ASIX AX88179 USB3.0 to Gigabit Ethernet Controller
 \end{itemize}
@@ -639,7 +643,7 @@ is not specified on the Hardkernel website.
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{odroid_xu_block_diagram}
-\caption{ODROID-XU block diagram \cite{odroid-xu-board-detail}}
+\caption{ODROID-XU Block Diagram \cite{odroid-xu-board-detail}}
 \label{odroid-xu-block-diagram}
 \end{figure}
 
@@ -647,11 +651,12 @@ is not specified on the Hardkernel website.
 The eight processor cores on the ODROID-XU's SoC are arranged in a big.LITTLE
 configuration. This heterogeneous computing platform presents some interesting
 opportunities specific to this hardware. For example, it would be advantageous
-to bind a polling network driver to one of the ``little'' Cortex-A7 cores, leaving all four
-of the ``big'' Cortex-A15 cores available for computing work. It might also be possible
-to dedicate one or more of the Cortex-A7 cores to overhead tasks in parallel
-simulation, again allowing for more of the Cortex-A15 group's raw processing
-power to be used for parallel simulation.
+to bind a polling network driver for execution on one of the ``little''
+Cortex-A7 cores, leaving all four of the ``big'' Cortex-A15 cores available for
+computing work. It might also be possible to dedicate one or more of the
+Cortex-A7 cores to overhead tasks in parallel simulation, again allowing for
+more of the Cortex-A15 group's raw processing power to be used for parallel
+simulation.
 
 Unfortunately, the only supported operating mode for the ODROID-XU is currently
 ``cluster migration.'' That is, either all four ``little'' cores are active, or
@@ -693,17 +698,17 @@ linux driver. Previous work in our laboratory has proven that it is capable of
 providing significant reduction in network latency when used in an x86 machine
 \cite{lancaster-10}.
 
-System Fabric Works created the driver with at least two goals in
-mind: to provide a low-cost gateway to InfiniBand software and to function as a
-testbed for IB application development \cite{pearson-10}. In both cases, its
-lack of network hardware dependence distinguishes it from all other InfiniBand
+System Fabric Works created the driver with at least two goals in mind: to
+provide a low-cost gateway to InfiniBand software and to function as a testbed
+for IB application development \cite{pearson-10}. In both cases, its lack of
+network hardware dependence distinguishes it from all other InfiniBand transport
 implementations. We hoped to leverage this technology for use in our low-cost
-cluster in order to bring its performance closer to the performance of a
+cluster in order to bring its PDES performance closer to the performance of a
 traditional x86 cluster.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_linux}
-\caption{rxe driver role in a Linux networking environment \cite{pearson-10}}
+\caption{rxe Driver Role in a Linux Networking Environment \cite{pearson-10}}
 \label{rxe-linux}
 \end{figure}
 
@@ -719,10 +724,10 @@ stack to transmit and receive packets earmarked for \verb;rxe;
 modules.
 
 The \verb;rxe; driver also interfaces with a user-mode library called
-librxe. This library provides the common InfiniBand\texttrademark verbs
+\verb;librxe;. This library provides the common InfiniBand\texttrademark verbs
 interface so that any compliant IB application can use the \verb;rxe; device
 without any modification. This library is essentially a user-mode wrapper for
-the functions found in the rxe driver, so its design will not be detailed here.
+ the functions found in the rxe driver, so its design will not be detailed here.
 
 \subsection{\textbf{rxe}}
 \label{rxe}
@@ -740,7 +745,7 @@ they are created, but such an operation may adversely impact performance
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_overview}
-\caption{rxe driver overview \protect\cite{pearson-10}}
+\caption{rxe Driver Overview \protect\cite{pearson-10}}
 \label{rxe-overview}
 \end{figure}
 
@@ -752,14 +757,14 @@ application uses Shared Receive Queue (SRQ) semantics (as OpenMPI does), then
 another small wrinkle is added for receive WRs as both the SRQ and the QP
 associated with the WR must be resolved. Once the Linux kernel is notified that
 a WR has been enqueued, the QP Requester and QP Responder routines work to
-complete that request. When a WR has been completed, and entry is placed in a
+complete that request. When a WR has been completed, an entry is placed in a
 Completion Queue (CQ) that can be accessed by the verbs application. This
 Completion Queue Entry (CQE) contains information that the application needs in
 order to consider the WR completed.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_recv}
-\caption{rxe Receive task \protect\cite{pearson-10}}
+\caption{rxe Receive Task \protect\cite{pearson-10}}
 \label{rxe-recv}
 \end{figure}
 
@@ -771,15 +776,15 @@ places the SKB into a corresponding packet list in the receive queue.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_resp}
-\caption{rxe QP Responder architecture \protect\cite{pearson-10}}
+\caption{rxe QP Responder Architecture \protect\cite{pearson-10}}
 \label{rxe-resp}
 \end{figure}
 
 The QP Responder's architecture is illustrated in \textbf{Figure
   \ref{rxe-resp}}. The Responder partition contains functions that respond to
 incoming requests for data. Such a request can be in one of two forms: a socket
-buffer (SKB) sent from \verb;rxe-net; or a WR from a receive queue. In either
-case, the Responder retrieves the requested data and generates a CQE
+buffer (SKB) sent from \verb;rxe-net; or a WR from a receive queue. For both
+cases, the Responder retrieves the requested data and generates a CQE
 \cite{pearson-10}. If the connection associated with the request uses Reliable
 Connection (RC) semantics, then a response message is generated and placed in
 the send queue \cite{InfiniBandTARoCE-10}\cite{pearson-10}. Additonally, if a
@@ -790,7 +795,7 @@ represented by the ``Responder Resources'' data structure.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_req}
-\caption{rxe QP Requester architecure \protect\cite{pearson-10}}
+\caption{rxe QP Requester Architecure \protect\cite{pearson-10}}
 \label{rxe-req}
 \end{figure}
 
@@ -807,7 +812,7 @@ immediately by the Initiator without invoking the Completer.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{rxe_arbiter}
-\caption{rxe Arbiter architecture \protect\cite{pearson-10}}
+\caption{rxe Arbiter Architecture \protect\cite{pearson-10}}
 \label{rxe-arbiter}
 \end{figure}
 
@@ -843,7 +848,7 @@ InfiniBand packets to RoCE packets \cite{ayoub-11} \cite{InfiniBandTABase-07}
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{roce_packet}
-\caption{RoCE packet composition \cite{ayoub-11}}
+\caption{RoCE Packet Composition \cite{ayoub-11}}
 \label{roce-packet}
 \end{figure}
 
@@ -854,16 +859,16 @@ depends on the IB libraries in the Linux kernel. These libraries, in turn,
 depend on the presence of a PCI bus in the host system. Neither the ODROID-U2
 nor the ODROID-XU has PCI support. Simply enabling PCI support in the Linux
 kernel configuration creates some incompatibilites that must be resolved before
-the kernel will work correctly. After some trial and error, I found an elegant
-solution: the addition of the line in \textbf{Figure \ref{pci_code}} near the
-beginning of \verb;drivers/pci/probe.c;.
+the kernel will work correctly. After some trial and error, I found a solution:
+the addition of the line in \textbf{Figure \ref{pci_code}} near the beginning of
+\verb;drivers/pci/probe.c;.
 
 \begin{figure}[h]
 \centering
 \begin{verbatim}
 #define pcibios_assign_all_busses() 1
 \end{verbatim}
-\caption{Code added to drivers/pci/probe.c}
+\caption{Code Added to drivers/pci/probe.c}
 \label{pci_code}
 \end{figure}
 
@@ -881,10 +886,13 @@ use on high memory pages. However, each \verb;kmap(); call requires a
 corresponding \verb;kunmap();. Some of the \verb;rxe; DMA memory mapping
 functions use the \verb;page_address(); macro to return an address for DMA
 operations. This is not an intended use for \verb;kmap();, because the kernel
-has a limited number of such mappings available. We were able to run the driver
-recoded in this manner for use with micro-benchmarks, but it is unstable when
-used with MPI applications. We concluded that a major overhaul of the \verb;rxe;
-DMA architecture would be required to support high memory on the driver side.
+has a limited number of such mappings available. It is also difficult to change,
+because the \verb;page_address(); macro does not require an unmap call, while
+\verb;kmap(); requires a matching \verb;kunmap(); call. We were able to run the
+driver recoded with \verb;kmap(); calls for use with micro-benchmarks, but it is
+unstable when used with MPI applications. We concluded that a major overhaul of
+the \verb;rxe; DMA architecture would be required to support high memory on the
+driver side.
 
 Luckily, this problem is easily resolved by configuring the kernel to map all
 memory to a single region, eliminating the distinction between user and kernel
@@ -924,7 +932,7 @@ Virtual kernel memory layout:
        .bss : 0x40ab8abc - 0x40c7d758   (1812 kB)
 \end{verbatim}
 \end{center}
-\caption{Address space mapped by Linux kernel}
+\caption{Address Space Mapped by Linux Kernel}
 \label{addrmap}
 \end{figure}
 
@@ -935,7 +943,7 @@ multi-tasking operating system can be eliminated with a polling network driver
 \cite{dovrolis-01}\cite{liu-09}. In fact, the Linux TCP/IP networking stack has
 moved to a hybrid of polling and interrupt-based event processing that is
 intended to reduce average network latency in high-traffic situations. In
-Parallel Discrete Event Simulation on multi-core processors, it is often
+Parallel Discrete Event Simulation on multi-core processors, it may even be
 advantageous to give up a processor core to a polling driver in order to
 significantly reduce message latency for all packets. The big.LITTLE processor
 configurations in products like the ODROID-XU make this prospect especially
@@ -947,7 +955,7 @@ Although the ability to symetrically multi-process with both ``big'' and
 goal in the hope that the trade of a ``big'' core for reduced latency would
 still be worthwhile. Doug Weber and Zakaria Aldeneh began this study by creating
 an EHCI polling driver for use with the standard ODROID-XU network
-adaptors. Weber and I later extended this work to an xHCI polling driver used
+adaptors. Weber later extended this work to an xHCI polling driver used
 with the Gigabit Ethernet adaptors for the ODROID-XU.
 
 \subsection{\textbf{EHCI Polling Driver}}
@@ -1015,7 +1023,7 @@ The total cost of the computing hardware for this cluster is calculated in
 \textbf{Table \ref{xu-cost-table}}.
 
 \begin{table}
-  \caption{Hardware cost of ODROID-XU cluster}
+  \caption{Hardware Cost of ODROID-XU Cluster}
   \label{xu-cost-table}
   \centering
   \begin{tabular}{| l | r |}
@@ -1039,7 +1047,7 @@ purchased specifically for this cluster, the hardware costs of these PCs are
 estimated in \textbf{Table \ref{x86-cost-table}}.
 
 \begin{table}
-  \caption{Hardware cost of x86 cluster}
+  \caption{Hardware Cost of x86 Cluster}
   \label{x86-cost-table}
   \centering
   \begin{tabular}{| l | r |}
@@ -1071,7 +1079,7 @@ applications running on each cluster.
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{sysbench_all}
-\caption{Sysbench results}
+\caption{Sysbench Results}
 \label{sysbench-all}
 \end{figure}
 
