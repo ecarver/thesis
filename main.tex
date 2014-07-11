@@ -123,89 +123,109 @@ performance does not justify its price for either application.
 \chapter{Introduction}
 \label{introduction}
 
-The applications of Beowulf clusters have expanded since Becker et al. created
-the first one in 1995 \cite{becker-95}. Although originally intended for
-scientific computing, this ``network-of-worstations'' technology has also been
-adopted for use in data centers \cite{liu-13}, cloud computing
-\cite{trivedi-11}, and research in fine-grained parallel computing
-\cite{aad-03}. Because these workstations are self contained and connected
-through a network, the bandwidth and latency of their interconnect are
-determining factors of a Beowulf cluster's performance \cite{lancaster-10}
-\cite{becker-95}. This is particularly true for fine-grained parallelism, where
-messages must be passed frequently in order to utilize the processing power of
-the cluster.
+The applications of Beowulf clusters have expanded since Becker \emph{et al} created the
+first one in 1995 \cite{becker-95}.  Although originally intended for scientific
+computing, this ``network-of-worstations'' technology has also been adopted for use in
+data centers \cite{liu-13}, cloud computing \cite{trivedi-11}, and research in
+fine-grained parallel computing \cite{aad-03}.  Because the processing nodes are self
+contained and connected through a network, the bandwidth and latency of their interconnect
+are often the determining factors of a Beowulf cluster's performance
+\cite{becker-95,lancaster-10}.  This is particularly true for fine-grained parallelism,
+where messages must be passed frequently in order to utilize the processing power of the
+cluster.
 
-Even small Beowulf clusters typically cost many thousands of dollars. This
-limits their availability to researchers in two ways. First, many academic
-institutions cannot afford any type of traditional Beowulf cluster. Second,
-those who can afford one must restrict access to the cluster because many
-researchers need to use it. This need to administer the cluster as a shared
-environment eliminates the possibility of exploring custom hardware and
-operating system services targeted to increase cluster performance for
-fine-grained parallel applications.
+Even small Beowulf clusters typically cost many thousands of dollars.  This limits their
+availability to researchers in two ways.  First, many academic institutions cannot afford
+any type of traditional Beowulf cluster.  Second, those who can afford one must restrict
+access to the cluster because many researchers need to use it.  This need to administer
+the cluster as a shared environment eliminates the possibility of exploring custom
+hardware and operating system services targeted to increase cluster performance for
+fine-grained parallel applications.  In addition, once an institution purchases the high
+cost traditional Beowulf cluster, the institution is naturally reluctant to upgrade the
+cluster for many years.  This can prevent researchers from accessing new innovations in
+hardware and their associated features for several years.
 
-Additionally, once an institution sinks the high cost of a traditional Beowulf
-cluster, the institution is naturally reluctant to upgrade the cluster for many
-years. This can prevent researchers from accessing new innovations in hardware
-and their associated features for many years.
+Fortunately, the emergence of small form factor symmetric multiprocessing (SMP) computing
+platforms has created an opportunity to create a new class of Beowulf cluster.  Driven by
+the quickly increasing computing demands of small form factor computers such as cellular
+telephones, tablet computers, and netbooks, mobile computing platforms have increased
+dramatically in computing power in the last few years.  However, to date, there has been
+little interest in applying these low-cost processors to solve availability issues in
+high-performance computing (HPC) research.
 
-However, the emergence of small form factor symmetric multiprocessing (SMP)
-computing platforms has created an opportunity to create a new class of Beowulf
-cluster. Driven by the quickly increasing computing demands of small form factor
-computers such as cellular telephones, tablet computers, and netbooks, mobile
-computing platforms have increased dramatically in computing power in the last
-few years. However, there has been little interest in applying these low-cost
-processors to solve availability issues in high-performance computing (HPC)
-research.
+The Samsung Exynos 5410 System on a Chip (SoC) is an example of a powerful yet low cost
+SMP platform.  Its eight processor cores promise excellent raw computing performance for
+those who are able to utilize them fully.  The 5410 is a big.LITTLE processor
+configuration with four large big cores (ARM A15s operating at 1.6GHz) and four LITTLE
+cores (ARM A7s operating at 1.2GHz).  This thesis will document our work with the
+ODROID-XU platform that uses the Exynos 5410 processing cores.  This platform is currently
+available for well under two hundred dollars.
 
-The Samsung Exynos 5410 System on a Chip (SoC) is an example of a powerful yet
-low cost SMP platform. Its eight processor cores promise excellent raw computing
-performance for those who are able to utilize them fully.
-
-Currently, the design of these mobile SMP platforms presents some challenges to
-those who wish to use them as nodes in a high-performance cluster. In
-particular, end-to-end network latency can be orders of magnitude greater than
-one would expect to find in a traditional Beowulf cluster. In order to minimize
-the impact of this limitation on computing performance, we have embarked on
-research into software-based methods of reducing network latency.
+Currently, the design of these ODROID SMP platforms presents some challenges to those who
+wish to use them as nodes in a high-performance cluster.  In particular, end-to-end
+network latency can be orders of magnitude greater than one would expect to find in a
+traditional Beowulf cluster.  In order to minimize the impact of this limitation on
+computing performance, we have embarked on research into software-based methods of
+reducing network latency.  In particular, this research will focus on two methods of
+reducing that latency at no additional cost: software Remote Direct Memory Access (RDMA)
+over Converged Ethernet (RoCE) and replacing the interrupt based network driver with
+polling based network drivers.  This latter optimization was explored in hopes of
+offloading the network driver to a LITTLE core.  However, due to limitations in the
+implementation of the hardware cache coherence controller, the ability to use all eight
+cores at once is not possible on this platform.  This has limited our study to
+configurations using only the four big cores.
 
 \section{\textbf{Research Statement}}
 
-We believe that it is possible to create a Beowulf cluster using small form
-factor computers that delivers a performance-for-price ratio comparable to the
-ratio of some traditional Beowulf clusters, especially those that are at least a few
-years old. In particular, we want to achieve such a ratio for performance in
-parallel discrete event simulation (PDES).
+This thesis proposes to create a Beowulf cluster using small form factor ODROID computers
+that deliver a performance-for-price ratio comparable to the ratio of some traditional x86
+based Beowulf clusters.  We are especially interested in comparisons to x86 platforms that
+are at a few years old.  In particular, we propose to explore the cost/performance ratio
+for applications with Parallel Discrete Event Simulation (PDES) and, in particular, with
+optimistically synchronized \cite{fujimoto-90,jefferson-85} PDES.
 
-The primary obstacle preventing us from achieving this objective is the high
-network latency associated with many small form factor computers. Therefore,
-this research will focus on two methods of reducing that latency at no
-additional cost: software Remote Direct Memory Access (RDMA) over Converged
-Ethernet (RoCE) and polling network drivers.
+The primary challenge and opportunity for this research is the high network latency of
+small form factor computing in general and experimentally with the ODROID platform.  It is
+a challenge because these systems are not designed specifically for high perfornace
+networking and the internal hardware buses do not have bigh bandwidth capabilites.
+Fortunately these devices are beginning to support the USB 3 protocol which increases
+their throughput capabilities.  It is an opportunity because the low cost nature of the
+solution makes it feasible to have application specific parallel compute platforms and
+thus opens the door to customization of the operating system services to better serve a
+specific application.  Since this latter opportunity is readily expoitable, this research
+will focus of it.  In particular, this thesis will explore two methods to reducing that
+latency at no additional cost, namely: (i) replacing the O/S network driver with a
+software-based Remote Direct Memory Access (RDMA) over Converged Ethernet (RoCE) driver,
+and (ii) replacing the conventional interrupt-based network driver with a polling-based
+network driver.
 
 \section{\textbf{Thesis Overview}}
 
 The remainder of this thesis is organized as follows.
 
-Chapter \ref{background} provides background information on Parallel Discrete
-Event Simulation (PDES), low-latency networking, and small form factor
-computers, including the ODROID platform used in this research.
+Chapter \ref{background} provides background information on Parallel Discrete Event
+Simulation (PDES), low-latency networking, and small form factor computers, including the
+ODROID platform used in this research.
 
-Chapter \ref{latency_reduction} presents our strategy for attacking the network
-latency problem in our Beowulf cluster. It focuses on two low-cost solutions:
-software RDMA over Converged Ethernet (RoCE) and polling network drivers.
+Chapter \ref{latency_reduction} presents our strategy for attacking the network latency
+problem in our Beowulf cluster.  It focuses on two low-cost solutions: software RDMA over
+Converged Ethernet (RoCE) and converting the O/S network driver to a polling network
+driver. 
 
-Chapter \ref{cluster} describes the hardware and software implementation of the
-clusters constructed for these experiments and benchmarks them in terms of raw
-computing performance.
+Chapter \ref{cluster} describes the hardware and software implementation of the clusters
+constructed for these experiments and benchmarks them in terms of raw computing
+performance.
 
-Chapter \ref{results} provides the results of these tests and attempts to relate
-the cluster's performance to its cost. The results of a similar set of tests on
-a traditional Beowulf cluster are provided for comparison.
+Chapter \ref{results} provides the results of these tests and attempts to relate the
+cluster's performance to its cost.  The results of a similar set of tests on a traditional
+Beowulf cluster are provided for comparison.
 
-Chapter \ref{conclusions} contextualizes the results of this research and
-suggests ways to continue this work. It discusses the current benefits and
-limitations of SoC-based cluster computing.
+Chapter \ref{analysis} contains a cost/performance benefit analysis of the ORDOID-based
+platform against a conventional x86-based platform.  
+
+Chapter \ref{conclusions} contextualizes the results of this research and suggests ways to
+continue this work. It discusses the current benefits and limitations of SoC-based cluster
+computing.
 
 \newpage
 \chapter{Background}
@@ -1486,9 +1506,7 @@ the transport is sensitive to large differences in message latency between LPs.
 \end{figure}
 
 
-\newpage
-\chapter{Discussion}
-\label{conclusions}
+\chapter{Cost Performance Analysis}\label{analysis}
 
 \section{\textbf{Cost and Performance Comparisons}}
 
@@ -1559,7 +1577,7 @@ more efficiently than the ARM cluster for all three models.
 \label{costperf-summary}
 \end{figure}
 
-\section{\textbf{Conclusions}}
+\chapter{Conclusions}\label{conclusions}
 
 The software RoCE transport increases ROSS performance by a consistent 5\% to
 11\% over the TCP/IP transport when no more than one MPI process is allocated
