@@ -72,8 +72,8 @@
 \chapter*{Abstract}
 
 Parallel Discrete Event Simulation (PDES) is a fine-grained parallel application that can
-be difficult to optimize on distributed clusters.  A significant challenge on these
-compute platforms is the relatively high network latency compared to the high CPU
+be difficult to optimize on distributed Beowulf clusters.  A significant challenge on
+these compute platforms is the relatively high network latency compared to the high CPU
 performance on each node.  The frequent communications and high network latency means that
 event information communicated between nodes can arrive after a significant delay where
 the processing node is either waiting for the event to arrive (conservatively synchronized
@@ -86,26 +86,27 @@ hardware such as Infiniband and/or lightweight messaging layers other than TCP/I
 However, clusters are generally high cost systems (10s to 100s of thousands of dollars)
 that, by necessity, must be shared.  The use of lower latency hardware such as Infiniband
 can nearly double the hardware cost and the replacement of the TCP/IP network stack on a
-shared platform is generally infeasible as other users of shared platforms (with
+shared platform is generally infeasible as other users of the shared platform (with
 coarse-grained parallel computations) are well served by the TCP/IP stack and unwilling to
-rewrite their applications to use the APIs on alternate network stacks.  Futhermore,
+rewrite their applications to use the APIs of alternate network stacks.  Futhermore,
 configuring the hardware with multiple messaging transport layers is also quite difficult
-to setup.
+to setup and not generally supported.
 
 Low cost, small-form factor compute nodes with multi-core processing chips are becoming
 widely available.  These solutions have lower performing compute nodes and yet often still
-support 100Mb/1Gb Ethernet hardware.  The much lower per node costs (on the order of
-\$200/node) can enable the deployment of personal clusters and thus may be an attractive
-alternative for network customization and use to support PDES applications.  This thesis
-explores this option of using an ODROID compute node for the cluster.  The conventional
-TCP/IP networking stack is replaced with the, publicly available, RDMA over Converged
-Ethernet (RoCE) networking layer which has significantly lower latency costs.  We find
-that RoCE solution is capable of reducing end-to-end small message latency by more than
-30\%.  This translates to a performance improvement of greater than 10\% (compared to the
-TCP/IP solution) for PDES applications using Rensselaer's Optimistic Simulation System
-(ROSS).  However, comparing the ODROID-based cluster performance for cost, both in terms
-of operations per second and Parallel Discrete Event Simulation performance, we find that
-its performance does not justify its price for either application.
+support 100Mb/1Gb Ethernet hardware (reducing the network latency/processor performance
+disparity).  The much lower per node costs (on the order of \$200/node) can enable the
+deployment of non-shared, dedicated clusters and thus, may be an attractive alternative
+for network customization and use to support PDES applications.  This thesis explores this
+option of using an ODROID compute node for the cluster.  The conventional TCP/IP
+networking stack is replaced with the (publicly available) RDMA over Converged Ethernet
+(RoCE) networking layer which has significantly lower latency costs.  We find that RoCE
+solution is capable of reducing end-to-end small message latency by more than 30\%.  This
+translates to a performance improvement of greater than 10\% (compared to the TCP/IP
+solution) for PDES applications using Rensselaer's Optimistic Simulation System (ROSS).
+However, comparing the ODROID-based cluster performance for cost, both in terms of
+operations per second and Parallel Discrete Event Simulation performance, we find that its
+performance does not justify its price for either application.
 
 \chapter*{Acknowledgements}
 
