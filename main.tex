@@ -120,8 +120,7 @@ performance does not justify its price for either application.
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
-\chapter{Introduction}
-\label{introduction}
+\chapter{Introduction}\label{introduction}
 
 The applications of Beowulf clusters have expanded since Becker \emph{et al} created the
 first one in 1995 \cite{becker-95}.  Although originally intended for scientific
@@ -175,7 +174,7 @@ implementation of the hardware cache coherence controller, the ability to use al
 cores at once is not possible on this platform.  This has limited our study to
 configurations using only the four big cores.
 
-\section{\textbf{Research Statement}}
+\section{Research Statement}
 
 This thesis proposes to create a Beowulf cluster using small form factor ODROID computers
 that deliver a performance-for-price ratio comparable to the ratio of some traditional x86
@@ -199,7 +198,7 @@ software-based Remote Direct Memory Access (RDMA) over Converged Ethernet (RoCE)
 and (ii) replacing the conventional interrupt-based network driver with a polling-based
 network driver.
 
-\section{\textbf{Thesis Overview}}
+\section{Thesis Overview}
 
 The remainder of this thesis is organized as follows.
 
@@ -227,51 +226,49 @@ Chapter \ref{conclusions} contextualizes the results of this research and sugges
 continue this work. It discusses the current benefits and limitations of SoC-based cluster
 computing.
 
-\newpage
-\chapter{Background}
-\label{background}
+\chapter{Background}\label{background}
 
-This chapter briefly introduces Parallel Discrete Event Simulation (PDES) and
-discusses its dependence on network communication in distributed computing
-platforms. It then discusses the Message Passing Interface (MPI), the
-communication library used in most PDES platforms. Finally, it presents
-limitations of existing Local Area Network (LAN) communication solutions and
-introduces alternative solutions.
+This chapter briefly introduces Parallel Discrete Event Simulation (PDES) and discusses
+its dependence on network communication in distributed computing platforms.  It then
+discusses the Message Passing Interface (MPI), the communication library used in most PDES
+platforms.  Finally, it presents some of the limitations of existing Local Area Network
+(LAN) communication solutions and introduces alternative solutions.
 
-\section{\textbf{Parallel Discrete Event Simulation}}
+\section{Parallel Discrete Event Simulation}
 
-\subsection{\textbf{Discrete Event Simulation}}
+\subsection{Discrete Event Simulation}
 
-Discrete Event Simulation (DES) is a powerful tool for researchers who wish to
-model the operation of a physical system in such a way that its behavior can be
-abstracted into a series of changes that take place instantaneously
-\cite{jacob-13}. These changes are known as \textit{events}. At any moment
-during execution, a discrete event simulation can be described in terms of the
-following three properties \cite{fujimoto-pdes} \cite{jacob-13} \cite{page-94}.
+Discrete Event Simulation (DES) is a powerful tool for researchers who wish to model the
+operation of a physical system in such a way that its behavior can be abstracted into a
+series of changes that take place instantaneously at specified times of the simulation
+\cite{jacob-13}.  These changes are known as \textit{events}. At any moment during
+execution, a discrete event simulation can be described in terms of the following three
+properties \cite{fujimoto-pdes,jacob-13,page-94}.
 
 \begin{enumerate}
-  \item Information on the current state of the simulation (the \textit{state variables})
-  \item A list of events that are scheduled for execution (the \textit{pending
-    event list})
-  \item A method for determining the ordering of events (the \textit{simulation
-    clock})
+  \item Information on the current state of the simulation (the \textit{state variables}).
+  \item A list of events that are scheduled for execution (the \textit{pending event
+    list}).
+  \item A method for determining the ordering of events (the \textit{simulation clock}).
 \end{enumerate}
 
-Events are processed one at a time by the simulator, in order. This order can be
-described by relating it to the simulation clock, providing each event with a
-virtual timestamp. The simulation clock time is always equal to the timestamp of
-the event currently being simulated. Simulating an event can effect two kinds of
-changes to a system \cite{fujimoto-pdes}:
+\noindent
+In a sequential simulation, events are processed one at a time by the simulator, in order.
+This order can be described by relating it to the simulation clock, providing each event
+with a virtual timestamp.  The simulation clock time is always equal to the timestamp of
+the event currently being simulated.  Simulating an event can effect two kinds of changes
+to a system \cite{fujimoto-pdes}:
 
 \begin{enumerate}
   \item A new event is scheduled.
   \item The state variables are altered.
 \end{enumerate}
 
-A discrete event simulation can be executed sequentially using the method shown
-in \textbf{Figure \ref{sequential-des}}.
+\noindent
+A discrete event simulation can be executed sequentially using the algorithm shown in
+Figure \ref{sequential-des}.
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 \begin{verbatim}
 sequential_des(state_variables, pending_event_list, simulation_clock)
@@ -285,130 +282,122 @@ sequential_des(state_variables, pending_event_list, simulation_clock)
 
 end sequential_des;
 \end{verbatim}
-\caption{Sequential DES Loop \cite{jacob-13}}
-\label{sequential-des}
+\caption{Sequential DES Loop \cite{jacob-13}}\label{sequential-des}
 \end{figure}
 
-An important property of DES is its adherence to strict causality
-\cite{fujimoto-pdes}. That is, an event can never schedule a new event that has
-a timestamp less than that of the scheduling event. This also means that in a
-sequential DES, the simulation time can never decrease. Causality is a property
-of all virtual time systems, including parallel simulation schemes
-\cite{lamport-78}.
+An important property of DES is its adherence to the strict causality of the events being
+executed \cite{fujimoto-pdes}.  That is, an event can never schedule a new event that has
+a timestamp less than that of the scheduling event.  This also means that in a sequential
+DES, the simulation time can never decrease.  Causality is a property of all virtual time
+systems, including parallel simulation schemes \cite{lamport-78}.
 
-\subsection{\textbf{Parallel Discrete Event Simulation}}
+\subsection{Parallel Discrete Event Simulation}
 
-Unfortunately, sequential execution of discrete event simulations can require
-immense amounts of execution time for large simulation models
-\cite{fujimoto-pdes}. This motivates the study of methods for reducing that
-execution time. Chief among such methods is the attempt to parallelize discrete
-event simulations. The goal of a parallel discrete event simulation (PDES) is to
-exploit as much concurrency in the simulation as possible while still satisfying
-the DES causality property \cite{fujimoto-89b}. Parallel discrete event
-simulators can be broadly classified by their approach to this event scheduling
-problem.
+Unfortunately, sequential execution of discrete event simulations can require immense
+amounts of execution time for large simulation models \cite{fujimoto-pdes}.  This
+motivates the study of methods for reducing that execution time.  Chief among such methods
+is the attempt to parallelize discrete event simulations.  The goal of a parallel discrete
+event simulation (PDES) is to exploit as much concurrency in the simulation as possible
+while still satisfying the DES causality property \cite{fujimoto-89b,fujimoto-90}.
+Parallel discrete event simulators can be broadly classified by their approach to this
+event scheduling problem.
 
 \textit{Conservative} synchronization simulates an event only when the simulator can
-guarantee that all past events have already been simulated. In this way,
-causality is never violated, but only events that are guaranteed to be causally
-independent can be executed in parallel. Because the output of an event cannot
-generally be predicted before it is simulated, independent events are limited to
-those with identical timestamps. While conservatively scheduled parallel
-simulation is useful for some types of problems \cite{nicol-93b}, more
-aggressive event scheduling may be necessary to exploit concurrency in a larger
-set of DES problems.
+guarantee that all past events have already been simulated \cite{chandy-79,fujimoto-90}.
+In this way, causality is never violated, but only events that are guaranteed to be
+causally independent can be executed in parallel.  Because the output of an event cannot
+generally be predicted before it is simulated, independent events are limited to those
+with identical timestamps.  While conservatively scheduled parallel simulation is useful
+for some types of problems \cite{nicol-93b}, more aggressive event scheduling may be
+necessary to exploit concurrency in a larger set of DES problems.
 
-\textit{Optimistic} synchronization simulates events speculatively and invalidates
-computation when a causality violation is detected. Each simulation process is
-permitted to simulate as far forward in time as it is able until it is notified
-that something in its past has changed. This triggers a \textit{rollback}, in
-which the process must revert to an earlier state and cancel any actions it has
-taken since that state \cite{nicol-93b}. The necessity of this functionality
-implies that state-saving mechanisms must be employed by the simulator, which
-will consume more memory than than a conservatively synchronized simulator would
-while solving the same problem. However, optimistic synchronization eliminates at least some of the
-overhead associated with conservative scheduling by avoiding processor idle time
-\cite{nicol-93b}. Still, the possibility of rollbacks also introduces an
-additional source of overhead computation, the impact of which varies based on
-the specifics of both the simulation and the simulator
-\cite{fujimoto-pdes}. Therefore, much research in optimistic parallel simulation
-has been targeted at the reduction of rollbacks and the reduction of the
-performance costs associated with rollbacks.
+\textit{Optimistic} synchronization (and specifically the Time Warp mechanism) simulates
+events speculatively and invalidates computation when a causality violation is detected
+\cite{fujimoto-90,jefferson-85}.  Each simulation process is permitted to simulate as far
+forward in time as it is able until it is notified that something in its past has changed.
+This triggers a \textit{rollback}, in which the process must revert to an earlier state
+and cancel any actions it has taken since that state \cite{nicol-93b}.  The necessity of
+this functionality implies that state-saving mechanisms must be employed by the simulator,
+which will consume more memory than than a conservatively synchronized simulator would
+while solving the same problem.  However, optimistic synchronization eliminates at least
+some of the overhead associated with conservative scheduling by avoiding processor idle
+time \cite{nicol-93b}.  Still, the possibility of rollbacks also introduces an additional
+source of overhead computation, the impact of which varies based on the specifics of both
+the simulation and the simulator \cite{fujimoto-pdes}.  Therefore, much research in
+optimistic parallel simulation has been targeted at the reduction of rollbacks and the
+reduction of the performance costs associated with rollbacks.
 
-\subsubsection{\textbf{Time Warp}}
-\label{time-warp}
+\subsubsection{Time Warp}\label{time-warp}
 
-Jefferson \cite{jefferson-85} proposed an optimistic PDES mechanism known as
-\textit{Time Warp}. He described a system in which a set of \textit{simulation
-  objects} also known as \textit{logical processes} (LPs) process events in
-parallel. Each LP has its own simulation clock. The local simulation time is
-called \textit{Local Virtual Time} (LVT). When simulating forward in LVT, an LP
-behaves similarly to \textbf{Figure \ref{sequential-des}}, with the addition of
-remote nodes that complicate event scheduling. When an LP (the sender) must
-schedule an event to be simulated by another LP (the receiver), a
-\textit{message} is sent from the sender to the receiver. The contents of the
-message are model-dependent, but every Time Warp message must be tagged with the
+Jefferson \cite{jefferson-85} proposed an optimistic PDES mechanism known as \textit{Time
+  Warp}.  He described a system in which a set of \textit{simulation objects} also known
+as \textit{Logical Processes} (LPs) process events in parallel.  Each LP has its own
+simulation clock.  The local simulation time in each LP is called \textit{Local Virtual
+  Time} (LVT). When simulating forward in LVT, an LP behaves similarly to Figure
+\ref{sequential-des}, with the addition of remote nodes generating and transmitting events
+that complicate event scheduling (because the LPs do not explicitly synchronize with each
+other).  When an LP (the sender) must schedule an event to be simulated by another LP (the
+receiver), a \textit{message} is sent from the sender to the receiver.  The contents of
+the message are model-dependent, but every Time Warp event message must be tagged with the
 following five values \cite{jefferson-85}.
 
 \begin{enumerate}
-  \item Identity of the sender
-  \item Identity of the receiver
-  \item Virtual send time
-  \item Virtual receive time
-  \item Sign (positive or negative)
+  \item Identity of the sender,
+  \item Identity of the receiver,
+  \item Virtual send time (simulation time the message was sent),
+  \item Virtual receive time (simulation time that the message is to be processed), and
+  \item Sign (positive or negative, explained below).
 \end{enumerate}
 
 In order to satisfy strict causality, the receive time of a message must be
-greater than its send time \cite{lamport-78}. When added to the strictures
+greater than its send time \cite{lamport-78}.  When added to the strictures
 already imposed on virtual time in a discrete event simulation, this implies
 that each LP's message output is ordered by send time as long as it is
 simulating forward in time \cite{jefferson-85}.
 
-When an LP receives an event with a receive time less than its current LVT, it
-must invalidate all the processing it has done at virtual times after that
-receive time. This process is complicated by the fact that it may also have sent
-messages to other LPs; these messages also must be invalidated. This situation
-is resolved by sending ``antimessages''. An \textit{antimessage} cancels the
-processing of the message that has the same sender, receiver, and timestamp
-values as the antimessage, but opposite sign. For clarity, messages are often
-called \textit{positive messages}, and antimessages are called \textit{negative
-  messages}. When an LP encounters the presence of corresponding positive and
-negative messages, those two messages ``annihilate'' \cite{jefferson-85}. That
-is, both are invalidated.
+When an LP receives an event with a receive time less than its current LVT (called a
+\emph{straggler} event), a causality violation has occurred and the LP must invalidate the
+premature processing it has done at virtual times greater than the receive time of the
+straggler event.  This process is complicated by the fact that the premature computation
+may have erroneously sent event messages to other LPs; these messages also must be
+invalidated.  This situation is resolved by sending an ``antimessages''.  An
+\textit{antimessage} cancels the processing of the message that has the same sender,
+receiver, and timestamp values as the antimessage, but opposite sign.  For clarity,
+messages are often called \textit{positive messages}, and antimessages are called
+\textit{negative messages}.  When an LP encounters the presence of corresponding positive
+and negative messages, those two messages ``annihilate'' \cite{jefferson-85}.  That is,
+both are invalidated and removed from further processing.
 
-When examined in terms of only a group of LPs, it is clear that this system would
-require each LP to save information on every state it has been in and every
-message it has sent or received. In order to keep memory costs at a reasonable
-level, the notion of \textit{Global Virtual Time} (GVT) is introduced. Jefferson defines
-GVT as ``the minimum of (1) all virtual times in all virtual clocks at time r,
-and (2) of the virtual send times of all messages that have been sent but have
-not yet been processed'' \cite{jefferson-85}. GVT defines the virtual time
-before which all event processing is guaranteed to be causally
-correct. Therefore, an LP needs only save state to just before the current GVT
-\cite{fujimoto-89b}.
+When examined in terms of only a group of LPs, it is clear that this system would require
+each LP to save information on every state it has been in and every message it has sent or
+received.  In order to keep memory costs at a manageable level, the notion of
+\textit{Global Virtual Time} (GVT) is introduced.  Jefferson defines GVT as ``the minimum
+of (1) all virtual times in all virtual clocks at time r, and (2) of the virtual send
+times of all messages that have been sent but have not yet been processed''
+\cite{jefferson-85}.  GVT defines the virtual time before which all event processing is
+guaranteed to be causally correct.  Therefore, an LP needs only save state to just before
+the current GVT \cite{fujimoto-89b}.
 
-In a similar fashion, a simulation cannot be terminated using LVT
-information. GVT information can be used to guarantee that a simulation meets a
-termination condition \cite{jefferson-85}.
+In a similar fashion, a simulation cannot be terminated using LVT information.  GVT
+information can be used to guarantee that a simulation meets a termination condition
+\cite{jefferson-85}.
 
-\section{\textbf{MPI}}
+\section{MPI}
 
-The Message Passing Interface (MPI) provides a standard interface for message
-passing programs that includes point-to-point and collective communication
-functions \cite{mpi-12}. It is widely used in High Performance Computing (HPC),
-with several implementations available depending on the needs of the user. For
-example, MPICH \cite{mpich} is an MPI implementation used in many supercomputers
-with a Transmission Control Protocol/Internet Protocol (TCP/IP)-based networking
-infrastructure. MVAPICH \cite{mvapich} is a similar implementation that runs
-over InfiniBand networks. OpenMPI \cite{openmpi} is a third implementation that
-supports both TCP and InfiniBand.
+The Message Passing Interface (MPI) provides a standard interface for message passing
+programs that includes point-to-point and collective communication functions
+\cite{mpi-12}.  It is widely used in High Performance Computing (HPC), with several
+implementations available depending on the needs of the user.  For example, MPICH
+\cite{mpich} is an MPI implementation used in many supercomputers with a Transmission
+Control Protocol/Internet Protocol (TCP/IP)-based networking infrastructure.  MVAPICH
+\cite{mvapich} is a similar implementation that runs over InfiniBand networks.  OpenMPI
+\cite{openmpi} is a third implementation that supports both TCP and InfiniBand.
 
-OpenMPI is ideal for comparison of TCP/IP and IB communication stacks because it
-supports the ability to choose which transports an MPI job will use. For
-example, \textbf{Figure \ref{ompi-btl}} shows \verb;mpirun; commands that can
-isolate first the TCP transport layer, then an IB transport layer for any
-job. Note that the \verb;self; layer (for loopback communication) should always
-be specified.
+OpenMPI is ideal for comparison of TCP/IP and IB communication stacks because it supports
+the ability to choose which transports an MPI job will use.  For example, Figure
+\ref{ompi-btl} shows \verb;mpirun; commands that can isolate first the TCP transport
+layer, then an IB transport layer for any job.  Note that the \verb;self; layer (for
+loopback communication) should always be specified.
 
 \begin{figure}
 \centering
@@ -416,196 +405,194 @@ be specified.
 mpirun -n <number of processes> -host <host list> --mca btl tcp,self <MPI job>
 mpirun -n <number of processes> -host <host list> --mca btl openib,self <MPI job>
 \end{verbatim}
-\caption{Commands to Isolate Transport Layers Using OpenMPI}
-\label{ompi-btl}
+\caption{Commands to Isolate Transport Layers Using OpenMPI}\label{ompi-btl}
 \end{figure}
 
-\section{\textbf{Low-latency Networking}}
+\section{Low-latency Networking}
 
-This section will discuss the limitations of most TCP/IP implementations as well
-as alternatives that have been used to reduce network latency in high
-performance platforms. Proprietary interconnect solutions such as
-RapidIO are excluded from this discussion because we cannot port them to a
-small form factor platform at a low cost.
+%% ERIC: can you please insert a citation for the RapidIO solution??
 
-\subsection{\textbf{Limitations of TCP/IP}}
+%% ERIC: returning after a couple of more paragraphs.  i'm also going to drop in empty
+%% cite latex commands where i think you should add citations.
 
-The Transmission Control Protocol/Internet Protocol (TCP/IP) describes a
-packet-switched network designed to communicate over a wide area with reliable,
-ordered transmission of these packets, each of which contains one or more
-messages. TCP/IP provides a global interconnect that is robust over long
-distances and a variety of network conditions. However, it also requires
-computational resources to support these features that can reduce performance
-compared to protocols that focus on Local Area Networks (LANs).
+This section will discuss the limitations of most TCP/IP implementations as well as
+alternatives that have been used to reduce network latency in high performance platforms.
+Proprietary interconnect solutions such as RapidIO \cite{} are excluded from this
+discussion because we cannot port them to a small form factor platform at a low cost.
 
-TCP/IP also does not support \textit{active messaging}. Active messages are
-messages that can perform operations on their own. For example, a message in a
-Remote Direct Memory Access (RDMA) system may be a write message; that message
-can write to the receiving node's memory. TCP/IP, on the other hand, would
-probably accomplish this by sending a message containing a write command and
-another message containing the data to be written. Many low-latency protocols
-that are discussed later in this section achieve a significant portion of their
-efficiency by supporting active messages in some way. In particular, RDMA
-semantics have become popular in the last decade.
+\subsection{Limitations of TCP/IP}
 
-\subsection{\textbf{Extensions to TCP}}
+The Transmission Control Protocol/Internet Protocol (TCP/IP) describes a packet-switched
+network designed to communicate over a wide area with reliable, ordered transmission of
+these packets, each of which contains one or more messages.  TCP/IP provides a global
+interconnect that is robust over long distances and a variety of network conditions.
+However, it also requires computational resources to support these features that can
+reduce performance compared to protocols that focus on Local Area Networks (LANs).
+
+%% ERIC: you need a citation for active messages (UUNET, GAMMA, Illinois Fast Messages,
+%% etc) in the first sentence and a citation for RDMA in the last.
+
+TCP/IP also does not support \textit{active messaging} \cite{}.  Active messages are
+messages that can perform operations on their own.  For example, a message in a Remote
+Direct Memory Access (RDMA) system may be a write message; that message can write to the
+receiving node's memory.  TCP/IP, on the other hand, would have to accomplish this by
+sending a message containing a write command and another message containing the data to be
+written.  Many low-latency protocols that are discussed later in this section achieve a
+significant portion of their efficiency by supporting active messages in some way.  In
+particular, RDMA semantics have become popular in the last decade \cite{}.
+
+\subsection{Extensions to TCP}
+
+%% ERIC: citation to this??
 
 One way to attack the latency limitations of TCP/IP is to implement flow control
-algorithms targeted specifically at a cluster's uses. This approach has been
+algorithms targeted specifically at a cluster's uses \cite{}.  This approach has been
 pursued extensively for data centers.
 
-One large source of latency in data centers is switch buffer overruns
-\cite{liu-13}. Data Center TCP (DCTCP) is an approach that limits this
-congestion in networks by detecting the beginnings of buffer overruns before they impact
-network performance. This eliminates many latency spikes that can plague
-high-traffic TCP networks. High-bandwidth Ultra-Low Latency (HULL) extends DCTCP
-by using simple simulation software to predict these buffer overruns and adjust
-traffic to compensate \cite{liu-13}. HULL is even more effective than DCTCP at
+%% ERIC: more citations....i assume that liu-13 is a general article; it probably contains
+%% the citations you need for each individual policy described below.
+
+One large source of latency in data centers is switch buffer overruns \cite{liu-13}.  Data
+Center TCP (DCTCP) \cite{} is an approach that limits this congestion in networks by detecting the
+beginnings of buffer overruns before they impact network performance.  This eliminates many
+latency spikes that can plague high-traffic TCP networks.  High-bandwidth Ultra-Low Latency
+(HULL) extends DCTCP by using simple simulation software to predict these buffer overruns
+and adjust traffic to compensate \cite{liu-13}. HULL is even more effective than DCTCP at
 eliminating sudden spikes in TCP latency.
 
-Deadline Driven Delivery (D\textsuperscript{3}) is another attempt to minimize latency spikes
-and, further, to enforce real time requirements on the delivery of TCP messages
-in a local network \cite{liu-13}. It is a form of active flow control that allocates
-networking resources based on time requirements associated with certain
-traffic. However, it has a tendency to starve out some requests when traffic
-becomes heavy. Preemptive Distributed Quick flow scheduling (PDQ) solves this
-problem by applying an improved scheduling algorithm \cite{liu-13}.
+Deadline Driven Delivery (D\textsuperscript{3}) \cite{} is another attempt to minimize
+latency spikes and, further, to enforce real time requirements on the delivery of TCP
+messages in a local network \cite{liu-13}.  It is a form of active flow control that
+allocates networking resources based on time requirements associated with certain traffic.
+However, it has a tendency to starve out some requests when traffic becomes heavy.
+Preemptive Distributed Quick flow scheduling (PDQ) \cite{} solves this problem by applying
+an improved scheduling algorithm \cite{liu-13}.
 
-A problem with flow control in HPC is the computing power and specialized
-hardware required for its implementation. While the benefits of these extensions
-to TCP/IP are demonstrable for large clusters, it is unlikely that a small,
-low-cost cluster would see much benefit from their implementation.
+A problem with flow control in HPC is the computing power and specialized hardware
+required for its implementation.  While the benefits of these extensions to TCP/IP are
+demonstrable for large clusters, it is unlikely that a small, low-cost cluster would see
+much benefit from their implementation.
 
-\subsection{\textbf{Open-MX}}
+\subsection{Open-MX}
 
-Open-MX is an implementation of the Myrinet Express messaging stack that runs
-over any ethernet hardware through a Linux driver
-\cite{goglin-08}. Micro-benchmark tests show that Open-MX can reduce message
-latency by 24.3\% to 32.2\% for ethernet controllers that support jumbo frames
-\cite{goglin-11}. However, the performance improvement is only 0.7\% to 10.4\%
-for ethernet controllers that do not support jumbo frames. Most embedded
-ethernet controllers fall into the latter category.
+Open-MX is an implementation of the Myrinet Express messaging stack that runs over any
+Ethernet hardware through a Linux driver \cite{goglin-08}.  Micro-benchmark tests show
+that Open-MX can reduce message latency by 24.3\% to 32.2\% for Ethernet controllers that
+support jumbo frames \cite{goglin-11}.  However, the performance improvement is only 0.7\%
+to 10.4\% for Ethernet controllers that do not support jumbo frames.  Most embedded
+Ethernet controllers fall into the latter category.
 
-Unfortunately, open source MPI implementation OpenMPI is phasing out support for
-Myrinet transports \cite{openmpi-myrinet}, leaving proprietary MPI implementations
-the only option for those who wish to pursue the use of this transport. The cost
-of a license for one of these implementations is prohibitive for use in research
-on low-cost clusters.
+Unfortunately, open source MPI implementation OpenMPI is phasing out support for Myrinet
+transports \cite{openmpi-myrinet}, leaving proprietary MPI implementations the only option
+for those who wish to pursue the use of this transport.  The cost of a license for one of
+these implementations is prohibitive for use in research on low-cost clusters.
 
-\subsection{\textbf{GAMMA}}
+\subsection{GAMMA}
 
-The Genoa Active Message Machine (GAMMA) is a Linux driver that implements a
-low-latency active messaging protocol over Megabit and Gigabit Ethernet
-\cite{gamma}. It is designed as a no-cost solution that reduces network latency
-on existing network hardware. Schneidenbach et al. observed a 50\% or greater
-reduction in small message transmission times compared to TCP/IP when using
-GAMMA over Gigabit Ethernet hardware \cite{schneidenbach-03}. GAMMA
-Message throughput was also consistently higher than TCP/IP for all message
-sizes.
+The Genoa Active Message Machine (GAMMA) is a Linux driver that implements a low-latency
+active messaging protocol over Megabit and Gigabit Ethernet \cite{gamma}.  It is designed
+as a no-cost solution that reduces network latency on existing network
+hardware. Schneidenbach \emph{et al} observed a 50\% or greater reduction in small message
+transmission times compared to TCP/IP when using GAMMA over Gigabit Ethernet hardware
+\cite{schneidenbach-03}.  GAMMA Message throughput was also consistently higher than
+TCP/IP for all message sizes.
 
-However, GAMMA has significant limitations. It is incompatible with existing
-Internet Protocol (IP) implementations; therefore, it requires a second network
-controller for each node in order to construct a cluster that receives user
-input over a network. In its existing implementation, it is also both x86 and
-network controller-specific. Although it may be possible to port such a system
-to an embedded architecture, other solutions are more attractive.
+However, GAMMA has significant limitations.  It is incompatible with existing Internet
+Protocol (IP) implementations; therefore, it requires a second network controller for each
+node in order to construct a cluster that receives user input over a network.  In its
+existing implementation, it is also both x86 and network controller-specific.  Although it
+may be possible to port such a system to an embedded architecture, other solutions are
+more attractive.
 
-\subsection{\textbf{OpenFabrics Solutions}}
+\subsection{OpenFabrics Solutions}
 
-\href{www.openfabrics.org}{The OpenFabrics Alliance} provides software to
-support the most successful set of HPC low-latency interconnects. This
-subsection will provide background on its three associated technologies:
-InfiniBand, RoCE, and iWARP.
+\href{www.openfabrics.org}{The OpenFabrics Alliance} provides software to support the most
+successful set of HPC low-latency interconnects.  This subsection will provide background
+on its three associated technologies: InfiniBand, RoCE, and iWARP.
 
-\subsubsection{\textbf{InfiniBand}}
+\subsubsection{InfiniBand}
 
-\href {www.infinibandta.org}{InfiniBand} (IB) was introduced in
-1999 to meet the new demand of data-intensive applications in high-end computing
-environments \cite{InfiniBandTABase-07}. Its characteristic high bandwidth and
-low latency make it a popular interconnect technology for computing solutions
-intended for fine-grained parallel simulation. For high-end Beowulf Clusters,
-message latency as low as one microsecond is provided through the two-pronged
-approach of using InfiniBand networking hardware and the lightweight IB
-transport layer. However, the high cost and lack of inter-fabric compatibility
-of such hardware have driven the development of solutions based on the
+\href {www.infinibandta.org}{InfiniBand} (IB) was introduced in 1999 to meet the new
+demand of data-intensive applications in high-end computing environments
+\cite{InfiniBandTABase-07}.  Its characteristic high bandwidth and low latency make it a
+popular interconnect technology for computing solutions intended for fine-grained parallel
+simulation.  For high-end Beowulf Clusters, message latency as low as one microsecond is
+provided through the two-pronged approach of using InfiniBand networking hardware and the
+lightweight IB transport layer.  However, the high cost and lack of inter-fabric
+compatibility of such hardware have driven the development of solutions based on the
 ubiquitous Ethernet link layer \cite{roce-announce}.
 
 Although IB is a full first-order interconnect solution, its transport layer is
-particularly attractive to researchers who desire affordable high performance
-computing. It specifies four transport types: Reliable Connection (RC), Reliable
-Datagram (RD), Unreliable Connection (UC), and Unreliable Datagram (UD)
-\cite{InfiniBandTABase-07}. All four types support channel messaging semantics,
-wherein messages are passed using send and receive calls
-\cite{InfiniBandTABase-07}. The RC and UC types support memory semantics, also
-known as Remote Direct Memory Access (RDMA). This approach allows an initiator
-computing node to access the memory of a remote process directly, without any
-significant effort on the part of the remote node \cite{sur-11}.
+particularly attractive to researchers who desire affordable high performance computing.
+It specifies four transport types: Reliable Connection (RC), Reliable Datagram (RD),
+Unreliable Connection (UC), and Unreliable Datagram (UD) \cite{InfiniBandTABase-07}.  All
+four types support channel messaging semantics, wherein messages are passed using send and
+receive calls \cite{InfiniBandTABase-07}.  The RC and UC types support memory semantics,
+also known as Remote Direct Memory Access (RDMA).  This approach allows an initiator
+computing node to access the memory of a remote process directly, without any significant
+effort on the part of the remote node \cite{sur-11}.
 
-\subsubsection{\textbf{RoCE}}
+\subsubsection{RoCE}
 
-RDMA over Converged Ethernet (RoCE), also known as InfiniBand over Ethernet
-(IBoE), is an attempt to provide the reliable, low-latency InfiniBand transport
-services over a converged Ethernet fabric already present in most data centers
-\cite{InfiniBandTARoCE-10}, \cite{roce-announce}. This enables properly
-configured networks to carry IB traffic without investing in entirely new
-physical hardware. Message latency can be under 2 microseconds when used in a
-lossless 40 Gigabit Ethernet network \cite{vienne-12}. RoCE has found a niche in
-commercial data centers, especially those that support financial operations such
-as high frequency trading. Unfortunately, specialized network adaptors are still
-required to take advantage of its features. Additionally, these solutions
-generally require switches that support Data Center Bridging (DCB)
-\cite{InfiniBandTARoCE-10}. This leaves an opportunity for a solution that can
-work with existing lossy Ethernet networks.
+RDMA over Converged Ethernet (RoCE), also known as InfiniBand over Ethernet (IBoE), is an
+attempt to provide the reliable, low-latency InfiniBand transport services over a
+converged Ethernet fabric already present in most data centers
+\cite{InfiniBandTARoCE-10,roce-announce}.  This enables properly configured networks to
+carry IB traffic without investing in entirely new physical hardware.  Message latency can
+be under 2 microseconds when used in a lossless 40 Gigabit Ethernet network
+\cite{vienne-12}.  RoCE has found a niche in commercial data centers, especially those
+that support financial operations such as high frequency trading.  Unfortunately,
+specialized network adapters are still required to take full advantage of its features.
+In addition, these solutions generally require switches that support Data Center Bridging
+(DCB) \cite{InfiniBandTARoCE-10}.  This leaves an opportunity for a solution that can work
+with existing lossy Ethernet networks.
 
-System Fabric Works, Inc., has created a pure software implementation of RoCE
-called \href{http://www.systemfabricworks.com/downloads/roce}{rxe}. \verb;rxe;
-is a Linux driver that implements the full IB transport over any Ethernet
-adaptor \cite{pearson-10}. Message latency can be as low as 10
-microseconds on a 10 Gigabit Ethernet controller \cite{pearson-10}. The
-\href{http://support.systemfabricworks.com/downloads/rxe/}{most recent relase of
-  the driver} is in the from of patches for the mainline Linux kernel. We chose
-to port this implementation to the ODROID platform for our studies in low-cost
+System Fabric Works, Inc., has created a pure software implementation of RoCE called
+\href{http://www.systemfabricworks.com/downloads/roce}{rxe}.  \verb;rxe; is a Linux driver
+that implements the full IB transport over any Ethernet adapter \cite{pearson-10}.
+Message latency can be as low as 10 microseconds on a 10 Gigabit Ethernet controller
+\cite{pearson-10}.  The \href{http://support.systemfabricworks.com/downloads/rxe/}{most
+  recent release of the driver} is in the from of patches for the mainline Linux kernel.
+We chose to port this implementation to the ODROID platform for our studies in low-cost
 Beowulf Clusters.
 
-\subsubsection{\textbf{iWARP}}
+\subsubsection{iWARP}
 
-The Internet Wide Area RDMA Protocol (iWARP) brings the benefits of active
-messaging to TCP/IP by encapsulating an RDMA protocol within a TCP transport
-layer. In the same fashion as IB, iWARP adaptors are generally believed to
-provide the best performance when using this protocol. However, there are pure
-software implementations of iWARP \cite{neeser-10}. Because iWARP still uses TCP
-sockets, message latency of such a software implementation may not be
-significantly different from standard TCP. Nonetheless, application performance
-can still be improved because of the reduced processing and I/O bus requirements
-associated with RDMA protocols \cite{narravula-07}.
+The Internet Wide Area RDMA Protocol (iWARP) brings the benefits of active messaging to
+TCP/IP by encapsulating an RDMA protocol within a TCP transport layer.  In the same
+fashion as IB, iWARP adapters are generally believed to provide the best performance when
+using this protocol.  However, there are pure software implementations of iWARP
+\cite{neeser-10}.  Because iWARP still uses TCP sockets, message latency of such a
+software implementation may not be significantly different from standard TCP.
+Nonetheless, application performance can still be improved because of the reduced
+processing and I/O bus requirements associated with RDMA protocols \cite{narravula-07}.
 
-\section{\textbf{ODROID Platform}}
+\section{ODROID Platform}
 
-The ODROID series of development boards from Hardkernel Co., Ltd. has made
-low-cost mobile hardware available in more traditional computing platforms. In
-these studies, we focus on the ODROID-U2 and ODROID-XU boards. The
-characteristics of these two platforms are given in the next two sections.
+The ODROID series of development boards from Hardkernel Co., Ltd. has made low-cost mobile
+hardware available in more traditional computing platforms.  In these studies, we focus on
+the ODROID-U2 and ODROID-XU boards.  The XU boards were not available until after this
+project started so we began this study on the ODROID-U2 hardware.  Hence we have
+performance results on both platforms.  The principle characteristics of these two
+platforms are given in the next two sections.
 
-\subsection{\textbf{ODROID-U2}}
+\subsection{ODROID-U2}
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{odroid_u2_top}
-\caption{ODROID-U2 Circuit Board Top View \cite{odroid-u2-board-detail}}
-\label{odroid-u2-board}
+\caption{ODROID-U2 Circuit Board Top View \cite{odroid-u2-board-detail}}\label{odroid-u2-board}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 \includegraphics[width=0.25\textwidth]{odroid_u2}
-\caption{ODROID-U2 with Heatsink \cite{odroid-u2-board-detail}}
-\label{odroid-u2}
+\caption{ODROID-U2 with Heatsink \cite{odroid-u2-board-detail}}\label{odroid-u2}
 \end{figure}
 
-The ODROID-U2 board hosts a Samsung Exynos 4412 Prime System on a Chip
-(SoC). \textbf{Figure \ref{odroid-u2-board}} shows the board on its own, and
-\textbf{Figure \ref{odroid-u2}} shows the board installed in its heatsink. We
-purchased two ODROID-U2 nodes for \$89 each. The board features the following
-hardware components \cite{odroid-u2-board-detail}:
+The ODROID-U2 board hosts a Samsung Exynos 4412 Prime System on a Chip (SoC).  Figure
+\ref{odroid-u2-board} shows the board on its own, and Figure \ref{odroid-u2} shows the
+board installed in its heatsink.  We purchased two ODROID-U2 nodes for \$89 each.  The
+board features the following hardware components \cite{odroid-u2-board-detail}:
 
 \begin{itemize}
 \item Samsung Exynos 4412 Prime
@@ -618,47 +605,49 @@ hardware components \cite{odroid-u2-board-detail}:
 \item MAXIM MAX98098 Audio CODEC
 \end{itemize}
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 \includegraphics[width=\textwidth]{odroid_u2_block_diagram}
 \caption{ODROID-U2 Block Diagram \cite{odroid-u2-board-detail}}
 \label{odroid-u2-block-diagram}
 \end{figure}
 
+%% ERIC, verify the last 2 sentences that i added....
+
 While the ODROID-U2 features impressive raw processing power for its size and
 price, its small amount of main memory can adversely impact performance for even
-moderately sized parallel simulation models. Additionally, the LAN9730 network
+moderately sized parallel simulation models.  Additionally, the LAN9730 network
 controller is even slower than we feared, routinely reaching end-to-end TCP
-small message latency over 500 microseconds.
+small message latency over 500 microseconds.  This is due, in part, to the fact that the
+ODROID-U2 Ethernet port comes in over the USB 2.0 bus which has a highly limiting
+throughput performance.  Even though it is advertised as having a 10/100 Ethernet port,
+the performance is well below expected.
 
+\subsection{ODROID-XU}
 
-\subsection{\textbf{ODROID-XU}}
-
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{odroid_xu_top}
 \caption{ODROID-XU Circuit Board Top View \cite{odroid-xu-board-detail}}
 \label{odroid-xu-board}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 \includegraphics[width=0.5\textwidth]{odroid_xu}
 \caption{ODROID-XU Board as Shipped \cite{odroid-xu-board-detail}}
 \label{odroid-xu}
 \end{figure}
 
-The ODROID-XU features the Samsung Exynos 5410 SoC. We purchased four of these
-for \$169 each to form our final four-node cluster. \textbf{Figure
-  \ref{odroid-xu-board}} shows the top of the ODROID-XU circuit board without
-the processor heatsink and fan installed. \textbf{Figure \ref{odroid-xu}} shows
-the ODROID-XU in its plastic case. Clearly, the ODROID-XU has a lower physical
-profile than the ODROID-U2 because its heatsink is smaller. However, in terms of
-the circuit boards alone, the ODROID-XU is larger than the ODROID-U2. Because
-the ODROID-XU has the same network controller as the ODROID-U2, we also
-purchased four USB 3.0 to Gigabit Ethernet modules that reduce end-to-end TCP
-small message latency to under 300 microseconds. Further details on the
-ODROID-XU follow \cite{odroid-xu-board-detail}. Note that the USB 3.0 controller
-is not specified on the Hardkernel website.
+The ODROID-XU features the Samsung Exynos 5410 SoC. We purchased four of these for \$169
+each to form our final four-node cluster.  Figure \ref{odroid-xu-board} shows the top of
+the ODROID-XU circuit board without the processor heatsink and fan installed.  Figure
+\ref{odroid-xu} shows the ODROID-XU in its plastic case.  Clearly, the ODROID-XU has a
+lower physical profile than the ODROID-U2 because its heatsink is smaller.  However, in
+terms of the circuit boards alone, the ODROID-XU is larger than the ODROID-U2. Because the
+ODROID-XU has the same network controller as the ODROID-U2, we also purchased four USB 3.0
+to Gigabit Ethernet modules that reduce end-to-end TCP small message latency to under 300
+microseconds.  Further details on the ODROID-XU follow \cite{odroid-xu-board-detail}. Note
+that the specifics on the USB 3.0 controller is not provided on the Hardkernel website.
 
 \begin{itemize}
 \item Samsung Exynos 5410 Octa
@@ -673,58 +662,53 @@ is not specified on the Hardkernel website.
 \item ASIX AX88179 USB3.0 to Gigabit Ethernet Controller
 \end{itemize}
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 \includegraphics[width=\textwidth]{odroid_xu_block_diagram}
-\caption{ODROID-XU Block Diagram \cite{odroid-xu-board-detail}}
-\label{odroid-xu-block-diagram}
+\caption{ODROID-XU Block Diagram
+  \cite{odroid-xu-board-detail}}\label{odroid-xu-block-diagram}
 \end{figure}
 
-
 The eight processor cores on the ODROID-XU's SoC are arranged in a big.LITTLE
-configuration. This heterogeneous computing platform presents some interesting
-opportunities specific to this hardware. For example, it would be advantageous
-to bind a polling network driver for execution on one of the ``little''
-Cortex-A7 cores, leaving all four of the ``big'' Cortex-A15 cores available for
-computing work. It might also be possible to dedicate one or more of the
-Cortex-A7 cores to overhead tasks in parallel simulation, again allowing for
-more of the Cortex-A15 group's raw processing power to be used for parallel
-simulation.
+configuration.  This heterogeneous computing platform presents some interesting
+opportunities specific to this hardware.  For example, it would be advantageous to bind a
+polling network driver for execution on one of the ``little'' Cortex-A7 cores, leaving all
+four of the ``big'' Cortex-A15 cores available for computing work.  It might also be
+possible to dedicate one or more of the Cortex-A7 cores to overhead tasks in parallel
+simulation, again allowing for more of the Cortex-A15 group's raw processing power to be
+used for parallel simulation.  
 
-Unfortunately, the only supported operating mode for the ODROID-XU is currently
-``cluster migration.'' That is, either all four ``little'' cores are active, or
-all four ``big'' cores are active. Development of a solution that will allow all
-eight cores to run simultaneously is ongoing at Hardkernel.
+Unfortunately, the only supported operating mode for the ODROID-XU is currently ``cluster
+migration.''  That is, either all four ``little'' cores are active, or all four ``big''
+cores are active.  This is caused by a hardware problem with the cache coherence protocol
+on the Exynos chip that is unlikely to be resolved with this board.  Development of a new
+solution with the new Exynos 5422 chip that will allow simultaneous use of all eight cores
+has been announced, but will not be released until later this year.
 
-\section{\textbf{Related Work}}
-
-
+\section{Related Work}
 
 Although performance profiling of hardware IB and RoCE is extensive
-\cite{subamaroni-09} \cite{vienne-12}, studies on software RoCE are
-rare. Robert J. Lancaster \cite{lancaster-10} experimented with the \verb;rxe;
-driver. He found that \verb;rxe; message latency ranged from 14\% to 81\% lower
-than TCP/IP using a Realtek 8168B Gigabit Ethernet adaptor with the r8169
-driver.
+\cite{subamaroni-09,vienne-12}, studies on software RoCE are rare.  Lancaster
+\cite{lancaster-10} experimented with the \verb;rxe; driver.  He found that \verb;rxe;
+message latency ranged from 14\% to 81\% lower than TCP/IP using a Realtek 8168B Gigabit
+Ethernet adapter with the r8169 driver.
 
-Trivedi et al. \cite{trivedi-11} experimented with a software implementation of
-iWARP for use in cloud computing. They found that end-to-end latencies were
-reduced for messages larger than 64 kB thanks the protocol's lightweight RDMA
-implementation.
+Trivedi \emph{et al} \cite{trivedi-11} experimented with a software implementation of
+iWARP for use in cloud computing.  They found that end-to-end latencies were reduced for
+messages larger than 64 kB thanks the protocol's lightweight RDMA implementation.
 
-Rajovic et al. \cite{rajovic-13} examined some mobile SoC platforms in order to
-evaluate their usefulness for HPC applications. They used the Open-MX
-interconnect to reduce network latency in these tests, and elected to use the
-NVIDIA Tegra 2 platform to build and deploy a large-scale cluster
-\cite{rajovic-14}. They focused on scientific computing and other coarse-grained
-parallel applications in performance testing, but found that the cluster scales
-well for such purposes using a Gigabit Ethernet interconnect.
+%% ERIC: i changed the ``but'' in the last sentence to ``and'' please verify....
 
-\newpage
-\chapter{Methods for Reducing Network Latency}
-\label{latency_reduction}
+Rajovic \emph{et al} \cite{rajovic-13} examined some mobile SoC platforms in order to
+evaluate their usefulness for HPC applications.  They used the Open-MX interconnect to
+reduce network latency in these tests, and elected to use the NVIDIA Tegra 2 platform to
+build and deploy a large-scale cluster \cite{rajovic-14}.  They focused on scientific
+computing and other coarse-grained parallel applications in performance testing and found
+that the cluster scales well for such purposes using a Gigabit Ethernet interconnect.
 
-\section{\textbf{Software RoCE}}
+\chapter{Methods for Reducing Network Latency}\label{latency_reduction}
+
+\section{Software RoCE}
 
 Currently, there is only one open-source software RoCE project: the \verb;rxe;
 linux driver. Previous work in our laboratory has proven that it is capable of
@@ -745,7 +729,7 @@ traditional x86 cluster.
 \label{rxe-linux}
 \end{figure}
 
-\textbf{Figure \ref{rxe-linux}} illustrates how the \verb;rxe; driver functions
+Figure \ref{rxe-linux} illustrates how the \verb;rxe; driver functions
 as a bridge between RDMA software and the Linux networking core.
 
 The \verb;rxe; linux driver is divided into two modules: \verb;rxe; and
@@ -762,8 +746,7 @@ interface so that any compliant IB application can use the \verb;rxe; device
 without any modification. This library is essentially a user-mode wrapper for
  the functions found in the rxe driver, so its design will not be detailed here.
 
-\subsection{\textbf{rxe}}
-\label{rxe}
+\subsection{rxe}\label{rxe}
 
 The \verb;rxe; kernel module contains the portion of the \verb;rxe; driver that
 implements layers 4 through 7 of the OSI model. It provides a software
@@ -782,7 +765,7 @@ they are created, but such an operation may adversely impact performance
 \label{rxe-overview}
 \end{figure}
 
-\textbf{Figure \ref{rxe-overview}} shows the dataflow among the major partitions
+Figure \ref{rxe-overview} shows the dataflow among the major partitions
 of the rxe driver. When a consumer application intends to send or receive a
 message, it must submit a Work Request (WR) via an IB verbs function call. This
 function places the WR into a QP allocated for that application. If the
@@ -802,7 +785,7 @@ order to consider the WR completed.
 \end{figure}
 
 The Layer 4 portion of the \verb;rxe; driver's Receive routine is illustrated in
-\textbf{Figure \ref{rxe-recv}}. This function receives a socket buffer (SKB)
+Figure \ref{rxe-recv}. This function receives a socket buffer (SKB)
 from \verb;rxe-net; as an input. It inspects the SKB header in order to
 determine whether the message is a response packet or a request packet and
 places the SKB into a corresponding packet list in the receive queue.
@@ -813,8 +796,8 @@ places the SKB into a corresponding packet list in the receive queue.
 \label{rxe-resp}
 \end{figure}
 
-The QP Responder's architecture is illustrated in \textbf{Figure
-  \ref{rxe-resp}}. The Responder partition contains functions that respond to
+The QP Responder's architecture is illustrated in Figure
+  \ref{rxe-resp}. The Responder partition contains functions that respond to
 incoming requests for data. Such a request can be in one of two forms: a socket
 buffer (SKB) sent from \verb;rxe-net; or a WR from a receive queue. For both
 cases, the Responder retrieves the requested data and generates a CQE
@@ -823,7 +806,7 @@ Connection (RC) semantics, then a response message is generated and placed in
 the send queue \cite{InfiniBandTARoCE-10}\cite{pearson-10}. Additonally, if a
 request represents an atomic operation, the responder must save some state in
 order to support retries for all message semantics and unordered read/write
-operations for RDMA semantics. In \textbf{Figure \ref{rxe-resp}}, this is
+operations for RDMA semantics. In Figure \ref{rxe-resp}, this is
 represented by the ``Responder Resources'' data structure.
 
 \begin{figure}[h]
@@ -832,8 +815,8 @@ represented by the ``Responder Resources'' data structure.
 \label{rxe-req}
 \end{figure}
 
-The QP Requester's architecture is illustrated in \textbf{Figure
-  \ref{rxe-req}}. The Requester is further divided into an Initiator task and a
+The QP Requester's architecture is illustrated in Figure
+  \ref{rxe-req}. The Requester is further divided into an Initiator task and a
 Completer task. The Initiator simply creates a request message for every entry
 in the send queue. The Completer is active only for communication using the
 Reliable Connection (RC) channel semantics. It waits for responses from the
@@ -849,7 +832,7 @@ immediately by the Initiator without invoking the Completer.
 \label{rxe-arbiter}
 \end{figure}
 
-The Arbiter task is illustrated in \textbf{Figure \ref{rxe-arbiter}}. It
+The Arbiter task is illustrated in Figure \ref{rxe-arbiter}. It
 schedules actual transmission of outgoing messages. It implements a round-robin
 scheduling policy among all active send queues, and it also handles flow control
 in order to avoid packet dropping in Linux due to queue overrun
@@ -860,22 +843,22 @@ altogether. In our research with the ODROID-U2, lowering or removing these
 timing thresholds had no effect on end-to-end latency on a 100 Mbps Ethernet
 link.
 
-\subsection{\textbf{rxe-net}}
+\subsection{rxe-net}
 
 In many ways, the \verb;rxe-net; module functions as a wrapper for the
-\verb;rxe; transport module described in \textbf{Section \ref{rxe}}. It
+\verb;rxe; transport module described in Section \ref{rxe}. It
 implements most of layer 3 of RoCE, allowing the layer 4 and higher functions of
 \verb;rxe; to integrate with the existing layer 2 networking implementation in
 Linux by forming a bridge that communicates with Linux on both the RDMA and
 Ethernet sides. It can be envisioned as the horizontal portion of the \verb;rxe;
-driver in \textbf{Figure \ref{rxe-linux}}. In addition to facilitating this
+driver in Figure \ref{rxe-linux}. In addition to facilitating this
 communication and marshalling of data, \verb;rxe-net; writes the appropriate
 combination of InfiniBand and MAC headers to each packet in order to fulfill the
 requirements of the RoCE specification \cite{pearson-10}
 \cite{InfiniBandTARoCE-10}. In accordance with the specification, the Ethernet
 MAC (layer 2) header is identical to a normal ethernet packet except for the
 ethertype value, which is set to \verb;0x8915; for all RoCE packets
-\cite{InfiniBandTARoCE-10}. \textbf{Figure \ref{roce-packet}} compares normal
+\cite{InfiniBandTARoCE-10}. Figure \ref{roce-packet} compares normal
 InfiniBand packets to RoCE packets \cite{ayoub-11} \cite{InfiniBandTABase-07}
 \cite{InfiniBandTARoCE-10}.
 
@@ -885,7 +868,7 @@ InfiniBand packets to RoCE packets \cite{ayoub-11} \cite{InfiniBandTABase-07}
 \label{roce-packet}
 \end{figure}
 
-\subsection{\textbf{Porting rxe to the ODROID Platform}}
+\subsection{Porting rxe to the ODROID Platform}
 
 Although \verb;rxe; is designed to operate with any Ethernet adaptor, it also
 depends on the IB libraries in the Linux kernel. These libraries, in turn,
@@ -893,7 +876,7 @@ depend on the presence of a PCI bus in the host system. Neither the ODROID-U2
 nor the ODROID-XU has PCI support. Simply enabling PCI support in the Linux
 kernel configuration creates some incompatibilites that must be resolved before
 the kernel will work correctly. After some trial and error, I found a solution:
-the addition of the line in \textbf{Figure \ref{pci_code}} near the beginning of
+the addition of the line in Figure \ref{pci_code} near the beginning of
 \verb;drivers/pci/probe.c;.
 
 \begin{figure}[h]
@@ -940,8 +923,8 @@ region by altering the values of the \verb;VMALLOC_START; and \verb;VMALLOC_END;
 macros, then shifting the \verb;IO_ADDRESS; macro accordingly so memory-mapped
 I/O devices still have their own address space. For the ODROID-XU, this process
 enabled the use of 1884 MB of memory, while the remaining 163 MB were dedicated
-to I/O devices. The final address space mapping is shown in \textbf{Figure
-  \ref{addrmap}}.
+to I/O devices. The final address space mapping is shown in Figure
+  \ref{addrmap}.
 
 %% The migration from the ODROID-U2 to the ODROID-XU presented some additional
 %% challenges in the porting effort for the rxe driver. I encountered a bug that
@@ -969,7 +952,7 @@ Virtual kernel memory layout:
 \label{addrmap}
 \end{figure}
 
-\section{\textbf{Polling the Network Adaptor}}
+\section{Polling the Network Adaptor}
 
 Previous research with network drivers has shown that interrupt latency in a
 multi-tasking operating system can be eliminated with a polling network driver
@@ -991,14 +974,14 @@ an EHCI polling driver for use with the standard ODROID-XU network
 adaptors. Weber later extended this work to an xHCI polling driver used
 with the Gigabit Ethernet adaptors for the ODROID-XU.
 
-\subsection{\textbf{EHCI Polling Driver}}
+\subsection{EHCI Polling Driver}
 
 Initial work with the EHCI Polling Driver by Doug Weber and Zakaria Aldeneh
 revealed that it could reduce network message latency over TCP by as much as
 35\%. This motivated the creation of a similarly architected polling driver
 for use with the USB 3 to Gigabit Ethernet adaptors.
 
-\subsection{\textbf{xHCI Polling Driver}}
+\subsection{xHCI Polling Driver}
 
 The eXtensible Host Controller Interface (xHCI) specification \cite{xhci}
 describes a structure called a Transfer Request Block (TRB) that represents a
@@ -1027,16 +1010,14 @@ processing core.
 Unfortunately, stability issues with this implementation made it impossible to
 sufficiently test its performance with MPI network communication.
 
-\newpage
-\chapter{Cluster Implementation and Testing}
-\label{cluster}
+\chapter{Cluster Implementation and Testing}\label{cluster}
 
 Three primary testing platforms were used for the experiments presented in this
 thesis. OpenMPI is used for all MPI communication. Its transport layer selection
 feature is used to isolate either the TCP/IP or RoCE transport for individual
 tests.
 
-\section{\textbf{ODROID-U2}}
+\section{ODROID-U2}
 
 Preliminary work with RoCE was tested on two ODROID-U2 computers running Debian
 7.0-armhf with Linux kernel 3.0.90. The ODROID-U2 nodes are connected to an
@@ -1044,7 +1025,7 @@ unmanaged Gigabit switch through Category 6 Ethernet cables. Unless specified
 otherwise, the Linux network MTU is set to 1488 bytes and the RoCE MTU is set to
 1024 bytes.
 
-\section{\textbf{ODROID-XU}}
+\section{ODROID-XU}
 
 The success of RoCE and EHCI polling experiments motivated the purchase of four
 ODROID-XU nodes as well as Gigabit Ethernet adaptors for all four nodes. All
@@ -1053,7 +1034,7 @@ tests in theis section are run on four ODROID-XU computers running Debian
 and the RoCE MTU is set to 1024 bytes.
 
 The total cost of the computing hardware for this cluster is calculated in
-\textbf{Table \ref{xu-cost-table}}.
+Table \ref{xu-cost-table}.
 
 \begin{table}
   \caption{Hardware Cost of ODROID-XU Cluster}
@@ -1071,13 +1052,13 @@ The total cost of the computing hardware for this cluster is calculated in
   \end{tabular}
 \end{table}
 
-\section{\textbf{Comparison Cluster}}
+\section{Comparison Cluster}
 
 We will compare the performance of the ODROID-XU cluster with a small
 traditional Beowulf cluster consisting of two x86 PCs running Intel Haswell CPUs
 and 32 GB of main memory. Although not all of the hardware components were
 purchased specifically for this cluster, the hardware costs of these PCs are
-estimated in \textbf{Table \ref{x86-cost-table}}.
+estimated in Table \ref{x86-cost-table}.
 
 \begin{table}
   \caption{Hardware Cost of x86 Cluster}
@@ -1103,7 +1084,7 @@ Simultaneous Multithreading (SMT), presenting eight logical cores to the
 operating system. Therefore, two of these x86 nodes will provide the same number
 of independent hardware threads as the four ARM nodes.
 
-\section{\textbf{Initial Cost Comparisons}}
+\section{Initial Cost Comparisons}
 
 The Linux \verb;sysbench; benchmark is used to compare CPU mathematics and
 memory performance in order to compare the raw processing power available to
@@ -1119,7 +1100,7 @@ applications running on each cluster.
 First, the \verb;sysbench; CPU test was
 run on in several threading configurations for 60 seconds per
 configuration. This test calculates prime numbers using 64-bit
-integers. \textbf{Figure \ref{sysbench-all}} organizes the results of these
+integers. Figure \ref{sysbench-all} organizes the results of these
 tests by the number of threads on which the test was run. Although both
 platforms scale well with threads, it is clear that the x86 machine is superior
 in 64-bit integer computations. 
@@ -1131,7 +1112,7 @@ in 64-bit integer computations.
 \label{sysbench-cost}
 \end{figure}
 
-\textbf{Figure \ref{sysbench-cost}} compares the performance per dollar of the
+Figure \ref{sysbench-cost} compares the performance per dollar of the
 two clusters based on the sysbench results. It is clear that the x86 cluster is
 the clear winner in pure compute power for 64-bit integer operations. This is
 expected, because the word size of the x86 processor is 64 bits, while the word
@@ -1140,7 +1121,7 @@ size of the ARM processor is 32 bits.
 Next, the \verb;nbench; benchmark \cite{nbench} is used to compare performance
 in three key areas (integer performance, floating point performance, and memory
 performance) in comparison with a baseline machine: an AMD
-K6/233. \textbf{Figure \ref{nbench-all}} shows the performance comparison for
+K6/233. Figure \ref{nbench-all} shows the performance comparison for
 both platforms with and without compiler optimizations. The benchmark was
 compiled with the GNU C Compiler (\verb;gcc;) on both platforms, with the
 \verb;-03; and the \verb;-O0; flags for optimization and no optimization,
@@ -1153,10 +1134,10 @@ respectively.
 \label{nbench-all}
 \end{figure}
 
-\textbf{Figure \ref{nbench-performance}} sets a new baseline for performance:
+Figure \ref{nbench-performance} sets a new baseline for performance:
 our Cortex-A15 machines. The performance results with optimizations are used to
-set the performance of the ARM processor at one in each category. \textbf{Figure
-  \ref{nbench-cost}} does the same for \verb;nbench; performance per dollar in
+set the performance of the ARM processor at one in each category. Figure
+  \ref{nbench-cost} does the same for \verb;nbench; performance per dollar in
 each category.
 
 \begin{figure}
@@ -1178,9 +1159,7 @@ In all three performance areas, the x86 CPU more than triples the computation
 power per dollar of the ARM CPU as measured by this benchmark. However, one can
 expect factors other than raw computing power to determine PDES performance.
 
-\newpage
-\chapter{Experimental Results}
-\label{results}
+\chapter{Experimental Results}\label{results}
 
 We first used micro-benchmarks to demonstrate the performance of the RoCE
 transport and polling drivers. We focus on MPI-based benchmarks because these
@@ -1193,13 +1172,13 @@ targeted benchmarking, we turn to the Intel MPI Benchmark (IMB) suite version
 Finally, we used Rensselaer's Optimisitic Simulation System (ROSS) to benchmark
 the final cluster's PDES performance.
 
-\section{\textbf{Micro-benchmark Results}}
+\section{Micro-benchmark Results}
 
 Preliminary micro-benchmark results from a cluster of two ODROID-U2 nodes are
 presented first. Next, the results of similar tests on two of the nodes
 comprising the four-node ODROID-XU cluster are shown.
 
-\subsection{\textbf{Two ODROID-U2 Nodes}}
+\subsection{Two ODROID-U2 Nodes}
 
 Figures \ref{npmpi-llat} and \ref{npmpi-hlat} show MPI message latency for small
 messages and large messages, respectively. Latency over RoCE is 17\% to 31\%
@@ -1226,8 +1205,8 @@ latency.
 \label{npmpi-hlat}
 \end{figure}
 
-The MPI bandwidth results in \textbf{Figures \ref{npmpi-lbw}} and
-\textbf{\ref{npmpi-hbw}} mirror the latency results. Interestingly, neither TCP
+The MPI bandwidth results in Figures \ref{npmpi-lbw} and
+\ref{npmpi-hbw} mirror the latency results. Interestingly, neither TCP
 nor RoCE could saturate the 100 Mbps link.
 
 \begin{figure}[h]
@@ -1252,7 +1231,7 @@ can test the effects of network communication on inter-process communication by
 making some of the process pairs communicate locally on a node and others
 communicate over the network. We suspected that the reduced CPU requirements of
 the IB transport would lead to slower scaling of latency as network and I/O bus
-congestion increases. \textbf{Figure \ref{multipingpong-u2}} supports this
+congestion increases. Figure \ref{multipingpong-u2} supports this
 conjecture. In fact, the \verb;rxe; driver appears to thrive in a congested
 networking environment, while TCP/IP latency grows steadily. This is surprising
 because we expected the average latency of both transports to decrease as low
@@ -1267,8 +1246,7 @@ eliminate this problem, with a maximum speedup of over two times TCP.
 \label{multipingpong-u2}
 \end{figure}
 
-\subsection{\textbf{Final Cluster}}
-\label{final-cluster-benchmarks}
+\subsection{Final Cluster}\label{final-cluster-benchmarks}
 
 I tested two ODROID-XU nodes equipped with AX88179 Gigabit Ethernet adaptors
 using the same NetPIPE and IMB benchmarks that are shown above for the
@@ -1288,7 +1266,7 @@ small message latency.
 \label{xu-lat-large}
 \end{figure}
 
-\textbf{Figures \ref{xu-lat-small}} and \textbf{\ref{xu-lat-large}} show the
+Figures \ref{xu-lat-small} and \ref{xu-lat-large} show the
 NetPIPE MPI latency results for two nodes on the ODROID-XU cluster using Gigabit
 Ethernet controllers. A minimum message latency of 200 microseconds is an
 excellent improvement from the performance observed on the ODROID-U2.
@@ -1330,8 +1308,8 @@ with RoCE CRC disabled.
 \label{xu-bw-large}
 \end{figure}
 
-Again, the bandwidth results shown in \textbf{Figures \ref{xu-bw-small}} and
-\textbf{\ref{xu-bw-large}} mirror the latency results from the same benchmarking
+Again, the bandwidth results shown in Figures \ref{xu-bw-small} and
+\ref{xu-bw-large} mirror the latency results from the same benchmarking
 tool. This time, however, the maximum bandwidth is dramatically increased thanks
 to the Gigabit Ethernet adaptors. However, it still does not approach the
 Gigabit level. Now that we have observed this behavior from two different
@@ -1344,7 +1322,7 @@ to such an architecture.
 \label{xu-imb-low}
 \end{figure}
 
-\textbf{Figure \ref{xu-imb-low}} shows the scaling of inter-process
+Figure \ref{xu-imb-low} shows the scaling of inter-process
 communication latency with increased network communication. This time, we use
 all four nodes in the cluster for this benchmark in order to better simulate the
 communication conditions of large PDES simulations. We observe that the Exynos
@@ -1354,8 +1332,7 @@ of the RoCE transport even more; up to a 3.34 times speedup is possible for very
 small messages when all cores are utilized. Even when only two of four cores are
 in use, 2.5 times speedup is possible.
 
-\section{\textbf{PDES Results}}
-\label{pdes-results}
+\section{PDES Results}\label{pdes-results}
 
 \href{https://github.com/carothersc/ROSS}{Rensselaer's Optimistic Simulation
   System (ROSS)} is used for all PDES experiments. It uses MPI for all
@@ -1374,7 +1351,7 @@ LPs used for each model is tuned so that startup overhead is not a significant
 portion of simulation runtime but memory is not exhausted. As the number of
 processes used in the simulation is varied, the number of LPs remains the same,
 although the number of KPs changes as it remains at the default allocation per
-process. \textbf{Table \ref{lptable}} lists the total number of LPs across all
+process. Table \ref{lptable} lists the total number of LPs across all
 processes as well as the termination time set for each model. This configuration
 is used for both the ARM and x86 clusters in order to allow a direct performance
 comparison.
@@ -1396,7 +1373,7 @@ comparison.
 Simulation runtime results as reported by ROSS are shown throughout the rest of
 this section. For each model, results from the x86 cluster and results from the
 ARM cluster over TCP and over RoCE are presented. The error bars in
-\textbf{Figures \ref{disksim}, \ref{raid},} and \textbf{\ref{wifi}} show a 99\%
+Figures \ref{disksim}, \ref{raid}, and \ref{wifi} show a 99\%
 confidence interval for the mean simulation time.
 
 \begin{figure}
@@ -1414,11 +1391,11 @@ confidence interval for the mean simulation time.
 \end{figure}
 
 The \verb;disksim; model is an example of a small model that we can run with a
-high number of LPs. We can see from \textbf{Figure \ref{disksim}} that RoCE
+high number of LPs. We can see from Figure \ref{disksim} that RoCE
 slightly improves runtime over TCP when no more than one MPI process is
 allocated to the node. When two or more MPI processes are allocated per compute
 node, the runtimes become unstable, occasionally stalling for many times the
-average runtime. For comparison, \textbf{Figure \ref{disksim-median}} shows the
+average runtime. For comparison, Figure \ref{disksim-median} shows the
 median simulation runtimes for the same set of tests. Aside from the stalls, it
 is clear that the performance of RoCE is a constant factor better than TCP for 8
 and 16 total MPI processes as well as 2 and 4.
@@ -1438,17 +1415,17 @@ and 16 total MPI processes as well as 2 and 4.
 \end{figure}
 
 We can observe nearly the same phenomenon from tests using the \verb;raid;
-model, the results of which are shown in \textbf{Figures \ref{raid}} and
-\textbf{\ref{raid-median}}. This time, our confidence interval is sufficiently
+model, the results of which are shown in Figures \ref{raid} and
+\ref{raid-median}. This time, our confidence interval is sufficiently
 small to conclude that RoCE performs worse than TCP when more than one MPI
 process is allocated per node. This is in stark contrast to the predictions of
-the micro-benchmark results from \textbf{Section
-  \ref{final-cluster-benchmarks}}, especially those that measure the scaling of
+the micro-benchmark results from Section
+  \ref{final-cluster-benchmarks}, especially those that measure the scaling of
 inter-process communication latency. A possible explanation for these PDES
 results in light of the micro-benchmark results is that the factor difference
 between the latency of shared memory communication compared to remote node
 communication is greater for RoCE than TCP. In fact, the factor difference is
-more than double according to \textbf{Figure \ref{xu-imb-low}}.
+more than double according to Figure \ref{xu-imb-low}.
 
 \begin{figure}
 \centering
@@ -1464,17 +1441,17 @@ more than double according to \textbf{Figure \ref{xu-imb-low}}.
 \label{wifi-median}
 \end{figure}
 
-Finally, the \verb;wifi; model results in \textbf{Figures \ref{wifi}} and
-\textbf{\ref{wifi-median}} show the same problem without the large variance seen
+Finally, the \verb;wifi; model results in Figures \ref{wifi} and
+\ref{wifi-median} show the same problem without the large variance seen
 in the \verb;disksim; and \verb;raid; models. Clearly, network message latency
 alone is not a good predictor for PDES performance when more than one
 communication layer is in use.
 
 
-\subsection{\textbf{RoCE Speedup}}
+\subsection{RoCE Speedup}
 
-\textbf{Figures \ref{disksim-speedup}, \ref{raid-speedup},} and
-\textbf{\ref{wifi-speedup}} show the mean speedup obtained by using the RoCE
+Figures \ref{disksim-speedup}, \ref{raid-speedup}, and
+\ref{wifi-speedup} show the mean speedup obtained by using the RoCE
 transport compared to TCP on the ARM cluster. Speedup is defined as
 $\frac{runtime_{TCP}}{runtime_{RoCE}}$, so values greater than one indicate speedup,
 while values less than one indicate slowdown.
@@ -1508,20 +1485,20 @@ the transport is sensitive to large differences in message latency between LPs.
 
 \chapter{Cost Performance Analysis}\label{analysis}
 
-\section{\textbf{Cost and Performance Comparisons}}
+\section{Cost and Performance Comparisons}
 
 In this section, I present performance-for-cost data calculated using the
-results from \textbf{Chapter \ref{pdes-results}}. First, performance for cost is
+results from Chapter \ref{pdes-results}. First, performance for cost is
 defined as $\frac{1}{runtime \times price}$ which yields a result with
 dimensions of $\frac{1}{seconds \times Dollars}$. This result is several orders
 of magnitude less than one, so all performance-for-cost numbers for a simulation
 model are scaled by a constant factor so that the lowest performance for cost is
 equal to one.
 
-Therefore, the results in \textbf{Figures \ref{disksim-costperf},
-  \ref{raid-costperf},} and \textbf{\ref{wifi-costperf}} can be interpreted as
+Therefore, the results in Figures \ref{disksim-costperf},
+  \ref{raid-costperf}, and \ref{wifi-costperf} can be interpreted as
 the ``times better performance for cost relative to the worst case seen in
-either cluster.'' Note that the results in \textbf{Figure \ref{raid-costperf}}
+either cluster.'' Note that the results in Figure \ref{raid-costperf}
 are shown in with a logarithmic scale so that the performance-for-cost values are
 visible for both clusters.
 
@@ -1547,7 +1524,7 @@ visible for both clusters.
 \end{figure}
 
 In all cases, the x86 cluster exhibits superior performance-for-cost compared to
-our ARM cluster. \textbf{Figure \ref{costperf}} shows the worst-case
+our ARM cluster. Figure \ref{costperf} shows the worst-case
 performance-for-cost comparison for the x86 cluster in comparison to the ARM
 cluster. The x86 cluster is at least 3 times more cost-efficient than the ARM
 cluster for PDES.
@@ -1559,7 +1536,7 @@ cluster for PDES.
 \label{costperf}
 \end{figure}
 
-\textbf{Figure \ref{costperf-summary}} shows the performance-for-cost comparison
+Figure \ref{costperf-summary} shows the performance-for-cost comparison
 to baseline for each model. This compares how performance scales for each model
 and each cluster as more MPI processes are added. We observe that the
 \verb;raid; model scales more efficiently than the other models we tested. From
@@ -1593,7 +1570,7 @@ our x86 cluster is far more efficient than our ARM cluster. However, the The x86
 exhibits tendencies that appear to lead to better scaling with increased
 parallelism than the ARM cluster.
 
-\section{\textbf{Challenges in SoC-based HPC}}
+\section{Challenges in SoC-based HPC}
 
 In this section, a few architectural challenges are presented that,
 collectively, represent a barrier to adoption of clusters built from mobile
@@ -1601,7 +1578,7 @@ SoCs. Most of these issues are caused by valid design decisions on the part of
 SoC vendors, considering their primary market. Possible solutions are also
 discussed.
 
-\subsection{\textbf{PoP Memory}}
+\subsection{PoP Memory}
 
 In our search for inexpensive cluster nodes, we found that a drawback to mobile
 SoCs is their limited main memory that is typically included in a Package on
@@ -1622,7 +1599,7 @@ because of package size constraints. However, vendors could offer multiple
 versions of their chips with identical processors but different amounts of main
 memory.
 
-\subsection{\textbf{I/O Limitations}}
+\subsection{I/O Limitations}
 
 The lack of Peripheral Component Interconnect (PCI) support in the Exynos line
 of SoCs means that all ethernet communications must be routed through a USB
@@ -1643,7 +1620,7 @@ running well on our cluster.
 Again, the Tegra 2 and 3 include support for SATA disks, but the Tegra 4 does
 not \cite{arstch-tegra}.
 
-\subsection{\textbf{Memory Errors}}
+\subsection{Memory Errors}
 
 High Performance Computing platforms typically use Error Correcting Code (ECC)
 main memory in order to avoid data corruption that could taint scientific
@@ -1668,12 +1645,12 @@ errors observed in Schroeder's study \cite{schroeder-09} and detect more severe
 errors, ensuring that bit flips cannot affect computation results without the
 user's knowledge.
 
-\section{\textbf{Benefits of SoC-based HPC}}
+\section{Benefits of SoC-based HPC}
 
 This section discusses some of our discoveries about the benefits of SoC-based
 clusters.
 
-\subsection{\textbf{Commodity Pricing}}
+\subsection{Commodity Pricing}
 
 Although the ARM cluster from this project falls short of a traditional x86
 Beowulf cluster in terms of performance for price, the possibility of
@@ -1683,7 +1660,7 @@ clusters in the first place: inexpensive commodity microprocessors intended for
 workstations gradually became more attractive than expensive custom solutions
 for small-scale High Performance Computing.
 
-\subsection{\textbf{Small Form Factor}}
+\subsection{Small Form Factor}
 
 Traditional Beowulf clusters require physical space and infrastructure for power
 and cooling that is not necessary for SoC-based clusters. In fact, a very large
@@ -1695,7 +1672,7 @@ x86 PCs, which require several different voltage supply rails from a power
 supply. This fact opens possibilities for innovative packaging solutions for
 SoC-based clusters, from large lattices to small fanless configurations.
 
-\section{\textbf{Suggestions for Future Work}}
+\section{Suggestions for Future Work}
 
 I have touted the ability to deploy custom operating systems in a cluster
 environment as a benefit of SoC-based HPC. Creating a custom operating
