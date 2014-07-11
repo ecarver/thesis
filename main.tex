@@ -54,7 +54,7 @@
     in the School of Electric and Computing Systems\\
     of the College of Engineering and Applied
     Sciences\\[0.20in]
-    July TODO, 2014\\[0.20in]
+    July 21, 2014\\[0.20in]
     by\\[0.20in]
     {\bf Eric Carver}\\
     BSEE, University of
@@ -83,7 +83,7 @@ crucial to the deployment of PDES.
 
 Conventional attacks on network latency in cluster environments are to use high priced
 hardware such as Infiniband and/or lightweight messaging layers other than TCP/IP.
-However, clusters are generally high cost systems (10s to 100s of thousands of dollars)
+However, clusters are generally high cost systems (tens to hundreds of thousands of dollars)
 that, by necessity, must be shared.  The use of lower latency hardware such as Infiniband
 can nearly double the hardware cost and the replacement of the TCP/IP network stack on a
 shared platform is generally infeasible as other users of the shared platform (with
@@ -95,7 +95,7 @@ to setup and not generally supported.
 Low cost, small-form factor compute nodes with multi-core processing chips are becoming
 widely available.  These solutions have lower performing compute nodes and yet often still
 support 100Mb/1Gb Ethernet hardware (reducing the network latency/processor performance
-disparity).  The much lower per node costs (on the order of \$200/node) can enable the
+disparity).  The much lower per node costs (on the order of \$200 per node) can enable the
 deployment of non-shared, dedicated clusters and thus, may be an attractive alternative
 for network customization and use to support PDES applications.  This thesis explores this
 option of using an ODROID compute node for the cluster.  The conventional TCP/IP
@@ -104,7 +104,7 @@ networking stack is replaced with the (publicly available) RDMA over Converged E
 solution is capable of reducing end-to-end small message latency by more than 30\%.  This
 translates to a performance improvement of greater than 10\% (compared to the TCP/IP
 solution) for PDES applications using Rensselaer's Optimistic Simulation System (ROSS).
-However, comparing the ODROID-based cluster performance for cost, both in terms of
+However, when comparing the ODROID-based cluster performance for cost, both in terms of
 operations per second and Parallel Discrete Event Simulation performance, we find that its
 performance does not justify its price for either application.
 
