@@ -71,29 +71,41 @@
 
 \chapter*{Abstract}
 
-Beowulf clusters are networks of workstation personal computers that are
-designed to perform tasks in parallel. Although these clusters are built from
-commodity components, they may still cost thousands of dollars per node.
+Parallel Discrete Event Simulation (PDES) is a fine-grained parallel application that can
+be difficult to optimize on distributed clusters.  A significant challenge on these
+compute platforms is the relatively high network latency compared to the high CPU
+performance on each node.  The frequent communications and high network latency means that
+event information communicated between nodes can arrive after a significant delay where
+the processing node is either waiting for the event to arrive (conservatively synchronized
+solutions) or prematurely processing events while the transmitted event is in transit
+(optimistically synchronized solutions).  Thus, solutions to reduce network latency are
+crucial to the deployment of PDES.
 
-Parallel Discrete Event Simulation (PDES) performance can benefit from custom
-hardware and operating systems that may not be available in traditional cluster
-environments. However, it is also very sensitive to network message latency.
+Conventional attacks on network latency in cluster environments are to use high priced
+hardware such as Infiniband and/or lightweight messaging layers other than TCP/IP.
+However, clusters are generally high cost systems (10s to 100s of thousands of dollars)
+that, by necessity, must be shared.  The use of lower latency hardware such as Infiniband
+can nearly double the hardware cost and the replacement of the TCP/IP network stack on a
+shared platform is generally infeasible as other users of shared platforms (with
+coarse-grained parallel computations) are well served by the TCP/IP stack and unwilling to
+rewrite their applications to use the APIs on alternate network stacks.  Futhermore,
+configuring the hardware with multiple messaging transport layers is also quite difficult
+to setup.
 
-In this thesis, the construction of Beowulf clusters using inexpensive
-processors intended for use in mobile devices is explored. We construct a
-four-node Beowulf cluster from ARM system on a chip (SoC) processors for a
-fraction of the cost of a traditional four-node Beowulf cluster. In order to
-mitigate the effects of high-latency network communication, we explore the
-replacement of the TCP/IP transport with a software implementation of the RDMA
-over Converged Ethernet (RoCE) transport. We find that software RoCE is capable
-of reducing end-to-end small message latency by more than 30\% in two embedded
-platforms. This translates to a performance improvement of greater than 10\% for
-some configurations using Rensselaer's Optimistic Simulation System (ROSS).
-
-We then evaluate the cluster's performance for cost, both in terms of operations
-per second and Parallel Discrete Event Simulation. By comparing it to a small
-x86-based Beowulf cluster, we find that its performance does not justify its
-price for either application.
+Low cost, small-form factor compute nodes with multi-core processing chips are becoming
+widely available.  These solutions have lower performing compute nodes and yet often still
+support 100Mb/1Gb Ethernet hardware.  The much lower per node costs (on the order of
+\$200/node) can enable the deployment of personal clusters and thus may be an attractive
+alternative for network customization and use to support PDES applications.  This thesis
+explores this option of using an ODROID compute node for the cluster.  The conventional
+TCP/IP networking stack is replaced with the, publicly available, RDMA over Converged
+Ethernet (RoCE) networking layer which has significantly lower latency costs.  We find
+that RoCE solution is capable of reducing end-to-end small message latency by more than
+30\%.  This translates to a performance improvement of greater than 10\% (compared to the
+TCP/IP solution) for PDES applications using Rensselaer's Optimistic Simulation System
+(ROSS).  However, comparing the ODROID-based cluster performance for cost, both in terms
+of operations per second and Parallel Discrete Event Simulation performance, we find that
+its performance does not justify its price for either application.
 
 \chapter*{Acknowledgements}
 
