@@ -1013,26 +1013,23 @@ to isolate either the TCP/IP or RoCE transport for individual tests.
 
 \section{ODROID-U2}
 
-Preliminary work with RoCE was tested on two ODROID-U2 computers running Debian
-7.0-armhf with Linux kernel 3.0.90.  The ODROID-U2 nodes are connected to an
-unmanaged Gigabit switch through Category 6 Ethernet cables. Unless specified
-otherwise, the Linux network MTU is set to 1488 bytes and the RoCE MTU is set to
-1024 bytes.
+Preliminary work with RoCE was tested on two ODROID-U2 computers running Debian 7.0-armhf
+with Linux kernel 3.0.90.  The ODROID-U2 nodes are connected to an unmanaged Gigabit
+switch through Category 6 Ethernet cables.  Unless specified otherwise, the Linux network
+MTU is set to 1488 bytes and the RoCE MTU is set to 1024 bytes.
 
 \section{ODROID-XU}
 
-The success of RoCE and EHCI polling experiments motivated the purchase of four
-ODROID-XU nodes as well as Gigabit Ethernet adaptors for all four nodes. All
-tests in theis section are run on four ODROID-XU computers running Debian
-8.0-armhf with Linux kernel 3.4.76. The Linux network MTU is set to 1500 bytes,
-and the RoCE MTU is set to 1024 bytes.
+The success of RoCE and EHCI polling experiments motivated the purchase of four ODROID-XU
+nodes as well as Gigabit Ethernet adaptors for all four nodes.  All tests in theis section
+are run on four ODROID-XU computers running Debian 8.0-armhf with Linux kernel 3.4.76.
+The Linux network MTU is set to 1500 bytes, and the RoCE MTU is set to 1024 bytes.
 
-The total cost of the computing hardware for this cluster is calculated in
-Table \ref{xu-cost-table}.
+The total cost of the ODROID-XU computing hardware for this cluster is calculated in Table
+\ref{xu-cost-table}.
 
 \begin{table}
-  \caption{Hardware Cost of ODROID-XU Cluster}
-  \label{xu-cost-table}
+  \caption{Hardware Cost of ODROID-XU Cluster}\label{xu-cost-table}
   \centering
   \begin{tabular}{| l | r |}
     \hline
@@ -1046,17 +1043,8 @@ Table \ref{xu-cost-table}.
   \end{tabular}
 \end{table}
 
-\section{Comparison Cluster}
-
-We will compare the performance of the ODROID-XU cluster with a small
-traditional Beowulf cluster consisting of two x86 PCs running Intel Haswell CPUs
-and 32 GB of main memory. Although not all of the hardware components were
-purchased specifically for this cluster, the hardware costs of these PCs are
-estimated in Table \ref{x86-cost-table}.
-
 \begin{table}
-  \caption{Hardware Cost of x86 Cluster}
-  \label{x86-cost-table}
+  \caption{Hardware Cost of x86 Cluster}\label{x86-cost-table}
   \centering
   \begin{tabular}{| l | r |}
     \hline
@@ -1073,16 +1061,23 @@ estimated in Table \ref{x86-cost-table}.
   \end{tabular}
 \end{table}
 
-Although each Intel processor has only four processor cores, it supports
-Simultaneous Multithreading (SMT), presenting eight logical cores to the
-operating system. Therefore, two of these x86 nodes will provide the same number
-of independent hardware threads as the four ARM nodes.
+\section{Comparison Cluster}
+
+We will compare the performance of the ODROID-XU cluster with a small traditional Beowulf
+cluster consisting of two x86 PCs running Intel Haswell CPUs and 32 GB of main memory.
+Although not all of the hardware components were purchased specifically for this cluster,
+the hardware costs of these PCs are estimated in Table \ref{x86-cost-table}.
+
+Although each Intel processor has only four processor cores, it supports Simultaneous
+Multithreading (SMT), presenting eight logical cores to the operating system.  Therefore,
+two of these x86 nodes will provide the same number of independent hardware threads as the
+four ARM nodes.
 
 \section{Initial Cost Comparisons}
 
-The Linux \verb;sysbench; benchmark is used to compare CPU mathematics and
-memory performance in order to compare the raw processing power available to
-applications running on each cluster.
+The Linux \verb;sysbench; benchmark is used to compare CPU mathematics and memory
+performance in order to compare the raw processing power available to applications running
+on each cluster.
 
 \begin{figure}
 \centering
@@ -1091,13 +1086,11 @@ applications running on each cluster.
 \label{sysbench-all}
 \end{figure}
 
-First, the \verb;sysbench; CPU test was
-run on in several threading configurations for 60 seconds per
-configuration. This test calculates prime numbers using 64-bit
-integers. Figure \ref{sysbench-all} organizes the results of these
-tests by the number of threads on which the test was run. Although both
-platforms scale well with threads, it is clear that the x86 machine is superior
-in 64-bit integer computations. 
+First, the \verb;sysbench; CPU test was run on in several threading configurations for 60
+seconds per configuration.  This test calculates prime numbers using 64-bit
+integers.  Figure \ref{sysbench-all} organizes the results of these tests by the number of
+threads on which the test was run. Although both platforms scale well with threads, it is
+clear that the x86 machine is superior in 64-bit integer computations.
 
 \begin{figure}
 \centering
@@ -1106,20 +1099,17 @@ in 64-bit integer computations.
 \label{sysbench-cost}
 \end{figure}
 
-Figure \ref{sysbench-cost} compares the performance per dollar of the
-two clusters based on the sysbench results. It is clear that the x86 cluster is
-the clear winner in pure compute power for 64-bit integer operations. This is
-expected, because the word size of the x86 processor is 64 bits, while the word
-size of the ARM processor is 32 bits.
+Figure \ref{sysbench-cost} compares the performance per dollar of the two clusters based
+on the sysbench results.  It is clear that the x86 cluster is the clear winner in pure
+compute power for 64-bit integer operations.  This is expected, because the word size of
+the x86 processor is 64 bits, while the word size of the ARM processor is 32 bits.
 
-Next, the \verb;nbench; benchmark \cite{nbench} is used to compare performance
-in three key areas (integer performance, floating point performance, and memory
-performance) in comparison with a baseline machine: an AMD
-K6/233. Figure \ref{nbench-all} shows the performance comparison for
-both platforms with and without compiler optimizations. The benchmark was
-compiled with the GNU C Compiler (\verb;gcc;) on both platforms, with the
-\verb;-03; and the \verb;-O0; flags for optimization and no optimization,
-respectively.
+Next, the \verb;nbench; benchmark \cite{nbench} is used to compare performance in three
+key areas (integer performance, floating point performance, and memory performance) in
+comparison with a baseline machine: an AMD K6/233.  Figure \ref{nbench-all} shows the
+performance comparison for both platforms with and without compiler optimizations.  The
+benchmark was compiled with the GNU C Compiler (\verb;gcc;) on both platforms, with the
+\verb;-03; and the \verb;-O0; flags for optimization and no optimization, respectively.
 
 \begin{figure}
 \centering
@@ -1128,11 +1118,10 @@ respectively.
 \label{nbench-all}
 \end{figure}
 
-Figure \ref{nbench-performance} sets a new baseline for performance:
-our Cortex-A15 machines. The performance results with optimizations are used to
-set the performance of the ARM processor at one in each category. Figure
-  \ref{nbench-cost} does the same for \verb;nbench; performance per dollar in
-each category.
+Figure \ref{nbench-performance} sets a new baseline for performance: the Cortex-A15
+machines.  The performance results with optimizations are used to set the performance of
+the ARM processor at one in each category.  Figure \ref{nbench-cost} does the same for
+\verb;nbench; performance per dollar in each category.
 
 \begin{figure}
 \centering
@@ -1149,90 +1138,81 @@ each category.
 \label{nbench-cost}
 \end{figure}
 
-In all three performance areas, the x86 CPU more than triples the computation
-power per dollar of the ARM CPU as measured by this benchmark. However, one can
-expect factors other than raw computing power to determine PDES performance.
+In all three performance areas, the x86 CPU more than triples the computation power per
+dollar of the ARM CPU as measured by this benchmark.  However, one can expect factors
+other than raw computing power to determine PDES performance.
 
 \chapter{Experimental Results}\label{results}
 
-We first used micro-benchmarks to demonstrate the performance of the RoCE
-transport and polling drivers. We focus on MPI-based benchmarks because these
-directly measure the performance available for PDES simulators that use MPI. The
-Network Protocol Independent Performance Evaluator (NetPIPE) \cite{NetPIPE}
-version 3.7.1 provides an MPI ping-pong benchmark that suits our needs. For more
-targeted benchmarking, we turn to the Intel MPI Benchmark (IMB) suite version
-3.2.4.
+%% ERIC: another citation please....
+
+We first used micro-benchmarks to demonstrate the performance of the RoCE transport and
+polling drivers.  We focus on MPI-based benchmarks because these directly measure the
+performance available for PDES simulators that use MPI.  The Network Protocol Independent
+Performance Evaluator (NetPIPE) \cite{NetPIPE} version 3.7.1 provides an MPI ping-pong
+benchmark that suits our needs.  For more targeted benchmarking, we turn to the Intel MPI
+Benchmark (IMB) suite version 3.2.4 \cite{}.
 
 Finally, we used Rensselaer's Optimisitic Simulation System (ROSS) to benchmark
 the final cluster's PDES performance.
 
 \section{Micro-benchmark Results}
 
-Preliminary micro-benchmark results from a cluster of two ODROID-U2 nodes are
-presented first. Next, the results of similar tests on two of the nodes
-comprising the four-node ODROID-XU cluster are shown.
+Preliminary micro-benchmark results from a cluster of two ODROID-U2 nodes are presented
+first.  Next, the results of similar tests on two of the nodes comprising the four-node
+ODROID-XU cluster are shown.
 
 \subsection{Two ODROID-U2 Nodes}
 
-Figures \ref{npmpi-llat} and \ref{npmpi-hlat} show MPI message latency for small
-messages and large messages, respectively. Latency over RoCE is 17\% to 31\%
-lower than latency over TCP for messages smaller than 260 B. In fact, RoCE
-latency remains flat throughout that region, while TCP performance degrades
-slowly as message size increases. This trend of identical performance for all
-messages from 0 to around 256 B continues throughout this section. We believe
-that this is a manifestation of a performance limitation introduced by the
-USB-to-Ethernet translation in the LAN9730 hardware.
+Figures \ref{npmpi-llat} and \ref{npmpi-hlat} show MPI message latency for small messages
+and large messages, respectively.  Latency over RoCE is 17\% to 31\% lower than latency
+over TCP for messages smaller than 260 B.  In fact, RoCE latency remains flat throughout
+that region, while TCP performance degrades slowly as message size increases.  This trend
+of identical performance for all messages from 0 to around 256 B continues throughout this
+section.  We believe that this is a manifestation of a performance limitation introduced
+by the USB-to-Ethernet translation in the LAN9730 hardware.  The trend of performance
+improvement with RoCE continues until message size rises above 8 KB, after which RoCE
+latency is significantly higher than TCP latency.
+
 
 \begin{figure}
 \includegraphics[width=\textwidth]{netpipe_lat_small}
-\caption{U2 NetPIPE MPI Latency Results, Small Message Sizes}
-\label{npmpi-llat}
+\caption{U2 NetPIPE MPI Latency Results, Small Message Sizes}\label{npmpi-llat}
 \end{figure}
-
-The trend of performance improvement with RoCE continues until message size
-rises above 8 KB, after which RoCE latency is significantly higher than TCP
-latency.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{netpipe_lat_large}
-\caption{U2 NetPIPE MPI Latency Results, Large Message Sizes}
-\label{npmpi-hlat}
+\caption{U2 NetPIPE MPI Latency Results, Large Message Sizes}\label{npmpi-hlat}
 \end{figure}
 
-The MPI bandwidth results in Figures \ref{npmpi-lbw} and
-\ref{npmpi-hbw} mirror the latency results. Interestingly, neither TCP
-nor RoCE could saturate the 100 Mbps link.
+The MPI bandwidth results in Figures \ref{npmpi-lbw} and \ref{npmpi-hbw} mirror the
+latency results.  Interestingly, neither TCP nor RoCE could saturate the 100 Mbps link.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{netpipe_bw_small}
-\caption{U2 NetPIPE MPI Bandwidth Results, Small Message Sizes}
-\label{npmpi-lbw}
+\caption{U2 NetPIPE MPI Bandwidth Results, Small Message Sizes}\label{npmpi-lbw}
 \end{figure}
-
-
 
 \begin{figure}
 \includegraphics[width=\textwidth]{netpipe_bw_large}
-\caption{U2 NetPIPE MPI Bandwidth Results, Large Message Sizes}
-\label{npmpi-hbw}
+\caption{U2 NetPIPE MPI Bandwidth Results, Large Message Sizes}\label{npmpi-hbw}
 \end{figure}
 
-In order to test transport scalability over MPI in the ODROID platform, we used
-the Intel MPI Benchmarks (IMB) suite's ``MultiPingPong'' test with four, six,
-and eight MPI processes. This benchmark creates pairs of processes that perform
-a standard ping-pong test in parallel with the other pairs. With this tool, we
-can test the effects of network communication on inter-process communication by
-making some of the process pairs communicate locally on a node and others
-communicate over the network. We suspected that the reduced CPU requirements of
-the IB transport would lead to slower scaling of latency as network and I/O bus
-congestion increases. Figure \ref{multipingpong-u2} supports this
-conjecture. In fact, the \verb;rxe; driver appears to thrive in a congested
-networking environment, while TCP/IP latency grows steadily. This is surprising
-because we expected the average latency of both transports to decrease as low
-inter-process communication latencies were averaged with longer network
-latencies. Regardless, the context switching associated with TCP appears to have
-drastic performance impact on the operation of the Exynos 4412. RoCE appears to
-eliminate this problem, with a maximum speedup of over two times TCP.
+In order to test transport scalability over MPI in the ODROID platform, we used the Intel
+MPI Benchmarks (IMB) suite's ``MultiPingPong'' test with four, six, and eight MPI
+processes.  This benchmark creates pairs of processes that perform a standard ping-pong
+test in parallel with the other pairs. With this tool, we can test the effects of network
+communication on inter-process communication by making some of the process pairs
+communicate locally on a node and others communicate over the network.  We suspected that
+the reduced CPU requirements of the IB transport would lead to slower scaling of latency
+as network and I/O bus congestion increases.  Figure \ref{multipingpong-u2} supports this
+conjecture.  In fact, the \verb;rxe; driver appears to thrive in a congested networking
+environment, while TCP/IP latency grows steadily.  This is surprising because we expected
+the average latency of both transports to decrease as low inter-process communication
+latencies were averaged with longer network latencies.  Regardless, the context switching
+associated with TCP appears to have drastic performance impact on the operation of the
+Exynos 4412.  RoCE appears to eliminate this problem, with a maximum speedup of over two
+times TCP/IP.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{pingpong_multi_zoom}
@@ -1242,11 +1222,10 @@ eliminate this problem, with a maximum speedup of over two times TCP.
 
 \subsection{Final Cluster}\label{final-cluster-benchmarks}
 
-I tested two ODROID-XU nodes equipped with AX88179 Gigabit Ethernet adaptors
-using the same NetPIPE and IMB benchmarks that are shown above for the
-ODROID-U2. We can see immediately that the purchase of the Gigabit Ethernet
-controllers has improved performance drastically, nearly halving our base TCP
-small message latency.
+I tested two ODROID-XU nodes equipped with AX88179 Gigabit Ethernet adaptors using the
+same NetPIPE and IMB benchmarks that are shown above for the ODROID-U2.  We can see
+immediately that the purchase of the Gigabit Ethernet controllers has improved performance
+drastically, nearly halving our base TCP small message latency.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{xu_lat_small}
@@ -1260,28 +1239,26 @@ small message latency.
 \label{xu-lat-large}
 \end{figure}
 
-Figures \ref{xu-lat-small} and \ref{xu-lat-large} show the
-NetPIPE MPI latency results for two nodes on the ODROID-XU cluster using Gigabit
-Ethernet controllers. A minimum message latency of 200 microseconds is an
-excellent improvement from the performance observed on the ODROID-U2.
+Figures \ref{xu-lat-small} and \ref{xu-lat-large} show the NetPIPE MPI latency results for
+two nodes on the ODROID-XU cluster using Gigabit Ethernet controllers.  A minimum message
+latency of 200 microseconds is an excellent improvement from the performance observed on
+the ODROID-U2.
 
-This time, we observe approximately a 25\% decrease in small message latency for
-the RoCE transport as compared to TCP. However, the two transports become very
-close in performance around message sizes of 384 bytes. This continues until
-1024 bytes, where TCP actually overtakes RoCE briefly. Strangely, this entire
-trend repeats for the range from 1024 to 4096 bytes and again from 4096 bytes to
-8192 bytes. After 8 KB, RoCE latency is significantly higher than TCP latency
-until 64 KB, where RoCE again takes the lead.
+This time, we observe approximately a 25\% decrease in small message latency for the RoCE
+transport as compared to TCP.  However, the two transports become very close in
+performance around message sizes of 384 bytes.  This continues until 1024 bytes, where TCP
+actually overtakes RoCE briefly.  Strangely, this entire trend repeats for the range from
+1024 to 4096 bytes and again from 4096 bytes to 8192 bytes. After 8 KB, RoCE latency is
+significantly higher than TCP latency until 64 KB, where RoCE again takes the lead.
 
-I speculated that these results could be caused by the calculation of the Cyclic
-Redundance Check (CRC) for each RoCE packet. This would explain the performance
-sensitifity to certain message sizes. In order to test this hypothesis, I ran
-the same tests again with the RoCE CRC disabled. Sure enough, performance
-improved compared to RoCE with CRC enabled, returning to data trends similar to
-what we observed from the ODROID-U2. Note that disabling the CRC does not reduce
-packet size; it merely bypasses the actual computation of the CRC. Although CRC
-computation is considered inexpensive, it clearly has a measurable effect on
-both latency and bandwidth performance here.
+We speculated that these results could be caused by the calculation of the Cyclic
+Redundance Check (CRC) for each RoCE packet.  This would explain the performance
+sensitifity to certain message sizes. In order to test this hypothesis, I ran the same
+tests again with the RoCE CRC disabled. Sure enough, performance improved compared to RoCE
+with CRC enabled, returning to data trends similar to what we observed from the
+ODROID-U2. Note that disabling the CRC does not reduce packet size; it merely bypasses the
+actual computation of the CRC. Although CRC computation is considered inexpensive, it
+clearly has a measurable effect on both latency and bandwidth performance here.
 
 Returning to the ODROID-U2 and disabling the RoCE CRC yielded no significant
 performance changes. This implies that the reduction in latency from the Gigabit
