@@ -708,230 +708,228 @@ that the cluster scales well for such purposes using a Gigabit Ethernet intercon
 
 \chapter{Methods for Reducing Network Latency}\label{latency_reduction}
 
+%% ERIC: verify this paragraph....
+
+This chapter reviews the two primary methods explored in this thesis to reduce message
+latency in the ODROID platform.  Because this work assumes that the low cost ODROID
+platform will enable the use of project specific dedicated cluster hardware, the
+replacement of various O/S services with application specific custom services is a
+reasonable approach.  While there are potentially numerous services that could be replaced
+to improve performance of PDES applications, the first and most critical service to
+consider is the network latency.  To address this issue, we pursue two strategies.  The
+first is the replacement of the TCP/IP network stack with a lightweight RDMA-based stack.
+The second strategy is to replace the interrupt-based network driver with a polling-based
+network driver.  The remainder of this chapter will discuss the details of each of these
+strategies. 
+
 \section{Software RoCE}
 
-Currently, there is only one open-source software RoCE project: the \verb;rxe;
-linux driver. Previous work in our laboratory has proven that it is capable of
-providing significant reduction in network latency when used in an x86 machine
-\cite{lancaster-10}.
+%% ERIC: verify this paragraph....
 
-System Fabric Works created the driver with at least two goals in mind: to
-provide a low-cost gateway to InfiniBand software and to function as a testbed
-for IB application development \cite{pearson-10}. In both cases, its lack of
-network hardware dependence distinguishes it from all other InfiniBand transport
-implementations. We hoped to leverage this technology for use in our low-cost
-cluster in order to bring its PDES performance closer to the performance of a
-traditional x86 cluster.
+In this work, we will replace the TCP/IP protocol stack with an RDMA over Converged
+Ethernet (RoCE) protocol stack.  This replacement occurs within the Linux kernel and
+coupled with a thin software layer to bridge the RoCE protocol to MPI, applications run on
+the resulting system do not have to be modified from their original MPI-based
+implementation. 
 
-\begin{figure}[h]
+Currently, there is only one open-source software RoCE project.  It is called the
+\verb;rxe; linux driver.  Previous work in our laboratory has proven that this driver is
+capable of providing significant reduction in network latency when used in an x86 platform
+\cite{lancaster-10}. 
+
+System Fabric Works created the \verb;rxe; driver with at two primary goals in mind: (i)
+to provide a low-cost gateway to InfiniBand software, and (ii) to function as a testbed
+for IB application development \cite{pearson-10}.  In both cases, its lack of network
+hardware dependence distinguishes it from all other InfiniBand transport implementations.
+We will leverage this technology for use in the low-cost ODROID-based cluster in order to
+help bring its PDES performance closer to the performance of a traditional x86 cluster.
+
+\begin{figure}
 \includegraphics[width=\textwidth]{rxe_linux}
 \caption{rxe Driver Role in a Linux Networking Environment \cite{pearson-10}}
 \label{rxe-linux}
 \end{figure}
 
-Figure \ref{rxe-linux} illustrates how the \verb;rxe; driver functions
-as a bridge between RDMA software and the Linux networking core.
+Figure \ref{rxe-linux} illustrates how the \verb;rxe; driver functions as a bridge between
+RDMA software and the Linux networking core.  The \verb;rxe; linux driver is divided into
+two modules: \verb;rxe; and \verb;rxe-net; \cite{pearson-10}.  \verb;rxe; provides an
+implementation of the InfiniBand transport compliant with the RoCE specification annex
+\cite{InfiniBandTARoCE-10}.  \verb;rxe-net; interfaces with the Linux networking stack to
+transmit and receive packets earmarked for \verb;rxe; \cite{pearson-10}.  The following two
+sections detail the design of these modules.
 
-The \verb;rxe; linux driver is divided into two modules: \verb;rxe; and
-\verb;rxe-net; \cite{pearson-10}. \verb;rxe; provides an implementation of the
-InfiniBand transport compliant with the RoCE specification annex
-\cite{InfiniBandTARoCE-10}. \verb;rxe-net; interfaces with the Linux networking
-stack to transmit and receive packets earmarked for \verb;rxe;
-\cite{pearson-10}. The following two sections detail the design of these
-modules.
-
-The \verb;rxe; driver also interfaces with a user-mode library called
-\verb;librxe;. This library provides the common InfiniBand verbs
-interface so that any compliant IB application can use the \verb;rxe; device
-without any modification. This library is essentially a user-mode wrapper for
- the functions found in the rxe driver, so its design will not be detailed here.
+The \verb;rxe; driver also interfaces with a user-mode library called \verb;librxe;.  This
+library provides the common InfiniBand verbs interface so that any compliant IB
+application can use the \verb;rxe; device without modification.  This library is
+essentially a user-mode wrapper for the functions found in the rxe driver, so its design
+will not be detailed here.
 
 \subsection{rxe}\label{rxe}
 
-The \verb;rxe; kernel module contains the portion of the \verb;rxe; driver that
-implements layers 4 through 7 of the OSI model. It provides a software
-implementation of the InfiniBand RoCE transport. As with all IB
-verbs applications, memory is preallocated in Memory Regions (MR), and coupled
-pairs of send and receive queues called ``queue pairs'' (QPs) are allocated by
-the application based on its needs. That is, QPs are configurable at allocation
-time in terms of both queue depth and entry length
-\cite{InfiniBandTARoCE-10}\cite{InfiniBandTABase-07}. QPs can be resized after
-they are created, but such an operation may adversely impact performance
+%% ERIC: more citations....
+
+The \verb;rxe; kernel module contains the portion of the \verb;rxe; driver that implements
+layers 4 through 7 of the OSI model \cite{}.  It provides a software implementation of the
+InfiniBand RoCE transport.  As with all IB verbs applications, memory is preallocated in
+Memory Regions (MR) and coupled to pairs of send and receive queues called ``queue
+pairs''.  (QPs) are allocated by the application based on its needs.  That is, QPs are
+configurable at allocation time in terms of both queue depth and entry length
+\cite{InfiniBandTARoCE-10,InfiniBandTABase-07}.  QPs can be resized after they are
+created, but such an operation may adversely impact performance
 \cite{InfiniBandTARoCE-10}.
 
-\begin{figure}[h]
+\begin{figure}[!t]
 \includegraphics[width=\textwidth]{rxe_overview}
-\caption{rxe Driver Overview \protect\cite{pearson-10}}
-\label{rxe-overview}
+\caption{rxe Driver Overview \protect\cite{pearson-10}}\label{rxe-overview}
 \end{figure}
 
-Figure \ref{rxe-overview} shows the dataflow among the major partitions
-of the rxe driver. When a consumer application intends to send or receive a
-message, it must submit a Work Request (WR) via an IB verbs function call. This
-function places the WR into a QP allocated for that application. If the
-application uses Shared Receive Queue (SRQ) semantics (as OpenMPI does), then
-another small wrinkle is added for receive WRs as both the SRQ and the QP
-associated with the WR must be resolved. Once the Linux kernel is notified that
-a WR has been enqueued, the QP Requester and QP Responder routines work to
-complete that request. When a WR has been completed, an entry is placed in a
-Completion Queue (CQ) that can be accessed by the verbs application. This
-Completion Queue Entry (CQE) contains information that the application needs in
-order to consider the WR completed.
+Figure \ref{rxe-overview} shows the dataflow among the major partitions of the rxe
+driver.  When a consumer application intends to send or receive a message, it must submit a
+Work Request (WR) via an IB verbs function call.  This function places the WR into a QP
+allocated for that application.  If the application uses Shared Receive Queue (SRQ)
+semantics (as OpenMPI does), then another small wrinkle is added for receive WRs as both
+the SRQ and the QP associated with the WR must be resolved.  Once the Linux kernel is
+notified that a WR has been enqueued, the QP Requester and QP Responder routines work to
+complete that request.  When a WR has been completed, an entry is placed in a Completion
+Queue (CQ) that can be accessed by the verbs application.  This Completion Queue Entry
+(CQE) contains information that the application needs in order to consider the WR
+completed.
 
-\begin{figure}[h]
+The Layer 4 portion of the \verb;rxe; driver's Receive routine is illustrated in Figure
+\ref{rxe-recv}.  This function receives a socket buffer (SKB) from \verb;rxe-net; as an
+input.  It inspects the SKB header in order to determine whether the message is a response
+packet or a request packet and places the SKB into a corresponding packet list in the
+receive queue.
+
+\begin{figure}[!t]
 \includegraphics[width=\textwidth]{rxe_recv}
-\caption{rxe Receive Task \protect\cite{pearson-10}}
-\label{rxe-recv}
+\caption{rxe Receive Task \protect\cite{pearson-10}}\label{rxe-recv}
 \end{figure}
 
-The Layer 4 portion of the \verb;rxe; driver's Receive routine is illustrated in
-Figure \ref{rxe-recv}. This function receives a socket buffer (SKB)
-from \verb;rxe-net; as an input. It inspects the SKB header in order to
-determine whether the message is a response packet or a request packet and
-places the SKB into a corresponding packet list in the receive queue.
-
-\begin{figure}[h]
+\begin{figure}[!t]
 \includegraphics[width=\textwidth]{rxe_resp}
-\caption{rxe QP Responder Architecture \protect\cite{pearson-10}}
-\label{rxe-resp}
+\caption{rxe QP Responder Architecture \protect\cite{pearson-10}}\label{rxe-resp}
 \end{figure}
 
-The QP Responder's architecture is illustrated in Figure
-  \ref{rxe-resp}. The Responder partition contains functions that respond to
-incoming requests for data. Such a request can be in one of two forms: a socket
-buffer (SKB) sent from \verb;rxe-net; or a WR from a receive queue. For both
-cases, the Responder retrieves the requested data and generates a CQE
-\cite{pearson-10}. If the connection associated with the request uses Reliable
-Connection (RC) semantics, then a response message is generated and placed in
-the send queue \cite{InfiniBandTARoCE-10}\cite{pearson-10}. Additonally, if a
-request represents an atomic operation, the responder must save some state in
-order to support retries for all message semantics and unordered read/write
-operations for RDMA semantics. In Figure \ref{rxe-resp}, this is
-represented by the ``Responder Resources'' data structure.
+The QP Responder's architecture is illustrated in Figure \ref{rxe-resp}.  The Responder
+partition contains functions that respond to incoming requests for data.  Such a request
+can be in one of two forms: a socket buffer (SKB) sent from \verb;rxe-net; or a WR from a
+receive queue.  For both cases, the Responder retrieves the requested data and generates a
+CQE \cite{pearson-10}.  If the connection associated with the request uses Reliable
+Connection (RC) semantics, then a response message is generated and placed in the send
+queue \cite{InfiniBandTARoCE-10,pearson-10}.  In addition, if a request represents an
+atomic operation, the responder must save some state in order to support retries for all
+message semantics and unordered read/write operations for RDMA semantics.  In Figure
+\ref{rxe-resp}, this is represented by the ``Responder Resources'' data structure.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{rxe_req}
-\caption{rxe QP Requester Architecure \protect\cite{pearson-10}}
-\label{rxe-req}
+\caption{rxe QP Requester Architecure \protect\cite{pearson-10}}\label{rxe-req} 
 \end{figure}
 
-The QP Requester's architecture is illustrated in Figure
-  \ref{rxe-req}. The Requester is further divided into an Initiator task and a
-Completer task. The Initiator simply creates a request message for every entry
-in the send queue. The Completer is active only for communication using the
-Reliable Connection (RC) channel semantics. It waits for responses from the
-remote node to indicate that each WQE has been retired\cite {pearson-10}. It
-then generates a CQE and releases the WQE. If a message fails and must be
-retried, the Initiator can be reset to the point where the Completer is
-waiting. For all other channel sematics, the WQE is retired and released
-immediately by the Initiator without invoking the Completer.
+The QP Requester's architecture is illustrated in Figure \ref{rxe-req}.  The Requester is
+further divided into an Initiator task and a Completer task.  The Initiator simply creates
+a request message for every entry in the send queue.  The Completer is active only for
+communication using the Reliable Connection (RC) channel semantics.  It waits for
+responses from the remote node to indicate that each WQE has been retired \cite
+{pearson-10}. It then generates a CQE and releases the WQE. If a message fails and must be
+retried, the Initiator can be reset to the point where the Completer is waiting.  For all
+other channel sematics, the WQE is retired and released immediately by the Initiator
+without invoking the Completer.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{rxe_arbiter}
-\caption{rxe Arbiter Architecture \protect\cite{pearson-10}}
-\label{rxe-arbiter}
+\caption{rxe Arbiter Architecture \protect\cite{pearson-10}}\label{rxe-arbiter}
 \end{figure}
 
-The Arbiter task is illustrated in Figure \ref{rxe-arbiter}. It
-schedules actual transmission of outgoing messages. It implements a round-robin
-scheduling policy among all active send queues, and it also handles flow control
-in order to avoid packet dropping in Linux due to queue overrun
-\cite{pearson-10}. This flow control includes a static minimum time between
-packet transmissions. This parameter and others in the Arbiter can be tuned
-while the module is loaded, and the Arbiter can even be disabled
-altogether. In our research with the ODROID-U2, lowering or removing these
-timing thresholds had no effect on end-to-end latency on a 100 Mbps Ethernet
-link.
+The Arbiter task is illustrated in Figure \ref{rxe-arbiter}.  It schedules actual
+transmission of outgoing messages; it implements a round-robin scheduling policy among all
+active send queues; and, it also handles flow control in order to avoid packet dropping in
+Linux due to queue overrun \cite{pearson-10}.  This flow control includes a static minimum
+time between packet transmissions.  This parameter and others in the Arbiter can be tuned
+while the module is loaded; the Arbiter can even be disabled altogether.  In our work with
+the ODROID-U2, lowering or removing these timing thresholds had no effect on end-to-end
+latency on a 100 Mbps Ethernet link.
 
 \subsection{rxe-net}
 
-In many ways, the \verb;rxe-net; module functions as a wrapper for the
-\verb;rxe; transport module described in Section \ref{rxe}. It
-implements most of layer 3 of RoCE, allowing the layer 4 and higher functions of
-\verb;rxe; to integrate with the existing layer 2 networking implementation in
-Linux by forming a bridge that communicates with Linux on both the RDMA and
-Ethernet sides. It can be envisioned as the horizontal portion of the \verb;rxe;
-driver in Figure \ref{rxe-linux}. In addition to facilitating this
-communication and marshalling of data, \verb;rxe-net; writes the appropriate
-combination of InfiniBand and MAC headers to each packet in order to fulfill the
-requirements of the RoCE specification \cite{pearson-10}
-\cite{InfiniBandTARoCE-10}. In accordance with the specification, the Ethernet
-MAC (layer 2) header is identical to a normal ethernet packet except for the
-ethertype value, which is set to \verb;0x8915; for all RoCE packets
-\cite{InfiniBandTARoCE-10}. Figure \ref{roce-packet} compares normal
-InfiniBand packets to RoCE packets \cite{ayoub-11} \cite{InfiniBandTABase-07}
-\cite{InfiniBandTARoCE-10}.
+In many ways, the \verb;rxe-net; module functions as a wrapper for the \verb;rxe;
+transport module described in Section \ref{rxe}.  It implements most of layer 3 of RoCE,
+allowing the layer 4 and higher functions of \verb;rxe; to integrate with the existing
+layer 2 networking implementation in Linux by forming a bridge that communicates with
+Linux on both the RDMA and Ethernet sides.  It can be envisioned as the horizontal portion
+of the \verb;rxe; driver in Figure \ref{rxe-linux}.  In addition to facilitating this
+communication and marshalling of data, \verb;rxe-net; writes the appropriate combination
+of InfiniBand and MAC headers to each packet in order to fulfill the requirements of the
+RoCE specification \cite{pearson-10,InfiniBandTARoCE-10}.  In accordance with the
+specification, the Ethernet MAC (layer 2) header is identical to a normal ethernet packet
+except for the ethertype value, which is set to \verb;0x8915; for all RoCE packets
+\cite{InfiniBandTARoCE-10}.  Figure \ref{roce-packet} compares normal InfiniBand packets
+to RoCE packets \cite{ayoub-11,InfiniBandTABase-07,InfiniBandTARoCE-10}.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{roce_packet}
-\caption{RoCE Packet Composition \cite{ayoub-11}}
-\label{roce-packet}
+\caption{RoCE Packet Composition \cite{ayoub-11}}\label{roce-packet}
 \end{figure}
 
 \subsection{Porting rxe to the ODROID Platform}
 
-Although \verb;rxe; is designed to operate with any Ethernet adaptor, it also
-depends on the IB libraries in the Linux kernel. These libraries, in turn,
-depend on the presence of a PCI bus in the host system. Neither the ODROID-U2
-nor the ODROID-XU has PCI support. Simply enabling PCI support in the Linux
-kernel configuration creates some incompatibilites that must be resolved before
-the kernel will work correctly. After some trial and error, I found a solution:
-the addition of the line in Figure \ref{pci_code} near the beginning of
-\verb;drivers/pci/probe.c;.
+Although \verb;rxe; is designed to operate with any Ethernet adaptor, it also depends on
+the IB libraries in the Linux kernel.  These libraries, in turn, depend on the presence of
+a PCI bus in the host system.  Neither the ODROID-U2 nor the ODROID-XU has PCI support.
+Simply enabling PCI support in the Linux kernel configuration creates some
+incompatibilites that must be resolved before the kernel will work correctly.  After some
+trial and error, a solution was found: the addition of the line in Figure \ref{pci_code}
+near the beginning of \verb;drivers/pci/probe.c;.
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 \begin{verbatim}
 #define pcibios_assign_all_busses() 1
 \end{verbatim}
-\caption{Code Added to drivers/pci/probe.c}
-\label{pci_code}
+\caption{Code Added to drivers/pci/probe.c}\label{pci_code}
 \end{figure}
 
-The most significant porting effort involved updating the \verb;rxe; driver to
-work correctly with the ARM linux memory model. ARM Linux has several subtle
-differences from x86 Linux in the way the kernel maps memory. This resulted in
-some incompatibilities with the rxe code. Chiefly, the rxe code does not support
-the mapping of high memory (userspace memory) into low memory (kernel memory) at
-runtime. This is an important feature in modern IB drivers because it allows
-memory regions to be directly accessed by userspace programs, eliminating some
-need for high-latency context switches. \verb;rxe; currently uses the
-\verb;page_address(); macro to get virtual page addresses. These calls should be
-replaced by \verb;kmap(); or \verb;kmap_atomic(); in order to make them safe for
-use on high memory pages. However, each \verb;kmap(); call requires a
-corresponding \verb;kunmap();. Some of the \verb;rxe; DMA memory mapping
-functions use the \verb;page_address(); macro to return an address for DMA
-operations. This is not an intended use for \verb;kmap();, because the kernel
-has a limited number of such mappings available. It is also difficult to change,
-because the \verb;page_address(); macro does not require an unmap call, while
-\verb;kmap(); requires a matching \verb;kunmap(); call. We were able to run the
-driver recoded with \verb;kmap(); calls for use with micro-benchmarks, but it is
-unstable when used with MPI applications. We concluded that a major overhaul of
-the \verb;rxe; DMA architecture would be required to support high memory on the
-driver side.
+The most significant porting effort involved updating the \verb;rxe; driver to work
+correctly with the ARM linux memory model.  ARM Linux has several subtle differences from
+x86 Linux in the way the kernel maps memory.  This resulted in some incompatibilities with
+the rxe code.  Chiefly, the rxe code does not support the mapping of high memory
+(userspace memory) into low memory (kernel memory) at runtime.  This is an important
+feature in modern IB drivers because it allows memory regions to be directly accessed by
+userspace programs, eliminating some need for high-latency context switches.  \verb;rxe;
+currently uses the \verb;page_address(); macro to get virtual page addresses.  These calls
+should be replaced by \verb;kmap(); or \verb;kmap_atomic(); in order to make them safe for
+use on high memory pages.  However, each \verb;kmap(); call requires a corresponding
+\verb;kunmap();.  Some of the \verb;rxe; DMA memory mapping functions use the
+\verb;page_address(); macro to return an address for DMA operations.  This is not an
+intended use for \verb;kmap();, because the kernel has a limited number of such mappings
+available.  It is also difficult to change, because the \verb;page_address(); macro does
+not require an unmap call, while \verb;kmap(); requires a matching \verb;kunmap(); call.
+We were able to run the driver recoded with \verb;kmap(); calls for use with
+micro-benchmarks, but it is unstable when used with MPI applications.  We concluded that a
+major overhaul of the \verb;rxe; DMA architecture would be required to support high memory
+on the driver side.
 
-Luckily, this problem is easily resolved by configuring the kernel to map all
-memory to a single region, eliminating the distinction between user and kernel
-address space. The ODROID-U2 and ODROID-XU only have 2046 MB of main memory, so
-a 32-bit processor can map it all into a single address space. However, the
-\verb;vmalloc; virtual memory region can overlap with some of this space,
-causing the Linux kernel to ignore or truncate regions of address space that
-should be mapped to physical memory. This limitation can be partially bypassed
-by reconfiguring the size of the \verb;vmalloc; region using Linux kernel
-parameters \cite{vmalloc-overlap}. Additionally, it is possible to move the
-region by altering the values of the \verb;VMALLOC_START; and \verb;VMALLOC_END;
-macros, then shifting the \verb;IO_ADDRESS; macro accordingly so memory-mapped
-I/O devices still have their own address space. For the ODROID-XU, this process
-enabled the use of 1884 MB of memory, while the remaining 163 MB were dedicated
-to I/O devices. The final address space mapping is shown in Figure
-  \ref{addrmap}.
+Luckily, this problem is easily resolved by configuring the kernel to map all memory to a
+single region, eliminating the distinction between user and kernel address space.  The
+ODROID-U2 and ODROID-XU only have 2046 MB of main memory, so a 32-bit processor can map it
+all into a single address space.  However, the \verb;vmalloc; virtual memory region can
+overlap with some of this space, causing the Linux kernel to ignore or truncate regions of
+address space that should be mapped to physical memory.  This limitation can be partially
+bypassed by reconfiguring the size of the \verb;vmalloc; region using Linux kernel
+parameters \cite{vmalloc-overlap}.  In addition, it is possible to move the region by
+altering the values of the \verb;VMALLOC_START; and \verb;VMALLOC_END; macros, then
+shifting the \verb;IO_ADDRESS; macro accordingly so memory-mapped I/O devices still have
+their own address space.  For the ODROID-XU, this process enabled the use of 1884 MB of
+memory, while the remaining 163 MB were dedicated to I/O devices.  The final address space
+mapping is shown in Figure \ref{addrmap}.
 
 %% The migration from the ODROID-U2 to the ODROID-XU presented some additional
 %% challenges in the porting effort for the rxe driver. I encountered a bug that
 %% disrupted the marshalling of Work Requests from userspace to kernel space. This
 %% bug was a symptom of TODO. This problem can be solved by TODO.
 
-\begin{figure}[h]
+\begin{figure}
 \begin{center}
 \begin{verbatim}
 Memory: 2046MB = 2046MB total
@@ -954,73 +952,69 @@ Virtual kernel memory layout:
 
 \section{Polling the Network Adaptor}
 
-Previous research with network drivers has shown that interrupt latency in a
-multi-tasking operating system can be eliminated with a polling network driver
-\cite{dovrolis-01}\cite{liu-09}. In fact, the Linux TCP/IP networking stack has
-moved to a hybrid of polling and interrupt-based event processing that is
-intended to reduce average network latency in high-traffic situations. In
-Parallel Discrete Event Simulation on multi-core processors, it may even be
-advantageous to give up a processor core to a polling driver in order to
-significantly reduce message latency for all packets. The big.LITTLE processor
-configurations in products like the ODROID-XU make this prospect especially
-enticing when one considers that polling could be handled by one of the
+Previous research with network drivers has shown that interrupt latency in a multi-tasking
+operating system introduces noticable latency that can be eliminated with a polling
+network driver \cite{dovrolis-01,liu-09}.  In fact, the Linux TCP/IP networking stack has
+moved to a hybrid of polling and interrupt-based event processing that is intended to
+reduce average network latency in high-traffic situations.  In Parallel Discrete Event
+Simulation on multi-core processors, it may even be advantageous to give up a processor
+core to a polling driver in order to significantly reduce message latency for all packets.
+The big.LITTLE processor configurations in products like the ODROID-XU make this prospect
+especially enticing when one considers that polling could be handled by one of the
 ``little'' cores, leaving all the ``big'' cores available for event processing.
 
-Although the ability to symetrically multi-process with both ``big'' and
-``little'' cores is not yet present for Linux in the ODROID-XU, we pursued this
-goal in the hope that the trade of a ``big'' core for reduced latency would
-still be worthwhile. Doug Weber and Zakaria Aldeneh began this study by creating
-an EHCI polling driver for use with the standard ODROID-XU network
-adaptors. Weber later extended this work to an xHCI polling driver used
-with the Gigabit Ethernet adaptors for the ODROID-XU.
+Although the ability to symetrically multi-process with both ``big'' and ``little'' cores
+is not yet present for Linux in the ODROID-XU, we pursued this goal in the hope that the
+trade of a ``big'' core for reduced latency would still be worthwhile.  Two senior project
+students (Doug Weber and Zakaria Aldeneh) began this study by creating an EHCI polling
+driver for use with the standard ODROID-XU network adapters.  Weber later extended this
+work to an xHCI polling driver used with the Gigabit Ethernet adaptors for the ODROID-XU.
 
 \subsection{EHCI Polling Driver}
 
-Initial work with the EHCI Polling Driver by Doug Weber and Zakaria Aldeneh
-revealed that it could reduce network message latency over TCP by as much as
-35\%. This motivated the creation of a similarly architected polling driver
-for use with the USB 3 to Gigabit Ethernet adaptors.
+Initial work with the EHCI Polling Driver revealed that it could reduce network message
+latency over TCP by as much as 35\%.  This motivated the creation of a similarly
+architected polling driver for use with the USB 3 to Gigabit Ethernet adapters on the
+ODROID-XU platform.
 
 \subsection{xHCI Polling Driver}
 
-The eXtensible Host Controller Interface (xHCI) specification \cite{xhci}
-describes a structure called a Transfer Request Block (TRB) that represents a
-single transaction between a driver and a USB controller. TRBs are placed on a
-data structure called a ``ring,'' which is similar to a circular linked list. We
-are particularly interested in the Event Ring, which is used by the host
-controller to notify a driver of hardware events, including received data.
+The eXtensible Host Controller Interface (xHCI) specification \cite{xhci} describes a
+structure called a Transfer Request Block (TRB) that represents a single transaction
+between a driver and a USB controller.  TRBs are placed on a data structure called a
+``ring,'' which is similar to a circular linked list.  We are particularly interested in
+the Event Ring, which is used by the host controller to notify a driver of hardware
+events, including received data.
 
-The architecture of the xHCI polling driver used in this study is contained
-within the \verb;xhci_hcd; Linux kernel module. When loaded, the module performs
-its normal function in interrupt mode. In interrupt mode, the controller raises
-an interrupt when it places a TRB onto the Event Ring. In response, the
-operating system executes the Interrupt Service Routine (ISR) associated with the
-interrupt. In turn, the ISR schedules a Deferred Procedure Call (DPC) that
-performs the necessary processing to handle all unprocessed TRBs on the Event
-Ring. Although this process is very fast, some overhead is incurred by the ISR.
+The architecture of the xHCI polling driver used in this study is contained within the
+\verb;xhci_hcd; Linux kernel module.  When loaded, the module performs its normal function
+in interrupt mode.  In interrupt mode, the controller raises an interrupt when it places a
+TRB onto the Event Ring.  In response, the operating system executes the Interrupt Service
+Routine (ISR) associated with the interrupt.  In turn, the ISR schedules a Deferred
+Procedure Call (DPC) that performs the necessary processing to handle all unprocessed TRBs
+on the Event Ring.  Although this process is very fast, some overhead is incurred by the
+ISR.
 
-When the \verb;poll_option; module parameter is set to 1, it spawns a kernel
-thread that loops forever, checking the Event Ring for new TRBs. In this way,
-the driver is able to process incoming events immediately, without waiting for
-the context switches associated with an ISR. Naturally, this thread completely
-utilizes one CPU core. In this case, we hoped that the mitigation of interrupt
-latency can improve PDES performance enough to offset the removal of one event
-processing core.
+When the \verb;poll_option; module parameter is set to 1, it spawns a kernel thread that
+loops forever, checking the Event Ring for new TRBs.  In this way, the driver is able to
+process incoming events immediately, without waiting for the context switches associated
+with an ISR.  Naturally, this thread completely utilizes one CPU core.  In this case, we
+hoped that the mitigation of interrupt latency can improve PDES performance enough to
+offset the removal of one event processing core.
 
 Unfortunately, stability issues with this implementation made it impossible to
-sufficiently test its performance with MPI network communication.
+sufficiently test its performance with MPI network communication at this time.
 
 \chapter{Cluster Implementation and Testing}\label{cluster}
 
-Three primary testing platforms were used for the experiments presented in this
-thesis. OpenMPI is used for all MPI communication. Its transport layer selection
-feature is used to isolate either the TCP/IP or RoCE transport for individual
-tests.
+Three primary testing platforms were used for the experiments presented in this thesis.
+OpenMPI is used for all MPI communication.  Its transport layer selection feature is used
+to isolate either the TCP/IP or RoCE transport for individual tests.
 
 \section{ODROID-U2}
 
 Preliminary work with RoCE was tested on two ODROID-U2 computers running Debian
-7.0-armhf with Linux kernel 3.0.90. The ODROID-U2 nodes are connected to an
+7.0-armhf with Linux kernel 3.0.90.  The ODROID-U2 nodes are connected to an
 unmanaged Gigabit switch through Category 6 Ethernet cables. Unless specified
 otherwise, the Linux network MTU is set to 1488 bytes and the RoCE MTU is set to
 1024 bytes.
@@ -1189,7 +1183,7 @@ messages from 0 to around 256 B continues throughout this section. We believe
 that this is a manifestation of a performance limitation introduced by the
 USB-to-Ethernet translation in the LAN9730 hardware.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{netpipe_lat_small}
 \caption{U2 NetPIPE MPI Latency Results, Small Message Sizes}
 \label{npmpi-llat}
@@ -1199,7 +1193,7 @@ The trend of performance improvement with RoCE continues until message size
 rises above 8 KB, after which RoCE latency is significantly higher than TCP
 latency.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{netpipe_lat_large}
 \caption{U2 NetPIPE MPI Latency Results, Large Message Sizes}
 \label{npmpi-hlat}
@@ -1209,7 +1203,7 @@ The MPI bandwidth results in Figures \ref{npmpi-lbw} and
 \ref{npmpi-hbw} mirror the latency results. Interestingly, neither TCP
 nor RoCE could saturate the 100 Mbps link.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{netpipe_bw_small}
 \caption{U2 NetPIPE MPI Bandwidth Results, Small Message Sizes}
 \label{npmpi-lbw}
@@ -1217,7 +1211,7 @@ nor RoCE could saturate the 100 Mbps link.
 
 
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{netpipe_bw_large}
 \caption{U2 NetPIPE MPI Bandwidth Results, Large Message Sizes}
 \label{npmpi-hbw}
@@ -1240,7 +1234,7 @@ latencies. Regardless, the context switching associated with TCP appears to have
 drastic performance impact on the operation of the Exynos 4412. RoCE appears to
 eliminate this problem, with a maximum speedup of over two times TCP.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{pingpong_multi_zoom}
 \caption{Scaling of U2 Message Latency with Communication Congestion}
 \label{multipingpong-u2}
@@ -1254,13 +1248,13 @@ ODROID-U2. We can see immediately that the purchase of the Gigabit Ethernet
 controllers has improved performance drastically, nearly halving our base TCP
 small message latency.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{xu_lat_small}
 \caption{XU NetPIPE MPI Latency Results, Small Message Sizes}
 \label{xu-lat-small}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{xu_lat_large}
 \caption{XU NetPIPE MPI Latency Results, Large Message Sizes}
 \label{xu-lat-large}
@@ -1296,13 +1290,13 @@ algorithm that were previously hidden by the high latency of the LAN9730
 ethernet controller. In accordance with this finding, our PDES tests will be run
 with RoCE CRC disabled.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{xu_bw_small}
 \caption{XU NetPIPE MPI Bandwidth Results, Small Message Sizes}
 \label{xu-bw-small}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{xu_bw_large}
 \caption{XU NetPIPE MPI Bandwidth Results, Large Mesage Sizes}
 \label{xu-bw-large}
@@ -1316,7 +1310,7 @@ Gigabit level. Now that we have observed this behavior from two different
 USB-to-ethernet controllers, we must conclude that this is a limitation inherent
 to such an architecture.
 
-\begin{figure}[h]
+\begin{figure}
 \includegraphics[width=\textwidth]{xu_imb}
 \caption{Scaling of XU Message Latency with Communication Congestion}
 \label{xu-imb-low}
