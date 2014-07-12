@@ -88,7 +88,7 @@ that, by necessity, must be shared.  The use of lower latency hardware such as I
 can nearly double the hardware cost and the replacement of the TCP/IP network stack on a
 shared platform is generally infeasible as other users of the shared platform (with
 coarse-grained parallel computations) are well served by the TCP/IP stack and unwilling to
-rewrite their applications to use the APIs of alternate network stacks.  Futhermore,
+rewrite their applications to use the APIs of alternate network stacks.  Furthermore,
 configuring the hardware with multiple messaging transport layers is also quite difficult
 to setup and not generally supported.
 
@@ -108,7 +108,7 @@ However, when comparing the ODROID-based cluster performance for cost, both in t
 operations per second and Parallel Discrete Event Simulation performance, we find that its
 performance does not justify its price for either application.
 
-\chapter*{Acknowledgements}
+\chapter*{Acknowledgments}
 
 %% TODO
 
@@ -124,7 +124,7 @@ performance does not justify its price for either application.
 
 The applications of Beowulf clusters have expanded since Becker \emph{et al} created the
 first one in 1995 \cite{becker-95}.  Although originally intended for scientific
-computing, this ``network-of-worstations'' technology has also been adopted for use in
+computing, this ``network-of-workstations'' technology has also been adopted for use in
 data centers \cite{liu-13}, cloud computing \cite{trivedi-11}, and research in
 fine-grained parallel computing \cite{aad-03}.  Because the processing nodes are self
 contained and connected through a network, the bandwidth and latency of their interconnect
@@ -185,13 +185,13 @@ optimistically synchronized \cite{fujimoto-90,jefferson-85} PDES.
 
 The primary challenge and opportunity for this research is the high network latency of
 small form factor computing in general and experimentally with the ODROID platform.  It is
-a challenge because these systems are not designed specifically for high perfornace
-networking and the internal hardware buses do not have bigh bandwidth capabilites.
+a challenge because these systems are not designed specifically for high performance
+networking and the internal hardware buses do not have high bandwidth capabilities.
 Fortunately these devices are beginning to support the USB 3 protocol which increases
 their throughput capabilities.  It is an opportunity because the low cost nature of the
 solution makes it feasible to have application specific parallel compute platforms and
 thus opens the door to customization of the operating system services to better serve a
-specific application.  Since this latter opportunity is readily expoitable, this research
+specific application.  Since this latter opportunity is readily exploitable, this research
 will focus of it.  In particular, this thesis will explore two methods to reducing that
 latency at no additional cost, namely: (i) replacing the O/S network driver with a
 software-based Remote Direct Memory Access (RDMA) over Converged Ethernet (RoCE) driver,
@@ -219,7 +219,7 @@ Chapter \ref{results} provides the results of these tests and attempts to relate
 cluster's performance to its cost.  The results of a similar set of tests on a traditional
 Beowulf cluster are provided for comparison.
 
-Chapter \ref{analysis} contains a cost/performance benefit analysis of the ORDOID-based
+Chapter \ref{analysis} contains a cost/performance benefit analysis of the ODROID-based
 platform against a conventional x86-based platform.  
 
 Chapter \ref{conclusions} contextualizes the results of this research and suggests ways to
@@ -614,14 +614,13 @@ board features the following hardware components \cite{odroid-u2-board-detail}:
 
 %% ERIC, verify the last 2 sentences that i added....
 
-While the ODROID-U2 features impressive raw processing power for its size and
-price, its small amount of main memory can adversely impact performance for even
-moderately sized parallel simulation models.  Additionally, the LAN9730 network
-controller is even slower than we feared, routinely reaching end-to-end TCP
-small message latency over 500 microseconds.  This is due, in part, to the fact that the
-ODROID-U2 Ethernet port comes in over the USB 2.0 bus which has a highly limiting
-throughput performance.  Even though it is advertised as having a 10/100 Ethernet port,
-the performance is well below expected.
+While the ODROID-U2 features impressive raw processing power for its size and price, its
+small amount of main memory can adversely impact performance for even moderately sized
+parallel simulation models.  In addition, the LAN9730 network controller is even slower
+than we feared, routinely reaching end-to-end TCP small message latency over 500
+microseconds.  This is due, in part, to the fact that the ODROID-U2 Ethernet port comes in
+over the USB 2.0 bus which has a highly limiting throughput performance.  Even though it
+is advertised as having a 10/100 Ethernet port, the performance is well below expected.
 
 \subsection{ODROID-XU}
 
@@ -733,7 +732,7 @@ the resulting system do not have to be modified from their original MPI-based
 implementation. 
 
 Currently, there is only one open-source software RoCE project.  It is called the
-\verb;rxe; linux driver.  Previous work in our laboratory has proven that this driver is
+\verb;rxe; Linux driver.  Previous work in our laboratory has proven that this driver is
 capable of providing significant reduction in network latency when used in an x86 platform
 \cite{lancaster-10}. 
 
@@ -751,7 +750,7 @@ help bring its PDES performance closer to the performance of a traditional x86 c
 \end{figure}
 
 Figure \ref{rxe-linux} illustrates how the \verb;rxe; driver functions as a bridge between
-RDMA software and the Linux networking core.  The \verb;rxe; linux driver is divided into
+RDMA software and the Linux networking core.  The \verb;rxe; Linux driver is divided into
 two modules: \verb;rxe; and \verb;rxe-net; \cite{pearson-10}.  \verb;rxe; provides an
 implementation of the InfiniBand transport compliant with the RoCE specification annex
 \cite{InfiniBandTARoCE-10}.  \verb;rxe-net; interfaces with the Linux networking stack to
@@ -824,7 +823,7 @@ message semantics and unordered read/write operations for RDMA semantics.  In Fi
 
 \begin{figure}
 \includegraphics[width=\textwidth]{rxe_req}
-\caption{rxe QP Requester Architecure \protect\cite{pearson-10}}\label{rxe-req} 
+\caption{rxe QP Requester Architecture \protect\cite{pearson-10}}\label{rxe-req} 
 \end{figure}
 
 The QP Requester's architecture is illustrated in Figure \ref{rxe-req}.  The Requester is
@@ -834,7 +833,7 @@ communication using the Reliable Connection (RC) channel semantics.  It waits fo
 responses from the remote node to indicate that each WQE has been retired \cite
 {pearson-10}. It then generates a CQE and releases the WQE. If a message fails and must be
 retried, the Initiator can be reset to the point where the Completer is waiting.  For all
-other channel sematics, the WQE is retired and released immediately by the Initiator
+other channel semantics, the WQE is retired and released immediately by the Initiator
 without invoking the Completer.
 
 \begin{figure}
@@ -862,7 +861,7 @@ of the \verb;rxe; driver in Figure \ref{rxe-linux}.  In addition to facilitating
 communication and marshalling of data, \verb;rxe-net; writes the appropriate combination
 of InfiniBand and MAC headers to each packet in order to fulfill the requirements of the
 RoCE specification \cite{pearson-10,InfiniBandTARoCE-10}.  In accordance with the
-specification, the Ethernet MAC (layer 2) header is identical to a normal ethernet packet
+specification, the Ethernet MAC (layer 2) header is identical to a normal Ethernet packet
 except for the ethertype value, which is set to \verb;0x8915; for all RoCE packets
 \cite{InfiniBandTARoCE-10}.  Figure \ref{roce-packet} compares normal InfiniBand packets
 to RoCE packets \cite{ayoub-11,InfiniBandTABase-07,InfiniBandTARoCE-10}.
@@ -874,11 +873,11 @@ to RoCE packets \cite{ayoub-11,InfiniBandTABase-07,InfiniBandTARoCE-10}.
 
 \subsection{Porting rxe to the ODROID Platform}
 
-Although \verb;rxe; is designed to operate with any Ethernet adaptor, it also depends on
+Although \verb;rxe; is designed to operate with any Ethernet adapter, it also depends on
 the IB libraries in the Linux kernel.  These libraries, in turn, depend on the presence of
 a PCI bus in the host system.  Neither the ODROID-U2 nor the ODROID-XU has PCI support.
 Simply enabling PCI support in the Linux kernel configuration creates some
-incompatibilites that must be resolved before the kernel will work correctly.  After some
+incompatibilities that must be resolved before the kernel will work correctly.  After some
 trial and error, a solution was found: the addition of the line in Figure \ref{pci_code}
 near the beginning of \verb;drivers/pci/probe.c;.
 
@@ -891,7 +890,7 @@ near the beginning of \verb;drivers/pci/probe.c;.
 \end{figure}
 
 The most significant porting effort involved updating the \verb;rxe; driver to work
-correctly with the ARM linux memory model.  ARM Linux has several subtle differences from
+correctly with the ARM Linux memory model.  ARM Linux has several subtle differences from
 x86 Linux in the way the kernel maps memory.  This resulted in some incompatibilities with
 the rxe code.  Chiefly, the rxe code does not support the mapping of high memory
 (userspace memory) into low memory (kernel memory) at runtime.  This is an important
@@ -950,7 +949,7 @@ Virtual kernel memory layout:
 \label{addrmap}
 \end{figure}
 
-\section{Polling the Network Adaptor}
+\section{Polling the Network Adapter}
 
 Previous research with network drivers has shown that interrupt latency in a multi-tasking
 operating system introduces noticable latency that can be eliminated with a polling
@@ -963,12 +962,12 @@ The big.LITTLE processor configurations in products like the ODROID-XU make this
 especially enticing when one considers that polling could be handled by one of the
 ``little'' cores, leaving all the ``big'' cores available for event processing.
 
-Although the ability to symetrically multi-process with both ``big'' and ``little'' cores
+Although the ability to symmetrically multi-process with both ``big'' and ``little'' cores
 is not yet present for Linux in the ODROID-XU, we pursued this goal in the hope that the
 trade of a ``big'' core for reduced latency would still be worthwhile.  Two senior project
 students (Doug Weber and Zakaria Aldeneh) began this study by creating an EHCI polling
 driver for use with the standard ODROID-XU network adapters.  Weber later extended this
-work to an xHCI polling driver used with the Gigabit Ethernet adaptors for the ODROID-XU.
+work to an xHCI polling driver used with the Gigabit Ethernet adapters for the ODROID-XU.
 
 \subsection{EHCI Polling Driver}
 
@@ -1021,7 +1020,7 @@ MTU is set to 1488 bytes and the RoCE MTU is set to 1024 bytes.
 \section{ODROID-XU}
 
 The success of RoCE and EHCI polling experiments motivated the purchase of four ODROID-XU
-nodes as well as Gigabit Ethernet adaptors for all four nodes.  All tests in theis section
+nodes as well as Gigabit Ethernet adapters for all four nodes.  All tests in this section
 are run on four ODROID-XU computers running Debian 8.0-armhf with Linux kernel 3.4.76.
 The Linux network MTU is set to 1500 bytes, and the RoCE MTU is set to 1024 bytes.
 
@@ -1035,7 +1034,7 @@ The total cost of the ODROID-XU computing hardware for this cluster is calculate
     \hline
     \textbf{Component} & \textbf{Cost} \\ \hline
     ODROID-XU board $\times$ 4 & \$169.00 $\times$ 4 \\
-    ASIX GbE Adaptor $\times$ 4 & \$25.00 $\times$ 4 \\
+    ASIX GbE Adapter $\times$ 4 & \$25.00 $\times$ 4 \\
     16 GB Class 10 MicroSD card, various vendors $\times$ 4 & \$10.99 $\times$ 4 \\
     Netgear GS108 GbE switch & \$45.99 \\
     \hline
@@ -1153,7 +1152,7 @@ Performance Evaluator (NetPIPE) \cite{NetPIPE} version 3.7.1 provides an MPI pin
 benchmark that suits our needs.  For more targeted benchmarking, we turn to the Intel MPI
 Benchmark (IMB) suite version 3.2.4 \cite{}.
 
-Finally, we used Rensselaer's Optimisitic Simulation System (ROSS) to benchmark
+Finally, we used Rensselaer's Optimistic Simulation System (ROSS) to benchmark
 the final cluster's PDES performance.
 
 \section{Micro-benchmark Results}
@@ -1222,7 +1221,7 @@ times TCP/IP.
 
 \subsection{Final Cluster}\label{final-cluster-benchmarks}
 
-I tested two ODROID-XU nodes equipped with AX88179 Gigabit Ethernet adaptors using the
+We tested two ODROID-XU nodes equipped with AX88179 Gigabit Ethernet adapters using the
 same NetPIPE and IMB benchmarks that are shown above for the ODROID-U2.  We can see
 immediately that the purchase of the Gigabit Ethernet controllers has improved performance
 drastically, nearly halving our base TCP small message latency.
@@ -1252,20 +1251,19 @@ actually overtakes RoCE briefly.  Strangely, this entire trend repeats for the r
 significantly higher than TCP latency until 64 KB, where RoCE again takes the lead.
 
 We speculated that these results could be caused by the calculation of the Cyclic
-Redundance Check (CRC) for each RoCE packet.  This would explain the performance
-sensitifity to certain message sizes. In order to test this hypothesis, I ran the same
-tests again with the RoCE CRC disabled. Sure enough, performance improved compared to RoCE
-with CRC enabled, returning to data trends similar to what we observed from the
-ODROID-U2. Note that disabling the CRC does not reduce packet size; it merely bypasses the
-actual computation of the CRC. Although CRC computation is considered inexpensive, it
+Redundancy Check (CRC) for each RoCE packet.  This would explain the performance
+sensitivity to certain message sizes. In order to test this hypothesis, the same tests
+were run again with the RoCE CRC disabled.  Sure enough, performance improved compared to
+RoCE with CRC enabled, returning to data trends similar to what we observed from the
+ODROID-U2.  Note that disabling the CRC does not reduce packet size; it merely bypasses
+the actual computation of the CRC.  Although CRC computation is considered inexpensive, it
 clearly has a measurable effect on both latency and bandwidth performance here.
 
-Returning to the ODROID-U2 and disabling the RoCE CRC yielded no significant
-performance changes. This implies that the reduction in latency from the Gigabit
-Ethernet controller exposed some of the performance costs of the \verb;rxe; CRC
-algorithm that were previously hidden by the high latency of the LAN9730
-ethernet controller. In accordance with this finding, our PDES tests will be run
-with RoCE CRC disabled.
+Returning to the ODROID-U2 and disabling the RoCE CRC yielded no significant performance
+changes.  This implies that the reduction in latency from the Gigabit Ethernet controller
+exposed some of the performance costs of the \verb;rxe; CRC algorithm that were previously
+hidden by the high latency of the LAN9730 Ethernet controller.  In accordance with this
+finding, the PDES tests performed for this work will be run with RoCE CRC disabled.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{xu_bw_small}
@@ -1275,17 +1273,16 @@ with RoCE CRC disabled.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{xu_bw_large}
-\caption{XU NetPIPE MPI Bandwidth Results, Large Mesage Sizes}
+\caption{XU NetPIPE MPI Bandwidth Results, Large Message Sizes}
 \label{xu-bw-large}
 \end{figure}
 
-Again, the bandwidth results shown in Figures \ref{xu-bw-small} and
-\ref{xu-bw-large} mirror the latency results from the same benchmarking
-tool. This time, however, the maximum bandwidth is dramatically increased thanks
-to the Gigabit Ethernet adaptors. However, it still does not approach the
-Gigabit level. Now that we have observed this behavior from two different
-USB-to-ethernet controllers, we must conclude that this is a limitation inherent
-to such an architecture.
+The bandwidth results shown in Figures \ref{xu-bw-small} and \ref{xu-bw-large} mirror the
+latency results from the same benchmarking tool.  This time, however, the maximum
+bandwidth is dramatically increased thanks to the Gigabit Ethernet adapters.  However, it
+still does not approach the Gigabit level.  Now that we have observed this behavior from
+two different USB-to-Ethernet controllers, we must conclude that this is a limitation
+inherent to such an architecture.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{xu_imb}
@@ -1293,39 +1290,35 @@ to such an architecture.
 \label{xu-imb-low}
 \end{figure}
 
-Figure \ref{xu-imb-low} shows the scaling of inter-process
-communication latency with increased network communication. This time, we use
-all four nodes in the cluster for this benchmark in order to better simulate the
-communication conditions of large PDES simulations. We observe that the Exynos
-5410 has drastically lower inter-process communication latency compared to the
-Exynos 4412. However, this serves to highlight the lightweight characteristics
-of the RoCE transport even more; up to a 3.34 times speedup is possible for very
-small messages when all cores are utilized. Even when only two of four cores are
-in use, 2.5 times speedup is possible.
+Figure \ref{xu-imb-low} shows the scaling of inter-process communication latency with
+increased network communication.  This time, we use all four nodes in the cluster for this
+benchmark in order to better simulate the communication conditions of large PDES
+simulations.  We observe that the Exynos 5410 has drastically lower inter-process
+communication latency compared to the Exynos 4412.  However, this serves to highlight the
+lightweight characteristics of the RoCE transport even more; up to a 3.34 times speedup is
+possible for very small messages when all cores are utilized.  Even when only two of four
+cores are in use, 2.5 times speedup is possible.
 
 \section{PDES Results}\label{pdes-results}
 
-\href{https://github.com/carothersc/ROSS}{Rensselaer's Optimistic Simulation
-  System (ROSS)} is used for all PDES experiments. It uses MPI for all
-inter-process communication, including local communication
-\cite{carothers-02}. Its optimistic synchronization protocol uses the Time Warp
-paradigm with some modifications. Notably, ROSS features the addition of Kernel
-Processes (KPs) that aggregate processed event lists and perform all the
-rollback computations, while the traditional LPs perform forward computation
-\cite{carothers-02}. There must be at least one LP assigned to each KP, but
-assigning several LPs to each KP can reduce memory footprint for many
-simulations \cite{carothers-02}.
+\href{https://github.com/carothersc/ROSS}{Rensselaer's Optimistic Simulation System
+  (ROSS)} is used for all PDES experiments.  It uses MPI for all inter-process
+communication, including local communication \cite{carothers-02}.  Its optimistic
+synchronization protocol uses the Time Warp paradigm with some modifications.  Notably,
+ROSS features the addition of Kernel Processes (KPs) that aggregate processed event lists
+and perform all the rollback computations, while the traditional LPs perform forward
+computation \cite{carothers-02}.  There must be at least one LP assigned to each KP, but
+assigning several LPs to each KP can reduce memory footprint for many simulations
+\cite{carothers-02}.
 
-For the results shown in this section, we use three of the simulation models
-included with ROSS: \verb;wifi;, \verb;disksim;, and \verb;raid;. The number of
-LPs used for each model is tuned so that startup overhead is not a significant
-portion of simulation runtime but memory is not exhausted. As the number of
-processes used in the simulation is varied, the number of LPs remains the same,
-although the number of KPs changes as it remains at the default allocation per
-process. Table \ref{lptable} lists the total number of LPs across all
-processes as well as the termination time set for each model. This configuration
-is used for both the ARM and x86 clusters in order to allow a direct performance
-comparison.
+For the results shown in this section, we use three of the simulation models included with
+ROSS: \verb;wifi;, \verb;disksim;, and \verb;raid;.  The number of LPs used for each model
+is tuned so that startup overhead is not a significant portion of simulation runtime but
+memory is not exhausted.  As the number of processes used in the simulation is varied, the
+number of LPs remains the same, although the number of KPs changes as it remains at the
+default allocation per process.  Table \ref{lptable} lists the total number of LPs across
+all processes as well as the termination time set for each model.  This configuration is
+used for both the ARM and x86 clusters in order to allow a direct performance comparison.
 
 \begin{table}
   \caption{ROSS Simulation Model Parameters}
@@ -1333,7 +1326,7 @@ comparison.
   \centering
   \begin{tabular}[c]{| l | r | r | r |}
     \hline
-    Model Name & LPs & Memory per Node (MB) & Temination Time (GVT) \\ \hline
+    Model Name & LPs & Memory per Node (MB) & Termination Time (GVT) \\ \hline
     \textsc{disksim} & 768 & 1536 & 10000000 \\
     \textsc{raid} & 384 & 1536 & 10000 \\
     \textsc{wifi} & 96 & 1536 & 10000 \\
@@ -1341,11 +1334,10 @@ comparison.
   \end{tabular}
 \end{table}
 
-Simulation runtime results as reported by ROSS are shown throughout the rest of
-this section. For each model, results from the x86 cluster and results from the
-ARM cluster over TCP and over RoCE are presented. The error bars in
-Figures \ref{disksim}, \ref{raid}, and \ref{wifi} show a 99\%
-confidence interval for the mean simulation time.
+Simulation runtime results as reported by ROSS are shown throughout the remainder of this
+section.  For each model, results from the x86 cluster and results from the ARM cluster
+over TCP and over RoCE are presented.  The error bars in Figures \ref{disksim},
+\ref{raid}, and \ref{wifi} show a 99\% confidence interval for the mean simulation time.
 
 \begin{figure}
 \centering
@@ -1361,15 +1353,14 @@ confidence interval for the mean simulation time.
 \label{disksim-median}
 \end{figure}
 
-The \verb;disksim; model is an example of a small model that we can run with a
-high number of LPs. We can see from Figure \ref{disksim} that RoCE
-slightly improves runtime over TCP when no more than one MPI process is
-allocated to the node. When two or more MPI processes are allocated per compute
-node, the runtimes become unstable, occasionally stalling for many times the
-average runtime. For comparison, Figure \ref{disksim-median} shows the
-median simulation runtimes for the same set of tests. Aside from the stalls, it
-is clear that the performance of RoCE is a constant factor better than TCP for 8
-and 16 total MPI processes as well as 2 and 4.
+The \verb;disksim; model is an example of a small model that we can run with a high number
+of LPs.  We can see from Figure \ref{disksim} that RoCE slightly improves runtime over TCP
+when no more than one MPI process is allocated to the node.  When two or more MPI
+processes are allocated per compute node, the runtimes become unstable, occasionally
+stalling for many times the average runtime.  For comparison, Figure \ref{disksim-median}
+shows the median simulation runtimes for the same set of tests.  Aside from the stalls, it
+is clear that the performance of RoCE is a constant factor better than TCP for 8 and 16
+total MPI processes as well as 2 and 4.
 
 \begin{figure}
 \centering
@@ -1385,18 +1376,16 @@ and 16 total MPI processes as well as 2 and 4.
 \label{raid-median}
 \end{figure}
 
-We can observe nearly the same phenomenon from tests using the \verb;raid;
-model, the results of which are shown in Figures \ref{raid} and
-\ref{raid-median}. This time, our confidence interval is sufficiently
-small to conclude that RoCE performs worse than TCP when more than one MPI
-process is allocated per node. This is in stark contrast to the predictions of
-the micro-benchmark results from Section
-  \ref{final-cluster-benchmarks}, especially those that measure the scaling of
-inter-process communication latency. A possible explanation for these PDES
-results in light of the micro-benchmark results is that the factor difference
-between the latency of shared memory communication compared to remote node
-communication is greater for RoCE than TCP. In fact, the factor difference is
-more than double according to Figure \ref{xu-imb-low}.
+We can observe nearly the same phenomenon from tests using the \verb;raid; model, the
+results of which are shown in Figures \ref{raid} and \ref{raid-median}.  This time, our
+confidence interval is sufficiently small to conclude that RoCE performs worse than TCP
+when more than one MPI process is allocated per node.  This is in stark contrast to the
+predictions of the micro-benchmark results from Section \ref{final-cluster-benchmarks},
+especially those that measure the scaling of inter-process communication latency.  A
+possible explanation for these PDES results in light of the micro-benchmark results is
+that the factor difference between the latency of shared memory communication compared to
+remote node communication is greater for RoCE than TCP.  In fact, the factor difference is
+more than double according to the results shown in Figure \ref{xu-imb-low}.
 
 \begin{figure}
 \centering
@@ -1412,45 +1401,40 @@ more than double according to Figure \ref{xu-imb-low}.
 \label{wifi-median}
 \end{figure}
 
-Finally, the \verb;wifi; model results in Figures \ref{wifi} and
-\ref{wifi-median} show the same problem without the large variance seen
-in the \verb;disksim; and \verb;raid; models. Clearly, network message latency
-alone is not a good predictor for PDES performance when more than one
-communication layer is in use.
+Finally, the \verb;wifi; model results in Figures \ref{wifi} and \ref{wifi-median} show
+the same problem without the large variance seen in the \verb;disksim; and \verb;raid;
+models.  Clearly, network message latency alone is not a good predictor for PDES
+performance when more than one communication layer is in use.
 
 
 \subsection{RoCE Speedup}
 
-Figures \ref{disksim-speedup}, \ref{raid-speedup}, and
-\ref{wifi-speedup} show the mean speedup obtained by using the RoCE
-transport compared to TCP on the ARM cluster. Speedup is defined as
-$\frac{runtime_{TCP}}{runtime_{RoCE}}$, so values greater than one indicate speedup,
-while values less than one indicate slowdown.
+Figures \ref{disksim-speedup}, \ref{raid-speedup}, and \ref{wifi-speedup} show the mean
+speedup obtained by using the RoCE transport compared to TCP on the ARM cluster.  Speedup
+is defined as $\frac{runtime_{TCP}}{runtime_{RoCE}}$, so values greater than one indicate
+speedup, while values less than one indicate slowdown.
 
-For all three models, we observe a consistent speedup between 5\% and 15\% when
-there is a maximum of one MPI process per node and a drastic slowdown when
-at least two MPI processes are allocated per node. Again, this may indicate that
-the transport is sensitive to large differences in message latency between LPs.
+For all three models, we observe a consistent speedup between 5\% and 15\% when there is a
+maximum of one MPI process per node and a drastic slowdown when at least two MPI processes
+are allocated per node.  Again, this may indicate that the transport is sensitive to large
+differences in message latency between LPs.
 
 \begin{figure}
 \centering
 \includegraphics[width=0.75\textwidth]{disksim_speedup}
-\caption{RoCE Speedup for \textsc{disksim} Model}
-\label{disksim-speedup}
+\caption{RoCE Speedup for \textsc{disksim} Model}\label{disksim-speedup}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[width=0.75\textwidth]{raid_speedup}
-\caption{RoCE Speedup for \textsc{raid} Model}
-\label{raid-speedup}
+\caption{RoCE Speedup for \textsc{raid} Model}\label{raid-speedup}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[width=0.75\textwidth]{wifi_speedup}
-\caption{RoCE Speedup for \textsc{wifi} Model}
-\label{wifi-speedup}
+\caption{RoCE Speedup for \textsc{wifi} Model}\label{wifi-speedup}
 \end{figure}
 
 
@@ -1458,47 +1442,42 @@ the transport is sensitive to large differences in message latency between LPs.
 
 \section{Cost and Performance Comparisons}
 
-In this section, I present performance-for-cost data calculated using the
-results from Chapter \ref{pdes-results}. First, performance for cost is
-defined as $\frac{1}{runtime \times price}$ which yields a result with
-dimensions of $\frac{1}{seconds \times Dollars}$. This result is several orders
-of magnitude less than one, so all performance-for-cost numbers for a simulation
-model are scaled by a constant factor so that the lowest performance for cost is
-equal to one.
+This section presents performance-for-cost data calculated using the results from Chapter
+\ref{pdes-results}.  First, performance for cost is defined as $\frac{1}{runtime \times
+  price}$ which yields a result with dimensions of $\frac{1}{seconds \times Dollars}$.
+This result is several orders of magnitude less than one, so all performance-for-cost
+numbers for a simulation model are scaled by a constant factor so that the lowest
+performance for cost is equal to one.
 
-Therefore, the results in Figures \ref{disksim-costperf},
-  \ref{raid-costperf}, and \ref{wifi-costperf} can be interpreted as
-the ``times better performance for cost relative to the worst case seen in
-either cluster.'' Note that the results in Figure \ref{raid-costperf}
-are shown in with a logarithmic scale so that the performance-for-cost values are
-visible for both clusters.
+The results shown in Figures \ref{disksim-costperf}, \ref{raid-costperf}, and
+\ref{wifi-costperf} can be interpreted as the ``times better performance for cost relative
+to the worst case seen in either cluster.''  Note that the results in Figure
+\ref{raid-costperf} are shown in with a logarithmic scale so that the performance-for-cost
+values are visible for both clusters.
 
 \begin{figure}
 \centering
 \includegraphics[width=0.75\textwidth]{disksim_costperf}
-\caption{Normalized Performance for Cost for \textsc{disksim} Model}
-\label{disksim-costperf}
+\caption{Normalized Performance for Cost for \textsc{disksim}
+  Model}\label{disksim-costperf} 
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[width=0.75\textwidth]{raid_costperf}
-\caption{Normalized Performance for Cost for \textsc{raid} Model}
-\label{raid-costperf}
+\caption{Normalized Performance for Cost for \textsc{raid} Model}\label{raid-costperf} 
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[width=0.75\textwidth]{wifi_costperf}
-\caption{Normalized Performance for Cost for \textsc{wifi} Model}
-\label{wifi-costperf}
+\caption{Normalized Performance for Cost for \textsc{wifi} Model}\label{wifi-costperf} 
 \end{figure}
 
-In all cases, the x86 cluster exhibits superior performance-for-cost compared to
-our ARM cluster. Figure \ref{costperf} shows the worst-case
-performance-for-cost comparison for the x86 cluster in comparison to the ARM
-cluster. The x86 cluster is at least 3 times more cost-efficient than the ARM
-cluster for PDES.
+In all cases, the x86 cluster exhibits superior performance-for-cost compared to our ARM
+cluster.  Figure \ref{costperf} shows the worst-case performance-for-cost comparison for
+the x86 cluster in comparison to the ARM cluster.  The x86 cluster is at least 3 times
+more cost-efficient than the ARM cluster for PDES.
 
 \begin{figure}
 \centering
@@ -1507,16 +1486,15 @@ cluster for PDES.
 \label{costperf}
 \end{figure}
 
-Figure \ref{costperf-summary} shows the performance-for-cost comparison
-to baseline for each model. This compares how performance scales for each model
-and each cluster as more MPI processes are added. We observe that the
-\verb;raid; model scales more efficiently than the other models we tested. From
-this, we learn that PDES performance depends significantly on simulation
-modeling techniques as well as network performance, and the cost of adding nodes
-to a cluster is more likely to be justified if one uses models similar to the
-ROSS \verb;raid; model than if one uses models similar to either \verb;disksim;
-or \verb;wifi;. Additionally, the x86 cluster takes advantage of parallelism
-more efficiently than the ARM cluster for all three models.
+Figure \ref{costperf-summary} shows the performance-for-cost comparison to baseline for
+each model.  This compares how performance scales for each model and each cluster as more
+MPI processes are added.  We observe that the \verb;raid; model scales more efficiently
+than the other models we tested.  From this, we learn that PDES performance depends
+significantly on simulation modeling techniques as well as network performance, and the
+cost of adding nodes to a cluster is more likely to be justified if one uses models
+similar to the ROSS \verb;raid; model than if one uses models similar to either
+\verb;disksim; or \verb;wifi;.  In addition, the x86 cluster takes advantage of
+parallelism more efficiently than the ARM cluster for all three models.
 
 \begin{figure}
 \centering
@@ -1525,143 +1503,141 @@ more efficiently than the ARM cluster for all three models.
 \label{costperf-summary}
 \end{figure}
 
+%% ERIC: you might want to add a section that talks about the cost differentials of larger
+%% configurations (32, 64, and possibly 128 node sizes) and engage the reader in a
+%% discussion about how that could affect the ability to run on the cutting edge of
+%% technology.  
+
 \chapter{Conclusions}\label{conclusions}
 
-The software RoCE transport increases ROSS performance by a consistent 5\% to
-11\% over the TCP/IP transport when no more than one MPI process is allocated
-per compute node for our cluster. With more than one MPI process per node, RoCE
-performance is less consistent. Execution stalls occasionally as rollbacks
-cascade, doubling or tripling execution time, perhaps once per ten runs. A
-configuration of three processes per node is particularly susceptible to this
-effect, leading us to conclude that disparity betweeen remote and local
-communication latency may be the cause of this problem.
+The software RoCE transport increases ROSS performance by a consistent 5\% to 11\% over
+the TCP/IP transport when no more than one MPI process is allocated per compute node for
+our cluster.  With more than one MPI process per node, RoCE performance is less
+consistent.  Execution stalls occasionally as rollbacks cascade, doubling or tripling
+execution time, perhaps once per ten runs.  A configuration of three processes per node is
+particularly susceptible to this effect, leading us to conclude that disparity between
+remote and local communication latency may be the cause of this problem.
 
-In terms of both raw computing power for price and PDES performance for price,
-our x86 cluster is far more efficient than our ARM cluster. However, the The x86 cluster also
-exhibits tendencies that appear to lead to better scaling with increased
-parallelism than the ARM cluster.
+In terms of both raw computing power for price and PDES performance for price, the x86
+cluster is far more efficient than our ARM cluster.  However, the The x86 cluster also
+exhibits tendencies that appear to lead to better scaling with increased parallelism than
+the ARM cluster.
 
 \section{Challenges in SoC-based HPC}
 
-In this section, a few architectural challenges are presented that,
-collectively, represent a barrier to adoption of clusters built from mobile
-SoCs. Most of these issues are caused by valid design decisions on the part of
-SoC vendors, considering their primary market. Possible solutions are also
-discussed.
+In this section, a few architectural challenges are presented that, collectively,
+represent a barrier to adoption of clusters built from mobile SoCs.  Most of these issues
+are caused by valid design decisions on the part of SoC vendors, considering their primary
+market.  Possible solutions are also discussed.
 
 \subsection{PoP Memory}
 
-In our search for inexpensive cluster nodes, we found that a drawback to mobile
-SoCs is their limited main memory that is typically included in a Package on
-Package (PoP) assembly, making it impossible for the end user to
-upgrade. Although current mobile operating systems are parsimonious with memory,
-the opposite is true for HPC and, in particular, optimistically synchronized
-PDES. In our studies, we were limited to relatively small simulation model sizes
-for our PDES tests because of memory constraints rather than execution time
-constraints.
+In our search for inexpensive cluster nodes, we found that a drawback to mobile SoCs is
+their limited main memory that is typically included in a Package on Package (PoP)
+assembly, making it impossible for the end user to upgrade.  Although current mobile
+operating systems are parsimonious with memory, the opposite is true for HPC and, in
+particular, optimistically synchronized PDES.  In our studies, we were limited to
+relatively small simulation model sizes for our PDES tests because of memory constraints
+rather than execution time constraints.
 
-Although the amount of memory that vendors package on mobile SoCs is steadily
-increasing, memory limitations prevent them from being a contender for
-replacement of large cluster nodes. Regardless, the attractiveness of mobile SoC
-nodes for a small-scale cluster is undeniable.
+Although the amount of memory that vendors package on mobile SoCs is steadily increasing,
+memory limitations prevent them from being a contender for replacement of large cluster
+nodes.  Regardless, the attractiveness of mobile SoC nodes for a small-scale cluster is
+undeniable.
 
-Including memory expansion slots on a mobile SoC is not currently feasible
-because of package size constraints. However, vendors could offer multiple
-versions of their chips with identical processors but different amounts of main
-memory.
+Including memory expansion slots on a mobile SoC is not currently feasible because of
+package size constraints.  However, vendors could offer multiple versions of their chips
+with identical processors but different amounts of main memory.
 
 \subsection{I/O Limitations}
 
-The lack of Peripheral Component Interconnect (PCI) support in the Exynos line
-of SoCs means that all ethernet communications must be routed through a USB
-interface. Although we saw that USB 3 reduces latency dramatically when compared
-to USB 2, both incur significant latency penalties when compared to a PCI or PCI
-Express (PCIe) network interface.
+The lack of Peripheral Component Interconnect (PCI) support in the Exynos line of SoCs
+means that all Ethernet communications must be routed through a USB interface.  Although
+USB 3 reduces latency dramatically when compared to USB 2, both incur significant latency
+penalties when compared to a PCI or PCI Express (PCIe) network interface.
 
-NVIDIA's Tegra 2 and Tegra 3 SoCs support PCIe, which provides access to a
-relatively low-latency networking interface in a mobile platform
-\cite{rajovic-13}. The Tegra 4 does not support PCIe \cite{arstch-tegra},
-illustrating the lack of demand for high speed I/O in mobile devices.
+NVIDIA's Tegra 2 and Tegra 3 SoCs support PCIe, which provides access to a relatively
+low-latency networking interface in a mobile platform \cite{rajovic-13}.  The Tegra 4 does
+not support PCIe \cite{arstch-tegra}, illustrating the lack of demand for high speed I/O
+in mobile devices.
 
-The Linux system images for the ODROID boards are hosted on small flash memory
-devices: microSD cards for the ODROID-XU and eMMC cards for the ODROID-U2. This
-fact alone eliminates the possibility of any ``disk-intensive'' programs from
-running well on our cluster.
+The Linux system images for the ODROID boards are hosted on small flash memory devices:
+microSD cards for the ODROID-XU and eMMC cards for the ODROID-U2.  This fact alone
+eliminates the possibility of any ``disk-intensive'' programs from running well on our
+cluster.
 
-Again, the Tegra 2 and 3 include support for SATA disks, but the Tegra 4 does
-not \cite{arstch-tegra}.
+Again, the Tegra 2 and 3 include support for SATA disks, but the Tegra 4 does not
+\cite{arstch-tegra}.
 
 \subsection{Memory Errors}
 
-High Performance Computing platforms typically use Error Correcting Code (ECC)
-main memory in order to avoid data corruption that could taint scientific
-results. Commodity processors rarely include support for ECC memory because such
-errors can be tolerated in a desktop or mobile computing environment. Because
-Low Power Double Data Rate (LPDDR) memory does not support ECC, there is no way
-to measure the incidence of memory errors in our own cluster; further, there is
-no way
+%% ERIC: last sentence in this next pararagraph is incomplete...
 
-Although conventional wisdom suggests that memory errors are rare in practice, a
-recent study by Schroeder et al. \cite{schroeder-09} on ECC memory found that
-8.2\% of all tested memory modules were affected by at least one error per
-year. Additionally, the incidence of memory errors increased with memory module
-density. This makes sense when one considers the possibility of charge sharing
-in the memory modules. This implies that memory errors are even more likely in
-an SoC environment where memory density is very high.
+High Performance Computing platforms typically use Error Correcting Code (ECC) main memory
+in order to avoid data corruption that could taint scientific results.  Commodity
+processors rarely include support for ECC memory because such errors can be tolerated in a
+desktop or mobile computing environment.  Because Low Power Double Data Rate (LPDDR)
+memory does not support ECC, there is no way to measure the incidence of memory errors in
+our own cluster; further, there is no way
 
-A significant step toward enabling mobile SoCs for deployment in HPC
-applications would be to include ECC memory. Most current ECC implementations
-can correct single-bit-per-word errors, which account for almost all memory
-errors observed in Schroeder's study \cite{schroeder-09} and detect more severe
-errors, ensuring that bit flips cannot affect computation results without the
-user's knowledge.
+Although conventional wisdom suggests that memory errors are rare in practice, a recent
+study by Schroeder \emph{et al} \cite{schroeder-09} on ECC memory found that 8.2\% of all
+tested memory modules were affected by at least one error per year.  In addition, the
+incidence of memory errors increased with memory module density.  This makes sense when
+one considers the possibility of charge sharing in the memory modules.  This implies that
+memory errors are even more likely in an SoC environment where memory density is very
+high.
+
+A significant step toward enabling mobile SoCs for deployment in HPC applications would be
+to include ECC memory.  Most current ECC implementations can correct single-bit-per-word
+errors, which account for almost all memory errors observed in Schroeder's study
+\cite{schroeder-09} and detect more severe errors, ensuring that bit flips cannot affect
+computation results without the user's knowledge.
 
 \section{Benefits of SoC-based HPC}
 
-This section discusses some of our discoveries about the benefits of SoC-based
-clusters.
+This section discusses some of our discoveries about the benefits of SoC-based clusters.
 
 \subsection{Commodity Pricing}
 
-Although the ARM cluster from this project falls short of a traditional x86
-Beowulf cluster in terms of performance for price, the possibility of
-constructing an inexpensive multi-node cluster may be attractive to some
-researchers. This is the same economic force that drove the adoption of Beowulf
-clusters in the first place: inexpensive commodity microprocessors intended for
-workstations gradually became more attractive than expensive custom solutions
-for small-scale High Performance Computing.
+Although the ARM cluster from this project falls short of a traditional x86 Beowulf
+cluster in terms of performance for price, the possibility of constructing an inexpensive
+multi-node cluster may be attractive to some researchers.  This is the same economic force
+that drove the adoption of Beowulf clusters in the first place: inexpensive commodity
+microprocessors intended for workstations gradually became more attractive than expensive
+custom solutions for small-scale High Performance Computing.
 
 \subsection{Small Form Factor}
 
-Traditional Beowulf clusters require physical space and infrastructure for power
-and cooling that is not necessary for SoC-based clusters. In fact, a very large
-cluster of ARM-based PCs can fit in the same physical space as a single
-x86-based PC. Their power supplies are also much smaller than corresponding x86
-power supplies. In fact, an advantage of the mobile SoC design is that the
-entire board runs from a single external power rail. This is in contrast to most
-x86 PCs, which require several different voltage supply rails from a power
-supply. This fact opens possibilities for innovative packaging solutions for
-SoC-based clusters, from large lattices to small fanless configurations.
+Traditional Beowulf clusters require physical space and infrastructure for power and
+cooling that is not necessary for SoC-based clusters.  In fact, a very large cluster of
+ARM-based PCs can fit in the same physical space as a single x86-based PC.  Their power
+supplies are also much smaller than corresponding x86 power supplies.  In fact, an
+advantage of the mobile SoC design is that the entire board runs from a single external
+power rail.  This is in contrast to most x86 PCs, which require several different voltage
+supply rails from a power supply.  This fact opens possibilities for innovative packaging
+solutions for SoC-based clusters, from large lattices to small fanless configurations.
 
 \section{Suggestions for Future Work}
 
-I have touted the ability to deploy custom operating systems in a cluster
-environment as a benefit of SoC-based HPC. Creating a custom operating
-system is a significant commitment toward a platform that is not yet proven to
-scale well for PDES. However, new hardware features such as hardware
-virtualization support and Large Physical Address Extension support reduce the
-risk associated with such a project.
+The ability to deploy custom operating systems in a cluster environment as a benefit of
+SoC-based HPC has been advocated in this thesis.  Creating a custom operating system is a
+significant commitment toward a platform that is not yet proven to scale well for PDES.
+However, new hardware features such as hardware virtualization support and Large Physical
+Address Extension support reduce the risk associated with such a project.
+
+%% ERIC: in general, one sentence does not make a paragraph.....
 
 Similar work on a platform with support for lower latency networking through PCI
 is likely to scale better with increases in number of MPI processes because the
 disparity between local and remote latency will be less pronounced for each
 node.
 
-Comparison of the power dissipated by our ARM cluster and the power dissipated
-by our x86 cluster would be interesting, especially as it pertains to discussion
-about scaling costs. Because an ARM-based cluster would probably require more
-nodes than an x86 cluster to achieve similar computing performance, it is not
-clear which architecture would actually be more efficient at a large scale.
+Comparison of the power dissipated by our ARM cluster and the power dissipated by our x86
+cluster would be interesting, especially as it pertains to discussion about scaling costs.
+Because an ARM-based cluster would probably require more nodes than an x86 cluster to
+achieve similar computing performance, it is not clear which architecture would actually
+be more efficient at a large scale.
 
 \newpage
 %%\bibliographystyle{abbrv} 
