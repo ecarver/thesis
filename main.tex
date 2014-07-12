@@ -682,8 +682,6 @@ Trivedi \emph{et al.} \cite{trivedi-11} experimented with a software implementat
 iWARP for use in cloud computing.  They found that end-to-end latencies were reduced for
 messages larger than 64 kB thanks the protocol's lightweight RDMA implementation.
 
-%% ERIC: i changed the ``but'' in the last sentence to ``and'' please verify....
-
 Rajovic \emph{et al.} \cite{rajovic-13} examined some mobile SoC platforms in order to
 evaluate their usefulness for HPC applications.  They used the Open-MX interconnect to
 reduce network latency in these tests, and elected to use the NVIDIA Tegra 2 platform to
@@ -692,8 +690,6 @@ computing and other coarse-grained parallel applications in performance testing 
 that the cluster scales well for such purposes using a Gigabit Ethernet interconnect.
 
 \chapter{Methods for Reducing Network Latency}\label{latency_reduction}
-
-%% ERIC: verify this paragraph....
 
 This chapter reviews the two primary methods explored in this thesis to reduce message
 latency in the ODROID platform.  Because this work assumes that the low cost ODROID
@@ -752,6 +748,8 @@ will not be detailed here.
 \subsection{rxe}\label{rxe}
 
 %% ERIC: more citations....
+%% In the case of the OSI layers, this is my own interpretation of the code...it is never
+%% explicitly stated in any rxe documentation
 
 The \verb;rxe; kernel module contains the portion of the \verb;rxe; driver that implements
 layers 4 through 7 of the OSI model \cite{}.  It provides a software implementation of the
@@ -1035,28 +1033,21 @@ The total cost of the ODROID-XU computing hardware for this cluster is calculate
     \hline
     \textbf{Component} & \textbf{Cost} \\
     \hline
-    Intel Core i7-4770 CPU $\times$ 2 & \$309.00 $\times$ 2 \\
-    32 GB RAM (2 DIMMs) $\times$ 2 & \$318.09 $\times$ 2 \\
-    Lynx Point based motherboard $\times$ 2 & \$105.00 $\times$ 2 \\
+    Intel Xeon E5410 CPU $\times$ 8 & \$284.00 $\times$ 8 \\
+    4 GB RAM (2 DDR3 ECC DIMMs) $\times$ 4 & \$183.99 $\times$ 4 \\
+    Dual LGA771 Motherboard $\times$ 4 & \$374.99 $\times$ 4 \\
     Hard Drives & \$150 \\
-    Enclosure $\times$ 2 & \$100 $\times$ 2 \\
-    Netgear GS108 GbE switch & \$45.99 \\
+    Network switch & \$45.99 \\
     \hline
-    \textbf{Total} & \textbf{\$1860.17} \\ \hline
+    \textbf{Total} & \textbf{\$4703.91} \\ \hline
   \end{tabular}
 \end{table}
 
 \section{Comparison Cluster}
 
-We will compare the performance of the ODROID-XU cluster with a small traditional Beowulf
-cluster consisting of two x86 PCs running Intel Haswell CPUs and 32 GB of main memory.
-Although not all of the hardware components were purchased specifically for this cluster,
-the hardware costs of these PCs are estimated in Table \ref{x86-cost-table}.
-
-Although each Intel processor has only four processor cores, it supports Simultaneous
-Multithreading (SMT), presenting eight logical cores to the operating system.  Therefore,
-two of these x86 nodes will provide the same number of independent hardware threads as the
-four ARM nodes.
+We will compare the performance of the ODROID-XU cluster with a traditional Beowulf
+cluster consisting of four x86 PCs running two Intel Xeon Harpertown CPUs per node with 4 GB of main memory.
+The hardware costs of these PCs are estimated in Table \ref{x86-cost-table}.
 
 \section{Initial Cost Comparisons}
 
@@ -1129,14 +1120,12 @@ other than raw computing power to determine PDES performance.
 
 \chapter{Experimental Results}\label{results}
 
-%% ERIC: another citation please....
-
 We first used micro-benchmarks to demonstrate the performance of the RoCE transport and
 polling drivers.  We focus on MPI-based benchmarks because these directly measure the
 performance available for PDES simulators that use MPI.  The Network Protocol Independent
 Performance Evaluator (NetPIPE) \cite{NetPIPE} version 3.7.1 provides an MPI ping-pong
 benchmark that suits our needs.  For more targeted benchmarking, we turn to the Intel MPI
-Benchmark (IMB) suite version 3.2.4 \cite{}.
+Benchmark (IMB) suite version 3.2.4 \cite{intel-mpi}.
 
 Finally, we used Rensselaer's Optimistic Simulation System (ROSS) to benchmark
 the final cluster's PDES performance.
@@ -1550,21 +1539,18 @@ in mobile devices.
 The Linux system images for the ODROID boards are hosted on small flash memory devices:
 microSD cards for the ODROID-XU and eMMC cards for the ODROID-U2.  This fact alone
 eliminates the possibility of any ``disk-intensive'' programs from running well on our
-cluster.
-
-Again, the Tegra 2 and 3 include support for SATA disks, but the Tegra 4 does not
+cluster. Again, the Tegra 2 and 3 include support for SATA disks, but the Tegra 4 does not
 \cite{arstch-tegra}.
 
 \subsection{Memory Errors}
-
-%% ERIC: last sentence in this next pararagraph is incomplete...
 
 High Performance Computing platforms typically use Error Correcting Code (ECC) main memory
 in order to avoid data corruption that could taint scientific results.  Commodity
 processors rarely include support for ECC memory because such errors can be tolerated in a
 desktop or mobile computing environment.  Because Low Power Double Data Rate (LPDDR)
 memory does not support ECC, there is no way to measure the incidence of memory errors in
-our own cluster; further, there is no way
+our own cluster; furthermore, we cannot even estimate the effect memory errors may have on
+our simulations.
 
 Although conventional wisdom suggests that memory errors are rare in practice, a recent
 study by Schroeder \emph{et al.} \cite{schroeder-09} on ECC memory found that 8.2\% of all
