@@ -410,14 +410,9 @@ mpirun -n <number of processes> -host <host list> --mca btl openib,self <MPI job
 
 \section{Low-latency Networking}
 
-%% ERIC: can you please insert a citation for the RapidIO solution??
-
-%% ERIC: returning after a couple of more paragraphs.  i'm also going to drop in empty
-%% cite latex commands where i think you should add citations.
-
 This section will discuss the limitations of most TCP/IP implementations as well as
 alternatives that have been used to reduce network latency in high performance platforms.
-Proprietary interconnect solutions such as RapidIO \cite{} are excluded from this
+Proprietary interconnect solutions such as RapidIO \cite{fuller-05} are excluded from this
 discussion because we cannot port them to a small form factor platform at a low cost.
 
 \subsection{Limitations of TCP/IP}
@@ -429,44 +424,36 @@ interconnect that is robust over long distances and a variety of network conditi
 However, it also requires computational resources to support these features that can
 reduce performance compared to protocols that focus on Local Area Networks (LANs).
 
-%% ERIC: you need a citation for active messages (UUNET, GAMMA, Illinois Fast Messages,
-%% etc) in the first sentence and a citation for RDMA in the last.
-
-TCP/IP also does not support \textit{active messaging} \cite{}.  Active messages are
-messages that can perform operations on their own.  For example, a message in a Remote
+TCP/IP also does not support \textit{active messaging} \cite{liu-94}.  Active messages are
+messages that can perform operations on their own \cite{palumbo-92}.  For example, a message in a Remote
 Direct Memory Access (RDMA) system may be a write message; that message can write to the
 receiving node's memory.  TCP/IP, on the other hand, would have to accomplish this by
 sending a message containing a write command and another message containing the data to be
 written.  Many low-latency protocols that are discussed later in this section achieve a
 significant portion of their efficiency by supporting active messages in some way.  In
-particular, RDMA semantics have become popular in the last decade \cite{}.
+particular, RDMA semantics have become popular in the last decade \cite{huang-07}.
 
 \subsection{Extensions to TCP}
 
-%% ERIC: citation to this??
-
 One way to attack the latency limitations of TCP/IP is to implement flow control
-algorithms targeted specifically at a cluster's uses \cite{}.  This approach has been
+algorithms targeted specifically at a cluster's uses \cite{liu-13}.  This approach has been
 pursued extensively for data centers.
 
-%% ERIC: more citations....i assume that liu-13 is a general article; it probably contains
-%% the citations you need for each individual policy described below.
-
 One large source of latency in data centers is switch buffer overruns \cite{liu-13}.  Data
-Center TCP (DCTCP) \cite{} is an approach that limits this congestion in networks by detecting the
+Center TCP (DCTCP) \cite{alizadeh-11} is an approach that limits this congestion in networks by detecting the
 beginnings of buffer overruns before they impact network performance.  This eliminates many
 latency spikes that can plague high-traffic TCP networks.  High-bandwidth Ultra-Low Latency
 (HULL) extends DCTCP by using simple simulation software to predict these buffer overruns
-and adjust traffic to compensate \cite{liu-13}. HULL is even more effective than DCTCP at
-eliminating sudden spikes in TCP latency.
+and adjust traffic to compensate \cite{alizadeh-12}. HULL is even more effective than DCTCP at
+eliminating sudden spikes in TCP latency \cite{liu-13}.
 
-Deadline Driven Delivery (D\textsuperscript{3}) \cite{} is another attempt to minimize
+Deadline Driven Delivery (D\textsuperscript{3}) \cite{wilson-11} is another attempt to minimize
 latency spikes and, further, to enforce real time requirements on the delivery of TCP
-messages in a local network \cite{liu-13}.  It is a form of active flow control that
+messages in a local network.  It is a form of active flow control that
 allocates networking resources based on time requirements associated with certain traffic.
 However, it has a tendency to starve out some requests when traffic becomes heavy.
-Preemptive Distributed Quick flow scheduling (PDQ) \cite{} solves this problem by applying
-an improved scheduling algorithm \cite{liu-13}.
+Preemptive Distributed Quick flow scheduling (PDQ) \cite{hong-12} solves this problem by applying
+an improved scheduling algorithm.
 
 A problem with flow control in HPC is the computing power and specialized hardware
 required for its implementation.  While the benefits of these extensions to TCP/IP are
@@ -612,15 +599,14 @@ board features the following hardware components \cite{odroid-u2-board-detail}:
 \label{odroid-u2-block-diagram}
 \end{figure}
 
-%% ERIC, verify the last 2 sentences that i added....
-
 While the ODROID-U2 features impressive raw processing power for its size and price, its
 small amount of main memory can adversely impact performance for even moderately sized
 parallel simulation models.  In addition, the LAN9730 network controller is even slower
 than we feared, routinely reaching end-to-end TCP small message latency over 500
 microseconds.  This is due, in part, to the fact that the ODROID-U2 Ethernet port comes in
 over the USB 2.0 bus which has a highly limiting throughput performance.  Even though it
-is advertised as having a 10/100 Ethernet port, the performance is well below expected.
+is advertised as having a 100 Megabit Ethernet controller, network performance is well below
+expected. %% TODO This is shown in the results below; add reference?
 
 \subsection{ODROID-XU}
 
