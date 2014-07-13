@@ -689,7 +689,7 @@ build and deploy a large-scale cluster \cite{rajovic-14}.  They focused on scien
 computing and other coarse-grained parallel applications in performance testing and found
 that the cluster scales well for such purposes using a Gigabit Ethernet interconnect.
 
-\chapter{Methods for Reducing Network Latency}\label{latency_reduction}
+\chapter{Latency Reduction}\label{latency_reduction}
 
 This chapter reviews the two primary methods explored in this thesis to reduce message
 latency in the ODROID platform.  Because this work assumes that the low cost ODROID
@@ -704,8 +704,6 @@ network driver.  The remainder of this chapter will discuss the details of each 
 strategies. 
 
 \section{Software RoCE}
-
-%% ERIC: verify this paragraph....
 
 In this work, we will replace the TCP/IP protocol stack with an RDMA over Converged
 Ethernet (RoCE) protocol stack.  This replacement occurs within the Linux kernel and
@@ -1276,6 +1274,24 @@ lightweight characteristics of the RoCE transport even more; up to a 3.34 times 
 possible for very small messages when all cores are utilized.  Even when only two of four
 cores are in use, 2.5 times speedup is possible.
 
+\subsection{x86 Cluster}
+
+For comparison, Figure \ref{x86-lat} shows the MPI message latency and Figure \ref{x86-bw}
+shows the MPI bandwidth, both measured by NetPIPE on two nodes of the traditional Beowulf
+cluster. Clearly the small message latency is far lower on the x86 platform with PCI
+ethernet controllers than anything we can achieve with the USB ethernet controllers. The
+bandwidth performance of the x86 nodes is similarly superior.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{x86_lat}
+\caption{x86 NetPIPE MPI Latency Results}\label{x86-lat}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{x86_bw}
+\caption{x86 NetPIPE MPI Bandwidth Results}\label{x86-bw}
+\end{figure}
+
 \section{PDES Results}\label{pdes-results}
 
 \href{https://github.com/carothersc/ROSS}{Rensselaer's Optimistic Simulation System
@@ -1415,7 +1431,7 @@ differences in message latency between LPs.
 \end{figure}
 
 
-\chapter{Cost Performance Analysis}\label{analysis}
+\chapter{Value Analysis}\label{analysis}
 
 \section{Cost and Performance Comparisons}
 
