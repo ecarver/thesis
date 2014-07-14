@@ -606,7 +606,7 @@ than we feared, routinely reaching end-to-end TCP small message latency over 500
 microseconds.  This is due, in part, to the fact that the ODROID-U2 Ethernet port comes in
 over the USB 2.0 bus which has a highly limiting throughput performance.  Even though it
 is advertised as having a 100 Megabit Ethernet controller, network performance is well below
-expected. %% TODO This is shown in the results below; add reference?
+expected.
 
 \subsection{ODROID-XU}
 
@@ -745,17 +745,12 @@ will not be detailed here.
 
 \subsection{rxe}\label{rxe}
 
-%% ERIC: more citations....
-%% In the case of the OSI layers, this is my own interpretation of the code...it is never
-%% explicitly stated in any rxe documentation
-
 The \verb;rxe; kernel module contains the portion of the \verb;rxe; driver that implements
-layers 4 through 7 of the OSI model \cite{}.  It provides a software implementation of the
-InfiniBand RoCE transport.  As with all IB verbs applications, memory is preallocated in
-Memory Regions (MR) and coupled to pairs of send and receive queues called ``queue
-pairs''.  (QPs) are allocated by the application based on its needs.  That is, QPs are
-configurable at allocation time in terms of both queue depth and entry length
-\cite{InfiniBandTARoCE-10,InfiniBandTABase-07}.  QPs can be resized after they are
+the InfiniBand RoCE transport \cite{pearson-10}.  As with all IB verbs applications,
+memory is preallocated in Memory Regions (MR) and coupled to pairs of send and receive
+queues called ``queue pairs''.  (QPs) are allocated by the application based on its needs.
+That is, QPs are configurable at allocation time in terms of both queue depth and entry
+length \cite{InfiniBandTARoCE-10,InfiniBandTABase-07}.  QPs can be resized after they are
 created, but such an operation may adversely impact performance
 \cite{InfiniBandTARoCE-10}.
 
@@ -904,11 +899,6 @@ shifting the \verb;IO_ADDRESS; macro accordingly so memory-mapped I/O devices st
 their own address space.  For the ODROID-XU, this process enabled the use of 1884 MB of
 memory, while the remaining 163 MB were dedicated to I/O devices.  The final address space
 mapping is shown in Figure \ref{addrmap}.
-
-%% The migration from the ODROID-U2 to the ODROID-XU presented some additional
-%% challenges in the porting effort for the rxe driver. I encountered a bug that
-%% disrupted the marshalling of Work Requests from userspace to kernel space. This
-%% bug was a symptom of TODO. This problem can be solved by TODO.
 
 \begin{figure}
 \begin{center}
@@ -1517,7 +1507,35 @@ parallelism more efficiently than the ARM cluster for all three models.
 %% ERIC: you might want to add a section that talks about the cost differentials of larger
 %% configurations (32, 64, and possibly 128 node sizes) and engage the reader in a
 %% discussion about how that could affect the ability to run on the cutting edge of
-%% technology.  
+%% technology.
+
+\section{Larger Clusters}
+
+As the number of nodes in a cluster increases, Table \ref{cost-table} estimates the cost
+of larger clusters for each platform using identical hardware to that which was tested in
+this thesis.  We ignore large-scale networking and cooling costs and consider simply the
+node price.  It is clear that even a moderately sized x86 cluster of 32 nodes is a
+significant investment.  Typically, an institution purchasing such a cluster would plan
+for it to be used for several years.  While this makes the purchase more cost effective,
+it prevents users from accessing new hardware features that emerge every year in new
+microprocessors.  ARM-based clusters provide access to a quicker upgrade path because of
+their lower cost.  In this case, one could purchase a new ARM-based cluster every two
+years for less than the price of one x86 cluster every decade.
+
+\begin{table}[h]
+\caption{Cost of Large Clusters}
+\label{cost-table}
+\centering
+\begin{tabular}{| l | r | r |}
+  \hline
+  Number of nodes & x86 cost & ARM cost \\
+  \hline
+  32 & \$37,631.28 & \$6,927.60 \\
+  64 & \$75,262.56 & \$13,855.20 \\
+  128 & \$150,525.12 & \$27,710.40 \\
+  \hline
+\end{tabular}
+\end{table}
 
 \chapter{Conclusions}\label{conclusions}
 
@@ -1531,9 +1549,9 @@ remote and local communication latency may be the cause of this problem.  ROSS i
 particular may be sensitive to this because it is not intended for use in SMP platforms.
 
 In terms of both raw computing power for price and PDES performance for price, the x86
-cluster is far more efficient than our ARM cluster.  The x86 cluster also
-exhibits tendencies that appear to lead to better scaling with increased parallelism than
-the ARM cluster.
+cluster is far more efficient than our ARM cluster.  The x86 cluster also exhibits
+tendencies that appear to lead to better scaling with increased parallelism than the ARM
+cluster. Regardless, an ARM-based cluster remains an attractive entry-level HPC option.
 
 \section{Challenges in SoC-based HPC}
 
