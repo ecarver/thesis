@@ -187,16 +187,16 @@ The primary challenge and opportunity for this research is the high network late
 small form factor computing in general and experimentally with the ODROID platform.  It is
 a challenge because these systems are not designed specifically for high performance
 networking and the internal hardware buses do not have high bandwidth capabilities.
-Fortunately these devices are beginning to support the USB 3 protocol which increases
-their throughput capabilities.  It is an opportunity because the low cost nature of the
-solution makes it feasible to have application specific parallel compute platforms and
-thus opens the door to customization of the operating system services to better serve a
-specific application.  Since this latter opportunity is readily exploitable, this research
-will focus of it.  In particular, this thesis will explore two methods to reducing that
-latency at no additional cost, namely: (i) replacing the O/S network driver with a
-software-based Remote Direct Memory Access (RDMA) over Converged Ethernet (RoCE) driver,
-and (ii) replacing the conventional interrupt-based network driver with a polling-based
-network driver.
+Fortunately these devices are beginning to contain internal buses supporting the USB 3
+protocol which significantly increases their throughput capabilities.  It is an
+opportunity because the low cost nature of the solution makes it feasible to have
+application specific parallel compute platforms and thus opens the door to customization
+of the operating system services to better serve a specific application.  Since this
+latter opportunity is readily exploitable, this research will focus of it.  In particular,
+this thesis will explore two methods to reducing that latency at no additional cost,
+namely: (i) replacing the O/S network driver with a software-based Remote Direct Memory
+Access (RDMA) over Converged Ethernet (RoCE) driver, and (ii) replacing the conventional
+interrupt-based network driver with a polling-based network driver.
 
 \section{Thesis Overview}
 
@@ -302,7 +302,7 @@ while still satisfying the DES causality property \cite{fujimoto-89b,fujimoto-90
 Parallel discrete event simulators can be broadly classified by their approach to this
 event scheduling problem.
 
-\textit{Conservative} synchronization simulates an event only when the simulator can
+\emph{Conservative} synchronization simulates an event only when the simulator can
 guarantee that all past events have already been simulated \cite{chandy-79,fujimoto-90}.
 In this way, causality is never violated, but only events that are guaranteed to be
 causally independent can be executed in parallel.  Because the output of an event cannot
@@ -311,13 +311,13 @@ with identical timestamps.  While conservatively scheduled parallel simulation i
 for some types of problems \cite{nicol-93b}, more aggressive event scheduling may be
 necessary to exploit concurrency in a larger set of DES problems.
 
-\textit{Optimistic} synchronization (and specifically the Time Warp mechanism) simulates
+\emph{Optimistic} synchronization (and specifically the Time Warp mechanism) simulates
 events speculatively and invalidates computation when a causality violation is detected
 \cite{fujimoto-90,jefferson-85}.  Each simulation process is permitted to simulate as far
 forward in time as it is able until it is notified that something in its past has changed.
-This triggers a \textit{rollback}, in which the process must revert to an earlier state
-and cancel any actions it has taken since that state \cite{nicol-93b}.  The necessity of
-this functionality implies that state-saving mechanisms must be employed by the simulator,
+This triggers a \emph{rollback}, in which the process must revert to an earlier state and
+cancel any actions it has taken since that state \cite{nicol-93b}.  The necessity of this
+functionality implies that state-saving mechanisms must be employed by the simulator,
 which will consume more memory than than a conservatively synchronized simulator would
 while solving the same problem.  However, optimistic synchronization eliminates at least
 some of the overhead associated with conservative scheduling by avoiding processor idle
@@ -329,16 +329,16 @@ reduction of the performance costs associated with rollbacks.
 
 \subsubsection{Time Warp}\label{time-warp}
 
-Jefferson \cite{jefferson-85} proposed an optimistic PDES mechanism known as \textit{Time
+Jefferson \cite{jefferson-85} proposed an optimistic PDES mechanism known as \emph{Time
   Warp}.  He described a system in which a set of \textit{simulation objects} also known
-as \textit{Logical Processes} (LPs) process events in parallel.  Each LP has its own
-simulation clock.  The local simulation time in each LP is called \textit{Local Virtual
-  Time} (LVT). When simulating forward in LVT, an LP behaves similarly to Figure
+as \emph{Logical Processes} (LPs) process events in parallel.  Each LP has its own
+simulation clock.  The local simulation time in each LP is called \emph{Local Virtual
+  Time} (LVT).  When simulating forward in LVT, an LP behaves similarly to Figure
 \ref{sequential-des}, with the addition of remote nodes generating and transmitting events
 that complicate event scheduling (because the LPs do not explicitly synchronize with each
 other).  When an LP (the sender) must schedule an event to be simulated by another LP (the
-receiver), a \textit{message} is sent from the sender to the receiver.  The contents of
-the message are model-dependent, but every Time Warp event message must be tagged with the
+receiver), a \emph{message} is sent from the sender to the receiver.  The contents of the
+message are model-dependent, but every Time Warp event message must be tagged with the
 following five values \cite{jefferson-85}.
 
 \begin{enumerate}
@@ -349,11 +349,11 @@ following five values \cite{jefferson-85}.
   \item Sign (positive or negative, explained below).
 \end{enumerate}
 
-In order to satisfy strict causality, the receive time of a message must be
-greater than its send time \cite{lamport-78}.  When added to the strictures
-already imposed on virtual time in a discrete event simulation, this implies
-that each LP's message output is ordered by send time as long as it is
-simulating forward in time \cite{jefferson-85}.
+\noindent
+In order to satisfy strict causality, the receive time of a message must be greater than
+its send time \cite{lamport-78}.  When added to the strictures already imposed on virtual
+time in a discrete event simulation, this implies that each LP's message output is ordered
+by send time as long as it is simulating forward in time \cite{jefferson-85}.
 
 When an LP receives an event with a receive time less than its current LVT (called a
 \emph{straggler} event), a causality violation has occurred and the LP must invalidate the
@@ -361,22 +361,22 @@ premature processing it has done at virtual times greater than the receive time 
 straggler event.  This process is complicated by the fact that the premature computation
 may have erroneously sent event messages to other LPs; these messages also must be
 invalidated.  This situation is resolved by sending an ``antimessages''.  An
-\textit{antimessage} cancels the processing of the message that has the same sender,
+\emph{antimessage} cancels the processing of the message that has the same sender,
 receiver, and timestamp values as the antimessage, but opposite sign.  For clarity,
-messages are often called \textit{positive messages}, and antimessages are called
-\textit{negative messages}.  When an LP encounters the presence of corresponding positive
+messages are often called \emph{positive messages}, and antimessages are called
+\emph{negative messages}.  When an LP encounters the presence of corresponding positive
 and negative messages, those two messages ``annihilate'' \cite{jefferson-85}.  That is,
 both are invalidated and removed from further processing.
 
 When examined in terms of only a group of LPs, it is clear that this system would require
 each LP to save information on every state it has been in and every message it has sent or
-received.  In order to keep memory costs at a manageable level, the notion of
-\textit{Global Virtual Time} (GVT) is introduced.  Jefferson defines GVT as ``the minimum
-of (1) all virtual times in all virtual clocks at time r, and (2) of the virtual send
-times of all messages that have been sent but have not yet been processed''
-\cite{jefferson-85}.  GVT defines the virtual time before which all event processing is
-guaranteed to be causally correct.  Therefore, an LP needs only save state to just before
-the current GVT \cite{fujimoto-89b}.
+received.  In order to keep memory costs at a manageable level, the notion of \emph{Global
+  Virtual Time} (GVT) is introduced.  Jefferson defines GVT as ``the minimum of (1) all
+virtual times in all virtual clocks at time r, and (2) of the virtual send times of all
+messages that have been sent but have not yet been processed'' \cite{jefferson-85}.  GVT
+defines the virtual time before which all event processing is guaranteed to be causally
+correct.  Therefore, an LP needs only save state to just before the current GVT
+\cite{fujimoto-89b}.
 
 In a similar fashion, a simulation cannot be terminated using LVT information.  GVT
 information can be used to guarantee that a simulation meets a termination condition
@@ -424,36 +424,38 @@ interconnect that is robust over long distances and a variety of network conditi
 However, it also requires computational resources to support these features that can
 reduce performance compared to protocols that focus on Local Area Networks (LANs).
 
-TCP/IP also does not support \textit{active messaging} \cite{liu-94}.  Active messages are
-messages that can perform operations on their own \cite{palumbo-92}.  For example, a message in a Remote
-Direct Memory Access (RDMA) system may be a write message; that message can write to the
-receiving node's memory.  TCP/IP, on the other hand, would have to accomplish this by
-sending a message containing a write command and another message containing the data to be
-written.  Many low-latency protocols that are discussed later in this section achieve a
-significant portion of their efficiency by supporting active messages in some way.  In
-particular, RDMA semantics have become popular in the last decade \cite{huang-07}.
+TCP/IP also does not support \emph{active messaging} \cite{liu-94}.  Active messages are
+messages that can perform operations on their own \cite{palumbo-92}.  For example, a
+message in a Remote Direct Memory Access (RDMA) system may be a write message; that
+message can write to the receiving node's memory.  TCP/IP, on the other hand, would have
+to accomplish this by sending a message containing a write command and another message
+containing the data to be written.  Many low-latency protocols that are discussed later in
+this section achieve a significant portion of their efficiency by supporting active
+messages in some way.  In particular, RDMA semantics have become popular in the last
+decade \cite{huang-07}.
 
 \subsection{Extensions to TCP}
 
 One way to attack the latency limitations of TCP/IP is to implement flow control
-algorithms targeted specifically at a cluster's uses \cite{liu-13}.  This approach has been
-pursued extensively for data centers.
+algorithms targeted specifically at a cluster's uses \cite{liu-13}.  This approach has
+been pursued extensively for data centers.
 
 One large source of latency in data centers is switch buffer overruns \cite{liu-13}.  Data
-Center TCP (DCTCP) \cite{alizadeh-11} is an approach that limits this congestion in networks by detecting the
-beginnings of buffer overruns before they impact network performance.  This eliminates many
-latency spikes that can plague high-traffic TCP networks.  High-bandwidth Ultra-Low Latency
-(HULL) extends DCTCP by using simple simulation software to predict these buffer overruns
-and adjust traffic to compensate \cite{alizadeh-12}. HULL is even more effective than DCTCP at
-eliminating sudden spikes in TCP latency \cite{liu-13}.
+Center TCP (DCTCP) \cite{alizadeh-11} is an approach that limits this congestion in
+networks by detecting the beginnings of buffer overruns before they impact network
+performance.  This eliminates many latency spikes that can plague high-traffic TCP
+networks.  High-bandwidth Ultra-Low Latency (HULL) extends DCTCP by using simple
+simulation software to predict these buffer overruns and adjust traffic to compensate
+\cite{alizadeh-12}. HULL is even more effective than DCTCP at eliminating sudden spikes in
+TCP latency \cite{liu-13}.
 
-Deadline Driven Delivery (D\textsuperscript{3}) \cite{wilson-11} is another attempt to minimize
-latency spikes and, further, to enforce real time requirements on the delivery of TCP
-messages in a local network.  It is a form of active flow control that
-allocates networking resources based on time requirements associated with certain traffic.
-However, it has a tendency to starve out some requests when traffic becomes heavy.
-Preemptive Distributed Quick flow scheduling (PDQ) \cite{hong-12} solves this problem by applying
-an improved scheduling algorithm.
+Deadline Driven Delivery (D\textsuperscript{3}) \cite{wilson-11} is another attempt to
+minimize latency spikes and, further, to enforce real time requirements on the delivery of
+TCP messages in a local network.  It is a form of active flow control that allocates
+networking resources based on time requirements associated with certain traffic.  However,
+it has a tendency to starve out some requests when traffic becomes heavy.  Preemptive
+Distributed Quick flow scheduling (PDQ) \cite{hong-12} solves this problem by applying an
+improved scheduling algorithm.
 
 A problem with flow control in HPC is the computing power and specialized hardware
 required for its implementation.  While the benefits of these extensions to TCP/IP are
@@ -478,8 +480,8 @@ these implementations is prohibitive for use in research on low-cost clusters.
 
 The Genoa Active Message Machine (GAMMA) is a Linux driver that implements a low-latency
 active messaging protocol over Megabit and Gigabit Ethernet \cite{gamma}.  It is designed
-as a no-cost solution that reduces network latency on existing network
-hardware. Schneidenbach \emph{et al.} observed a 50\% or greater reduction in small message
+as a no-cost solution that reduces network latency on existing network hardware.
+Schneidenbach \emph{et al.} observed a 50\% or greater reduction in small message
 transmission times compared to TCP/IP when using GAMMA over Gigabit Ethernet hardware
 \cite{schneidenbach-03}.  GAMMA Message throughput was also consistently higher than
 TCP/IP for all message sizes.
@@ -605,8 +607,8 @@ parallel simulation models.  In addition, the LAN9730 network controller is even
 than we feared, routinely reaching end-to-end TCP small message latency over 500
 microseconds.  This is due, in part, to the fact that the ODROID-U2 Ethernet port comes in
 over the USB 2.0 bus which has a highly limiting throughput performance.  Even though it
-is advertised as having a 100 Megabit Ethernet controller, network performance is well below
-expected.
+is advertised as having a 100 Megabit Ethernet controller, network performance is well
+below expected values.
 
 \subsection{ODROID-XU}
 
@@ -657,14 +659,14 @@ that the specifics on the USB 3.0 controller is not provided on the Hardkernel w
 The eight processor cores on the ODROID-XU's SoC are arranged in a big.LITTLE
 configuration.  This heterogeneous computing platform presents some interesting
 opportunities specific to this hardware.  For example, it would be advantageous to bind a
-polling network driver for execution on one of the ``little'' Cortex-A7 cores, leaving all
+polling network driver for execution on one of the ``LITTLE'' Cortex-A7 cores, leaving all
 four of the ``big'' Cortex-A15 cores available for computing work.  It might also be
 possible to dedicate one or more of the Cortex-A7 cores to overhead tasks in parallel
 simulation, again allowing for more of the Cortex-A15 group's raw processing power to be
-used for parallel simulation.  
+used for parallel simulation.
 
 Unfortunately, the only supported operating mode for the ODROID-XU is currently ``cluster
-migration.''  That is, either all four ``little'' cores are active, or all four ``big''
+migration.''  That is, either all four ``LITTLE'' cores are active, or all four ``big''
 cores are active.  This is caused by a hardware problem with the cache coherence protocol
 on the Exynos chip that is unlikely to be resolved with this board.  Development of a new
 solution with the new Exynos 5422 chip that will allow simultaneous use of all eight cores
@@ -701,7 +703,7 @@ consider is the network latency.  To address this issue, we pursue two strategie
 first is the replacement of the TCP/IP network stack with a lightweight RDMA-based stack.
 The second strategy is to replace the interrupt-based network driver with a polling-based
 network driver.  The remainder of this chapter will discuss the details of each of these
-strategies. 
+strategies.
 
 \section{Software RoCE}
 
@@ -709,12 +711,12 @@ In this work, we will replace the TCP/IP protocol stack with an RDMA over Conver
 Ethernet (RoCE) protocol stack.  This replacement occurs within the Linux kernel and
 coupled with a thin software layer to bridge the RoCE protocol to MPI, applications run on
 the resulting system do not have to be modified from their original MPI-based
-implementation. 
+implementation.
 
 Currently, there is only one open-source software RoCE project.  It is called the
 \verb;rxe; Linux driver.  Previous work in our laboratory has proven that this driver is
 capable of providing significant reduction in network latency when used in an x86 platform
-\cite{lancaster-10}. 
+\cite{lancaster-10}.
 
 System Fabric Works created the \verb;rxe; driver with at two primary goals in mind: (i)
 to provide a low-cost gateway to InfiniBand software, and (ii) to function as a testbed
@@ -759,9 +761,9 @@ created, but such an operation may adversely impact performance
 \caption{rxe Driver Overview \protect\cite{pearson-10}}\label{rxe-overview}
 \end{figure}
 
-Figure \ref{rxe-overview} shows the dataflow among the major partitions of the rxe
-driver.  When a consumer application intends to send or receive a message, it must submit a
-Work Request (WR) via an IB verbs function call.  This function places the WR into a QP
+Figure \ref{rxe-overview} shows the dataflow among the major partitions of the rxe driver.
+When a consumer application intends to send or receive a message, it must submit a Work
+Request (WR) via an IB verbs function call.  This function places the WR into a QP
 allocated for that application.  If the application uses Shared Receive Queue (SRQ)
 semantics (as OpenMPI does), then another small wrinkle is added for receive WRs as both
 the SRQ and the QP associated with the WR must be resolved.  Once the Linux kernel is
@@ -807,11 +809,11 @@ The QP Requester's architecture is illustrated in Figure \ref{rxe-req}.  The Req
 further divided into an Initiator task and a Completer task.  The Initiator simply creates
 a request message for every entry in the send queue.  The Completer is active only for
 communication using the Reliable Connection (RC) channel semantics.  It waits for
-responses from the remote node to indicate that each WQE has been retired \cite
-{pearson-10}. It then generates a CQE and releases the WQE. If a message fails and must be
-retried, the Initiator can be reset to the point where the Completer is waiting.  For all
-other channel semantics, the WQE is retired and released immediately by the Initiator
-without invoking the Completer.
+responses from the remote node to indicate that each WQE has been retired
+\cite{pearson-10}. It then generates a CQE and releases the WQE. If a message fails and
+must be retried, the Initiator can be reset to the point where the Completer is waiting.
+For all other channel semantics, the WQE is retired and released immediately by the
+Initiator without invoking the Completer.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{rxe_arbiter}
@@ -932,9 +934,9 @@ Simulation on multi-core processors, it may even be advantageous to give up a pr
 core to a polling driver in order to significantly reduce message latency for all packets.
 The big.LITTLE processor configurations in products like the ODROID-XU make this prospect
 especially enticing when one considers that polling could be handled by one of the
-``little'' cores, leaving all the ``big'' cores available for event processing.
+``LITTLE'' cores, leaving all the ``big'' cores available for event processing.
 
-Although the ability to symmetrically multi-process with both ``big'' and ``little'' cores
+Although the ability to symmetrically multi-process with both ``big'' and ``LITTLE'' cores
 is not yet present for Linux in the ODROID-XU, we pursued this goal in the hope that the
 trade of a ``big'' core for reduced latency would still be worthwhile.  Two senior project
 students (Doug Weber and Zakaria Aldeneh) began this study by creating an EHCI polling
@@ -980,13 +982,13 @@ latency reduction for small message sizes. This result may be explained by relat
 operation of NetPIPE to the architecture of XHCI itself.  For small messages, NetPIPE
 measures message latency by sending hundreds to thousands of small messages from the
 initator node to the target node, then measuring the time elapsed before it receives a
-response. These times are averaged and divided by two to yield the average end-to-end
-message latency. As explained above, an interrupt-based XHCI driver processes \emph{all}
-of the pending TRBs in the event ring before exiting the DPC routine. Therefore, not every
-packet receipt requires an interrupt before it can be processed. In effect, the bursty
-nature of the NetPIPE test packets mask each other's latency. Traffic generated by PDES
-would not follow this pattern. If this hypothesis is correct, then a polling driver could
-still enable PDES speedup.
+response.  These times are averaged and divided by two to yield the average end-to-end
+message latency.  As explained above, an interrupt-based XHCI driver processes \emph{all}
+of the pending TRBs in the event ring before exiting the DPC routine.  Therefore, not
+every packet receipt requires an interrupt before it can be processed.  In effect, the
+bursty nature of the NetPIPE test packets mask each other's latency.  Traffic generated by
+PDES would not follow this pattern.  If this hypothesis is correct, then a polling driver
+could still enable PDES speedup.
 
 \chapter{Cluster Implementation and Testing}\label{cluster}
 
@@ -1046,8 +1048,9 @@ The total cost of the ODROID-XU computing hardware for this cluster is calculate
 \section{Comparison Cluster}
 
 We will compare the performance of the ODROID-XU cluster with a traditional Beowulf
-cluster consisting of four x86 PCs running two Intel Xeon Harpertown CPUs per node with 4 GB of main memory.
-The hardware costs of these PCs are estimated in Table \ref{x86-cost-table}.
+cluster consisting of four x86 PCs running two Intel Xeon Harpertown CPUs per node with 4
+GB of main memory.  The hardware costs of these PCs are estimated in Table
+\ref{x86-cost-table}.
 
 \section{Initial Cost Comparisons}
 
@@ -1063,10 +1066,10 @@ on each cluster.
 \end{figure}
 
 First, the \verb;sysbench; CPU test was run on in several threading configurations for 60
-seconds per configuration.  This test calculates prime numbers using 64-bit
-integers.  Figure \ref{sysbench-all} organizes the results of these tests by the number of
-threads on which the test was run. Although both platforms scale well with threads, it is
-clear that the x86 machine is superior in 64-bit integer computations.
+seconds per configuration.  This test calculates prime numbers using 64-bit integers.
+Figure \ref{sysbench-all} organizes the results of these tests by the number of threads on
+which the test was run. Although both platforms scale well with threads, it is clear that
+the x86 machine is superior in 64-bit integer computations.
 
 \begin{figure}
 \centering
@@ -1116,15 +1119,15 @@ the ARM processor at one in each category.  Figure \ref{nbench-cost} does the sa
 
 In all three performance areas, the x86 CPU more than doubles the computation power per
 dollar of the ARM CPU as measured by this benchmark.  However, the ARM cluster is more
-cost efficient in all three key performance areas as shown in Figure
-\ref{nbench-cost}. Although this is encouraging, one can expect factors other than raw
-computing power to determine PDES performance.
+cost efficient in all three key performance areas as shown in Figure \ref{nbench-cost}.
+Although this is encouraging, one can expect factors other than raw computing power to
+determine PDES performance.
 
 It is important to note that this benchmark measures only single-thread performance, and
-the ARM cluster has only half the number of processor cores in the x86 cluster. Therefore,
-coarse-grained scientific applications can be run more cost efficiently on the x86 cluster
-if they perform a lot of floating point operations or operations on integers longer than
-32 bits. Cost efficiency is similar for other scientific computation.
+the ARM cluster has only half the number of processor cores in the x86 cluster.
+Therefore, coarse-grained scientific applications can be run more cost efficiently on the
+x86 cluster if they perform a lot of floating point operations or operations on integers
+longer than 32 bits.  Cost efficiency is similar for other scientific computation.
 
 \chapter{Experimental Results}\label{results}
 
@@ -1155,7 +1158,6 @@ section.  We believe that this is a manifestation of a performance limitation in
 by the USB-to-Ethernet translation in the LAN9730 hardware.  The trend of performance
 improvement with RoCE continues until message size rises above 8 KB, after which RoCE
 latency is significantly higher than TCP latency.
-
 
 \begin{figure}
 \includegraphics[width=\textwidth]{netpipe_lat_small}
@@ -1286,8 +1288,8 @@ cores are in use, 2.5 times speedup is possible.
 
 For comparison, Figure \ref{x86-lat} shows the MPI message latency and Figure \ref{x86-bw}
 shows the MPI bandwidth, both measured by NetPIPE on two nodes of the traditional Beowulf
-cluster. Clearly the small message latency is far lower on the x86 platform with PCI
-ethernet controllers than anything we can achieve with the USB ethernet controllers. The
+cluster.  Clearly the small message latency is far lower on the x86 platform with PCI
+ethernet controllers than anything we can achieve with the USB ethernet controllers.  The
 bandwidth performance of the x86 nodes is similarly superior.
 
 \begin{figure}
@@ -1407,7 +1409,6 @@ the same problem without the large variance seen in the \verb;disksim; and \verb
 models.  Clearly, network message latency alone is not a good predictor for PDES
 performance when more than one communication layer is in use.
 
-
 \subsection{RoCE Speedup}
 
 Figures \ref{disksim-speedup}, \ref{raid-speedup}, and \ref{wifi-speedup} show the mean
@@ -1503,11 +1504,6 @@ parallelism more efficiently than the ARM cluster for all three models.
 \caption{Scaling of Model Performance for Cost with Parallelism on Each Platform}
 \label{costperf-summary}
 \end{figure}
-
-%% ERIC: you might want to add a section that talks about the cost differentials of larger
-%% configurations (32, 64, and possibly 128 node sizes) and engage the reader in a
-%% discussion about how that could affect the ability to run on the cutting edge of
-%% technology.
 
 \section{Larger Clusters}
 
@@ -1634,7 +1630,9 @@ that drove the adoption of Beowulf clusters in the first place: inexpensive comm
 microprocessors intended for workstations gradually became more attractive than expensive
 custom solutions for small-scale High Performance Computing.
 
-Mobile SoCs lower the cost barrier for HPC. This thesis has shown that an ARM-based cluster can be constructed for less than \$1000, a fraction of the cost of a similar traditional Beowulf cluster.
+Mobile SoCs lower the cost barrier for HPC.  This thesis has shown that an ARM-based
+cluster can be constructed for less than \$1000, a fraction of the cost of a similar
+traditional Beowulf cluster.
 
 \subsection{Small Form Factor}
 
@@ -1666,22 +1664,22 @@ Comparison of the power dissipated by our ARM cluster and the power dissipated b
 cluster would be interesting, especially as it pertains to discussion about scaling costs.
 Because an ARM-based cluster would probably require more nodes than an x86 cluster to
 achieve similar computing performance, it is not clear which architecture would actually
-be more efficient at a large scale. One would expect that cooling becomes a problem for
+be more efficient at a large scale.  One would expect that cooling becomes a problem for
 x86 at a smaller cluster size than it does for ARM, so additional cooling costs may create
 a range wherein an ARM-based cluster is more efficient than a comparably performing x86
 cluster.
 
-The benefits of a polling network driver remain unexplored on a mobile platform. The fact
+The benefits of a polling network driver remain unexplored on a mobile platform.  The fact
 that PDES performance scaled less efficiently with increased allocation of processes per
 node means that giving up a core for a polling driver is feasible if it can reduce latency
-significantly for PDES network traffic. The release of the ODROID-XU3 \cite{xu3} in August
-2014 will make a polling driver especially attractive. It hosts a Samsung Exynos 5422 SoC
-which supports Heterogeneous Multiprocessing (HMP).  That is, both the ``big'' and
-``little'' cores can operate simultaneously. Not only does this enable a polling driver to
-be bound to a ``little'' core, but it may also enable other innovative solutions to
-overhead computation problems in PDES. The ODROID-XU3 also has integrated voltage and
-current sensors for the CPU, GPU, and memory. These sensors could be used in studies of
-power dissipation for an ARM-based cluster.
+significantly for PDES network traffic.  The release of the ODROID-XU3 \cite{xu3}
+scheduled for release in August 2014 will make a polling driver especially attractive.  It
+hosts a Samsung Exynos 5422 SoC which supports Heterogeneous Multiprocessing (HMP).  That
+is, both the ``big'' and ``LITTLE'' cores can operate simultaneously. Not only does this
+enable a polling driver to be bound to a ``LITTLE'' core, but it may also enable other
+innovative solutions to overhead computation problems in PDES.  The ODROID-XU3 also has
+integrated voltage and current sensors for the CPU, GPU, and memory.  These sensors could
+be used in studies of power dissipation for an ARM-based cluster.
 
 \newpage
 %%\bibliographystyle{abbrv} 
