@@ -110,7 +110,21 @@ performance does not justify its price for either application.
 
 \chapter*{Acknowledgments}
 
-%% TODO
+Above all, I thank God for granting me the opportunity and ability to pursue this
+research. ``Thus far the Lord has helped us,'' (1 Samuel 7:12).
+
+Without the guidance of Dr. Philip A. Wilsey, none of the research here would be
+possible. It has been an honor and a pleasure to work with him in this exciting field. In
+particular, I thank him for his tireless dedication to the review of this document, which
+he has elevated from mediocrity to something of which I am proud.
+
+I would like to thank everyone who works or has previously worked in the Experimental
+Computing Laboratory. I thank Doug Weber and Zakaria Aldeneh for their work on polling
+drivers, some of which has been discussed in this thesis. I thank Kyle Craig and Josh Hay
+for advancing through the research process with me. I thank Sounak Gupta for his
+assistance with practical matters, including MPI and WARPED.
+
+I thank my family and friends for their love and support throughout my education.
 
 \tableofcontents \markright{ }
 \listoffigures \markright{ }
@@ -1672,8 +1686,8 @@ cluster.
 The benefits of a polling network driver remain unexplored on a mobile platform.  The fact
 that PDES performance scaled less efficiently with increased allocation of processes per
 node means that giving up a core for a polling driver is feasible if it can reduce latency
-significantly for PDES network traffic.  The release of the ODROID-XU3 \cite{xu3}
-scheduled for release in August 2014 will make a polling driver especially attractive.  It
+significantly for PDES network traffic.  The ODROID-XU3 \cite{xu3}
+(scheduled for release in August 2014) will make a polling driver especially attractive.  It
 hosts a Samsung Exynos 5422 SoC which supports Heterogeneous Multiprocessing (HMP).  That
 is, both the ``big'' and ``LITTLE'' cores can operate simultaneously. Not only does this
 enable a polling driver to be bound to a ``LITTLE'' core, but it may also enable other
