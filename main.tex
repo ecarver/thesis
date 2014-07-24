@@ -15,6 +15,13 @@
 \usepackage{booktabs}
 \usepackage{float}
 \usepackage{caption}
+\usepackage{afterpage}
+
+\newcommand\blankpage{%
+  \null
+  \thispagestyle{empty}%
+  \addtocounter{page}{-1}%
+  \newpage}
 
 \setcounter{topnumber}{2}
 \setcounter{bottomnumber}{3}
@@ -107,6 +114,8 @@ solution) for PDES applications using Rensselaer's Optimistic Simulation System 
 However, when comparing the ODROID-based cluster performance for cost, both in terms of
 operations per second and Parallel Discrete Event Simulation performance, we find that its
 performance does not justify its price for either application.
+
+\afterpage{\blankpage}
 
 \chapter*{Acknowledgments}
 
